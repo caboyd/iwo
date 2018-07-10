@@ -7,10 +7,21 @@
     "baseUrl": ".",
     "paths":{
       "*":[
-        "src/*"
+        "src/*",
+        "*"
       ]
-    }
+    },
+    "strict": true,
+    "noImplicitReturns": true,
+    "strictPropertyInitialization" : true
+    
+
   },
+  "typedef":[
+    true,
+    "call-signature",
+    "property-declaration"
+  ],
   "exclude": [
     "node_modules"
   ]

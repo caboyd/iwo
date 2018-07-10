@@ -1,0 +1,9 @@
+{
+  "rules":{
+    "typedef": [
+      true,
+      "call-signature",
+      "property-declaration"
+    ]
+  }
+}

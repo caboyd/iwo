@@ -1,4 +1,4 @@
-import {mat4, vec3} from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 
 let frag: string = require("shaders/basic.frag");
 let vert: string = require("shaders/basic.vert");
@@ -22,9 +22,10 @@ let cPos: vec3 = vec3.fromValues(0, 0, 3.0);
 let cUp: vec3 = vec3.fromValues(0, 1, 0);
 let cFront: vec3 = vec3.fromValues(0, 0, -1);
 
-(function loadWebGL() {
+(function loadWebGL():void {
     canvas = <HTMLCanvasElement>document.getElementById("canvas");
-    initGL();
+
+    gl = initGL();
     initShaders();
     initBuffers();
 
@@ -35,7 +36,7 @@ let cFront: vec3 = vec3.fromValues(0, 0, -1);
     drawScene();
 })();
 
-function initGL() {
+function initGL():WebGL2RenderingContext {
     try {
         gl = <WebGL2RenderingContext>canvas.getContext("webgl2");
     } catch (e) {
@@ -44,13 +45,14 @@ function initGL() {
     if (!gl) {
         alert("WebGL is not available on your browser.");
     }
+    return gl;
 }
 
-function initShaders() {
-    let fragmentShader: WebGLShader = getShader(gl, frag, gl.FRAGMENT_SHADER);
-    let vertexShader: WebGLShader = getShader(gl, vert, gl.VERTEX_SHADER);
+function initShaders():void {
+    let fragmentShader: WebGLShader = getShader(gl, frag, gl.FRAGMENT_SHADER)!;
+    let vertexShader: WebGLShader = getShader(gl, vert, gl.VERTEX_SHADER)!;
 
-    shader_prog = gl.createProgram();
+    shader_prog = gl.createProgram()!;
     gl.attachShader(shader_prog, vertexShader);
     gl.attachShader(shader_prog, fragmentShader);
     gl.linkProgram(shader_prog);
@@ -62,14 +64,14 @@ function initShaders() {
     gl.useProgram(shader_prog);
 
     pos = gl.getAttribLocation(shader_prog, "a_position");
-    model = gl.getUniformLocation(shader_prog, "u_model");
-    view = gl.getUniformLocation(shader_prog, "u_view");
-    projection = gl.getUniformLocation(shader_prog, "u_projection");
+    model = gl.getUniformLocation(shader_prog, "u_model")!;
+    view = gl.getUniformLocation(shader_prog, "u_view")!;
+    projection = gl.getUniformLocation(shader_prog, "u_projection")!;
 }
 
-function initBuffers() {
-    triangleVertexPositionBuffer = gl.createBuffer();
-    vao = gl.createVertexArray();
+function initBuffers():void {
+    triangleVertexPositionBuffer = gl.createBuffer()!;
+    vao = gl.createVertexArray()!;
 
     gl.bindVertexArray(vao);
     gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
@@ -85,7 +87,7 @@ function initBuffers() {
     gl.enableVertexAttribArray(pos);
 }
 
-function drawScene() {
+function drawScene():void {
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -103,8 +105,8 @@ function drawScene() {
     let translation = vec3.create();
     vec3.set(translation, 0, 0, -1.0);
     mat4.translate(mMatrix, mMatrix, translation);
-    gl.uniformMatrix4fv(model, false,mMatrix);
-    
+    gl.uniformMatrix4fv(model, false, mMatrix);
+
     //Pass triangle position to vertex shader
     gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
     gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 0, 0);
@@ -113,15 +115,14 @@ function drawScene() {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
 }
 
-function getShader(gl: WebGL2RenderingContext, src, type) {
+function getShader(gl: WebGL2RenderingContext, src:string, type:number):WebGLShader  {
     let shader: WebGLShader;
-    shader = gl.createShader(type);
+    shader = gl.createShader(type)!;
     gl.shaderSource(shader, src);
     gl.compileShader(shader);
 
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         alert(gl.getShaderInfoLog(shader));
-        return null;
     }
 
     return shader;
