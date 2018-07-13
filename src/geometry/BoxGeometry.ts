@@ -14,7 +14,7 @@ export class BoxGeometry implements Geometry {
 
     isInterleaved: boolean;
     interleaved_attributes: Float32Array;
-    
+
     //Bounding Sphere
 
     //Bounding Box (AABB)
@@ -29,21 +29,28 @@ export class BoxGeometry implements Geometry {
     ) {
         this.attributes = new Map<AttributeType, ArrayBufferView>();
 
-        let width_verts = 2 * (2 + 2 * width_segments);
-        let height_verts = 2 * (2 + 2 * height_segments);
-        let depth_verts = 2 * (2 + 2 * depth_segments);
-        let total_verts = width_verts * height_verts * depth_verts;
+        let front_back = width_segments * height_segments;
+        let left_right = height_segments * depth_segments;
+        let top_bottom = depth_segments * width_segments;
 
-        if (total_verts > 65536) this.indices = new Uint32Array(total_verts);
-        else this.indices = new Uint16Array(total_verts);
+        let total_indices = 6 * 2 * (front_back + left_right + top_bottom);
+
+        if (total_indices > 65536) this.indices = new Uint32Array(total_indices);
+        else this.indices = new Uint16Array(total_indices);
         let indices = this.indices;
+
+        front_back = 2 * (width_segments + 1) * (height_segments + 1);
+        left_right = 2 * (height_segments + 1) * (depth_segments + 1);
+        top_bottom = 2 * (depth_segments + 1) * (width_segments + 1);
+
+        let total_verts = front_back + left_right + top_bottom;
 
         let verts = new Float32Array(total_verts * 3);
         let normals = new Float32Array(total_verts * 3);
         let tex_coords = new Float32Array(total_verts * 2);
         let tangents = new Float32Array(total_verts * 3);
         let bitangents = new Float32Array(total_verts * 3);
-        let groups:Group[] = [];
+        let groups: Group[] = [];
 
         this.interleaved_attributes = new Float32Array(0);
 
@@ -54,21 +61,22 @@ export class BoxGeometry implements Geometry {
         let ptr = 0;
         let tex_ptr = 0;
         let i_ptr = 0;
+        let index_offset = 0;
 
         //Build Front Side
-        buildSide(Order.x, Order.y, Order.z, width, width_segments, height, height_segments, half_depth, 1, 1,0);
+        buildSide(Order.x, Order.y, Order.z, width, width_segments, height, height_segments, half_depth, 1, 1, 0);
 
         //Build Back Side
-        buildSide(Order.x, Order.y, Order.z, width, width_segments, height, height_segments, -half_depth, -1, 1,1);
+        buildSide(Order.x, Order.y, Order.z, width, width_segments, height, height_segments, -half_depth, -1, 1, 1);
 
         //Build Left Side
-        buildSide(Order.z, Order.y, Order.x, depth, depth_segments, height, height_segments, -half_width, 1, 1,2);
+        buildSide(Order.z, Order.y, Order.x, depth, depth_segments, height, height_segments, -half_width, 1, 1, 2);
 
         //Build Right Side
-        buildSide(Order.z, Order.y, Order.x, depth, depth_segments, height, height_segments, half_width, -1, 1,3);
+        buildSide(Order.z, Order.y, Order.x, depth, depth_segments, height, height_segments, half_width, -1, 1, 3);
 
         //Build Top Side
-        buildSide(Order.x, Order.z, Order.y, width, width_segments, depth, depth_segments, half_height, 1, -1,4);
+        buildSide(Order.x, Order.z, Order.y, width, width_segments, depth, depth_segments, half_height, 1, -1, 4);
 
         //Build Bottom Side
         buildSide(Order.x, Order.z, Order.y, width, width_segments, depth, depth_segments, -half_height, 1, 1, 5);
@@ -110,7 +118,7 @@ export class BoxGeometry implements Geometry {
          * @param {number} plane - the position in the dimension of the plane
          * @param {number} x_dir - (-1 or 1) the direction of positive x ( 1 mean x grows to the right)
          * @param {number} y_dir - (-1 or 1) the direction of positive y ( 1 mean y grows to the top)
-         * @param {number} mat_index - material index for this side 
+         * @param {number} mat_index - material index for this side
          */
         function buildSide(
             x_order: Order,
@@ -123,7 +131,7 @@ export class BoxGeometry implements Geometry {
             plane: number,
             x_dir: number,
             y_dir: number,
-            mat_index:number = 0
+            mat_index: number = 0
         ): void {
             //VERTS
             let half_horizontal = horizontal_size / 2;
@@ -169,10 +177,11 @@ export class BoxGeometry implements Geometry {
 
             //INDICES
             let index_count = 0;
+            let index_start = index_offset;
             for (let i = 0; i < horizontal_steps; i++) {
                 for (let j = 0; j < vertical_steps; j++) {
-                    let lower_left = (vertical_steps + 1) * i;
-                    let lower_right = (vertical_steps + 1) * (i + 1);
+                    let lower_left = index_start + (vertical_steps + 1) * i;
+                    let lower_right = index_start + (vertical_steps + 1) * (i + 1);
                     let upper_left = lower_left + 1;
                     let upper_right = lower_right + 1;
 
@@ -189,12 +198,12 @@ export class BoxGeometry implements Geometry {
                     indices[i_ptr++] = upper_left;
                     indices[i_ptr++] = lower_right;
                     indices[i_ptr++] = upper_right;
-                    
+
                     index_count += 6;
+                    index_offset += 4;
                 }
             }
-            groups.push({count:index_count, offset:i_ptr - index_count, material_index:mat_index} as Group);
+            groups.push({ count: index_count, offset: i_ptr - index_count, material_index: mat_index } as Group);
         }
-        
     }
 }

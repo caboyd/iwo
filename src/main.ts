@@ -1,22 +1,33 @@
-import { mat4, vec3 } from "gl-matrix";
+import {glMatrix, mat4, vec3} from "gl-matrix";
+import {BoxGeometry} from "./geometry/BoxGeometry";
+import {Mesh} from "./meshes/Mesh";
+import {MeshInstance} from "./meshes/MeshInstance";
+import {Material} from "./materials/Material";
+import {AttributeType} from "./geometry/Geometry";
 
-let frag: string = require("shaders/basic.frag");
-let vert: string = require("shaders/basic.vert");
+let frag: string = require("shaders/standard.frag");
+let vert: string = require("shaders/standard.vert");
 
 let canvas: HTMLCanvasElement;
 
 let gl: WebGL2RenderingContext;
 let shader_prog: WebGLShader;
 let triangleVertexPositionBuffer: WebGLBuffer;
-let mMatrix: mat4 = mat4.create();
-let vMatrix: mat4 = mat4.create();
-let pMatrix: mat4 = mat4.create();
+
+let model_matrix:mat4 = mat4.create();
+let view_matrix:mat4 = mat4.create();
+let proj_matrix:mat4 = mat4.create();
+
+let modelview_matrix: mat4 = mat4.create();
+let normalview_matrix: mat4 = mat4.create();
+let mvp_matrix: mat4 = mat4.create();
 let vao: WebGLVertexArrayObject;
 
-let pos: GLint;
-let model: WebGLUniformLocation;
-let view: WebGLUniformLocation;
-let projection: WebGLUniformLocation;
+let position_location: GLint;
+let modelview_location: WebGLUniformLocation;
+let normalview_location: WebGLUniformLocation;
+let mvp_location: WebGLUniformLocation;
+let box:BoxGeometry;
 
 let cPos: vec3 = vec3.fromValues(0, 0, 3.0);
 let cUp: vec3 = vec3.fromValues(0, 1, 0);
@@ -33,7 +44,8 @@ let cFront: vec3 = vec3.fromValues(0, 0, -1);
 
     gl.enable(gl.DEPTH_TEST);
 
-    drawScene();
+    requestAnimationFrame(drawScene);
+    
 })();
 
 function initGL():WebGL2RenderingContext {
@@ -63,10 +75,10 @@ function initShaders():void {
 
     gl.useProgram(shader_prog);
 
-    pos = gl.getAttribLocation(shader_prog, "a_position");
-    model = gl.getUniformLocation(shader_prog, "u_model")!;
-    view = gl.getUniformLocation(shader_prog, "u_view")!;
-    projection = gl.getUniformLocation(shader_prog, "u_projection")!;
+    position_location = gl.getAttribLocation(shader_prog, "a_vertex");
+    modelview_location = gl.getUniformLocation(shader_prog, "u_modelview_matrix")!;
+    normalview_location = gl.getUniformLocation(shader_prog, "u_normalview_matrix")!;
+    mvp_location = gl.getUniformLocation(shader_prog, "u_mvp_matrix")!;
 }
 
 function initBuffers():void {
@@ -78,41 +90,77 @@ function initBuffers():void {
 
     //prettier-ignore
     let vertices = [
-        -1.5, -0.5, 0.0,
+        -0.5, -0.5, 0.0,
         0.5, -0.5, 0.0,
         0.0, 0.5, 0.0];
 
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
-    gl.enableVertexAttribArray(pos);
+    gl.enableVertexAttribArray(position_location);
 }
 
 function drawScene():void {
+    box = new BoxGeometry(1,1,1);
+    
+    let mesh = new Mesh(gl,box);
+    let instance = new MeshInstance(mesh, [new Material()]);
+    
+    
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    mat4.perspective(pMatrix, 70, gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
+    mat4.perspective(proj_matrix, glMatrix.toRadian(90), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
     let cForward: vec3 = vec3.create();
     cForward = vec3.add(cForward, cPos, cFront);
-    mat4.lookAt(vMatrix, cPos, cForward, cUp);
+    mat4.lookAt(view_matrix, cPos, cForward, cUp);
     //move view and projection matrix to vertex shader
 
-    gl.uniformMatrix4fv(view, false, vMatrix);
-    gl.uniformMatrix4fv(projection, false, pMatrix);
-
-    mat4.identity(mMatrix);
+    mat4.identity(model_matrix);
     //Move our Triangle
     let translation = vec3.create();
-    vec3.set(translation, 0, 0, -1.0);
-    mat4.translate(mMatrix, mMatrix, translation);
-    gl.uniformMatrix4fv(model, false, mMatrix);
+    vec3.set(translation, 0, 0, 0.0);
+    
+    mat4.rotateY(model_matrix,model_matrix,glMatrix.toRadian(Date.now()/100.0));
+    mat4.rotateZ(model_matrix,model_matrix,glMatrix.toRadian(Date.now()/100.0));
+    mat4.translate(model_matrix, model_matrix, translation);
+    
+
+    mat4.mul(modelview_matrix, view_matrix, model_matrix);
+    
+    mat4.invert(normalview_matrix,normalview_matrix);
+    mat4.transpose(normalview_matrix, normalview_matrix);
+
+    mat4.mul(mvp_matrix, proj_matrix, modelview_matrix);
+
+    gl.uniformMatrix4fv(modelview_location, false, modelview_matrix);
+    gl.uniformMatrix4fv(normalview_location, false, normalview_matrix);
+    gl.uniformMatrix4fv(mvp_location, false, mvp_matrix);
 
     //Pass triangle position to vertex shader
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexPositionBuffer);
-    gl.vertexAttribPointer(pos, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(position_location);
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertex_buffer.attribute_buffers.get(AttributeType.Vertex)!);
+  //  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions),gl.STATIC_DRAW);
+    gl.vertexAttribPointer(position_location, 3, gl.FLOAT, false, 0, 0);
+
+    gl.enableVertexAttribArray(2);
+    gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertex_buffer.attribute_buffers.get(AttributeType.Normals)!);
+    gl.vertexAttribPointer(2, 3, gl.FLOAT, false, 0, 0);
+    
+    let count = 0;
+    for(let sub of mesh.sub_meshes)
+        count += sub.count;
+    
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.index_buffer!.EBO);
+    // gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,
+    //     new Uint16Array(indices), gl.STATIC_DRAW);
 
     //Draw triangle
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    
+    //gl.drawElements(gl.TRIANGLES, mesh.sub_meshes[0].count, gl.UNSIGNED_SHORT,0);
+
+    gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT,0);
+    
+    requestAnimationFrame(drawScene);
 }
 
 function getShader(gl: WebGL2RenderingContext, src:string, type:number):WebGLShader  {
@@ -127,3 +175,4 @@ function getShader(gl: WebGL2RenderingContext, src:string, type:number):WebGLSha
 
     return shader;
 }
+
