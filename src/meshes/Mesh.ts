@@ -5,11 +5,9 @@
  */
 
 import { Geometry } from "src/geometry/Geometry";
-import { DrawMode } from "../webgl2/Webgl2Constants";
-import { VertexBuffer } from "./VertexBuffer";
-import { IndexBuffer } from "./IndexBuffer";
-import { Webgl2IndexBuffer } from "src/webgl2/Webgl2IndexBuffer";
-import { Webgl2VertexBuffer } from "src/webgl2/Webgl2VertexBuffer";
+import { DrawMode } from "src/graphics/WebglConstants";
+import { IndexBuffer } from "src/graphics/IndexBuffer";
+import { VertexBuffer } from "src/graphics/VertexBuffer";
 import { SubMesh } from "./SubMesh";
 
 export class Mesh {
@@ -18,14 +16,17 @@ export class Mesh {
 
     public draw_mode: DrawMode;
     public readonly sub_meshes: SubMesh[];
+    public count:number;
 
     constructor(gl: WebGL2RenderingContext, geometry: Geometry) {
-        if (geometry.indices) this.index_buffer = new Webgl2IndexBuffer(gl, geometry);
-        this.vertex_buffer = new Webgl2VertexBuffer(gl, geometry);
+        if (geometry.indices) this.index_buffer = new IndexBuffer(gl, geometry);
+        this.vertex_buffer = new VertexBuffer(gl, geometry);
         this.sub_meshes = [];
         this.draw_mode = DrawMode.TRIANGLES;
-
+        this.count = 0;
+        
         for (let group of geometry.groups) {
+            this.count += group.count;
             this.sub_meshes.push(
                 new SubMesh(group.material_index, group.offset, group.count, this.vertex_buffer, this.index_buffer)
             );

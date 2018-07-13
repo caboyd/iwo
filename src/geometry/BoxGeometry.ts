@@ -35,7 +35,7 @@ export class BoxGeometry implements Geometry {
 
         let total_indices = 6 * 2 * (front_back + left_right + top_bottom);
 
-        if (total_indices > 65536) this.indices = new Uint32Array(total_indices);
+        if (total_indices >= 65536) this.indices = new Uint32Array(total_indices);
         else this.indices = new Uint16Array(total_indices);
         let indices = this.indices;
 
@@ -61,7 +61,7 @@ export class BoxGeometry implements Geometry {
         let ptr = 0;
         let tex_ptr = 0;
         let i_ptr = 0;
-        let index_offset = 0;
+        let vertex_index = 0;
 
         //Build Front Side
         buildSide(Order.x, Order.y, Order.z, width, width_segments, height, height_segments, half_depth, 1, 1, 0);
@@ -102,6 +102,8 @@ export class BoxGeometry implements Geometry {
          *
          * @modifies {ptr} ptr is incremented 3 for each vertex
          * @modifies {i_ptr} i_ptr is incremented 3 for each indices
+         * @modifies {tex_ptr} ptr is incremented 2 for each vertex
+         * @modifies {vertex_index} is incremented by 2 and 2 more per segment
          * @modifies {verts} values are placed at the index of ptr
          * @modifies {normals} values are placed at the index of ptr
          * @modifies {tex_coords} values are placed at the index of ptr
@@ -177,11 +179,11 @@ export class BoxGeometry implements Geometry {
 
             //INDICES
             let index_count = 0;
-            let index_start = index_offset;
+            let start_vertex = vertex_index;
             for (let i = 0; i < horizontal_steps; i++) {
                 for (let j = 0; j < vertical_steps; j++) {
-                    let lower_left = index_start + (vertical_steps + 1) * i;
-                    let lower_right = index_start + (vertical_steps + 1) * (i + 1);
+                    let lower_left = start_vertex + (vertical_steps + 1) * i;
+                    let lower_right = start_vertex + (vertical_steps + 1) * (i + 1);
                     let upper_left = lower_left + 1;
                     let upper_right = lower_right + 1;
 
@@ -199,10 +201,16 @@ export class BoxGeometry implements Geometry {
                     indices[i_ptr++] = lower_right;
                     indices[i_ptr++] = upper_right;
 
+                    //number of indexes for a quad
                     index_count += 6;
-                    index_offset += 4;
+                    
+                    //increment by 2 per segment
+                    vertex_index += 2;
                 }
             }
+            //increment by initial 2 vertexes of quad
+            vertex_index += 2;
+            
             groups.push({ count: index_count, offset: i_ptr - index_count, material_index: mat_index } as Group);
         }
     }

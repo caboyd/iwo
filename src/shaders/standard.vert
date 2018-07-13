@@ -20,7 +20,7 @@ out vec2 tex_coord;
 
 void main() {
 	 gl_Position = u_mvp_matrix * vec4(a_vertex,1.0f);
-	 normal = mat3(u_normalview_matrix) * a_normal;
+	 normal = normalize(mat3(u_normalview_matrix) * a_normal);
 	 
 	 tex_coord = a_tex_coord;
 }
