@@ -50,9 +50,9 @@ export class BoxGeometry implements Geometry {
         let tex_coords = new Float32Array(total_verts * 2);
         let tangents = new Float32Array(total_verts * 3);
         let bitangents = new Float32Array(total_verts * 3);
+        
+        let interleaved = new Float32Array(total_verts * 14);
         let groups: Group[] = [];
-
-        this.interleaved_attributes = new Float32Array(0);
 
         let half_width = width / 2;
         let half_height = height / 2;
@@ -61,6 +61,7 @@ export class BoxGeometry implements Geometry {
         let ptr = 0;
         let tex_ptr = 0;
         let i_ptr = 0;
+        let interleaved_ptr = 0;
         let vertex_index = 0;
 
         //Build Front Side
@@ -81,7 +82,7 @@ export class BoxGeometry implements Geometry {
         //Build Bottom Side
         buildSide(Order.x, Order.z, Order.y, width, width_segments, depth, depth_segments, -half_height, 1, 1, 5);
 
-        this.isInterleaved = false;
+        this.isInterleaved = true;
         this.attribute_flags =
             AttributeType.Vertex |
             AttributeType.Normals |
@@ -94,6 +95,7 @@ export class BoxGeometry implements Geometry {
         this.attributes.set(AttributeType.Tex_Coords, tex_coords);
         this.attributes.set(AttributeType.Tangents, tangents);
         this.attributes.set(AttributeType.Bitangents, bitangents);
+        this.interleaved_attributes = interleaved;
         this.groups = groups;
 
         /**
@@ -150,28 +152,31 @@ export class BoxGeometry implements Geometry {
                     let py = ptr + y_order;
                     let pz = ptr + z_order;
 
-                    verts[px] = x * x_dir;
-                    verts[py] = y * y_dir;
-                    verts[pz] = plane;
+                    let ipx = interleaved_ptr + x_order;
+                    let ipy = interleaved_ptr + y_order;
+                    let ipz = interleaved_ptr + z_order;
 
-                    normals[px] = 0;
-                    normals[py] = 0;
-                    normals[pz] = plane > 0 ? 1 : -1;
+                    interleaved[ipx] = verts[px] = x * x_dir;
+                    interleaved[ipy] = verts[py] = y * y_dir;
+                    interleaved[ipz] = verts[pz] = plane;
+                    
+                    interleaved[interleaved_ptr + 3] = tex_coords[tex_ptr++] = (i * horizontal_step) / horizontal_size;
+                    interleaved[interleaved_ptr + 4] = tex_coords[tex_ptr++] = (j * vertical_step) / vertical_size;
 
-                    tangents[px] = x_dir;
-                    tangents[py] = 0;
-                    tangents[pz] = 0;
+                    interleaved[ipx + 5] = normals[px] = 0;
+                    interleaved[ipy + 5] = normals[py] = 0;
+                    interleaved[ipz + 5] = normals[pz] = plane > 0 ? 1 : -1;
 
-                    bitangents[px] = 0;
-                    bitangents[py] = y_dir;
-                    bitangents[pz] = 0;
+                    interleaved[ipx + 8] = tangents[px] = x_dir;
+                    interleaved[ipy + 8] = tangents[py] = 0;
+                    interleaved[ipz + 8] = tangents[pz] = 0;
 
-                    tex_coords[tex_ptr++] = (i * horizontal_step) / horizontal_size;
-                    tex_coords[tex_ptr++] = (j * vertical_step) / vertical_size;
-
-                    //Interleaved
+                    interleaved[ipx + 11] = bitangents[px] = 0;
+                    interleaved[ipy + 11] = bitangents[py] = y_dir;
+                    interleaved[ipz + 11] = bitangents[pz] = 0;
 
                     ptr += 3;
+                    interleaved_ptr += 14;
                     j++;
                 }
                 i++;

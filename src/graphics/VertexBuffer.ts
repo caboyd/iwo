@@ -10,6 +10,7 @@ export class VertexBuffer {
     public VBO: WebGLBuffer | undefined;
     public readonly interleaved: boolean;
     public readonly references: ReferenceCounter;
+    public readonly stride: number;
 
     constructor(gl: WebGL2RenderingContext, geometry: Geometry) {
         this.attributes = geometry.attributes;
@@ -17,23 +18,59 @@ export class VertexBuffer {
         this.attribute_flags = geometry.attribute_flags;
         this.interleaved = geometry.isInterleaved;
         this.references = new ReferenceCounter();
+        this.stride = 0;
 
         if (this.interleaved && geometry.interleaved_attributes) {
             this.VBO = WebGL.buildBuffer(gl, gl.ARRAY_BUFFER, geometry.interleaved_attributes);
+            if (this.attribute_flags & AttributeType.Vertex) this.stride += 12;
+            if (this.attribute_flags & AttributeType.Tex_Coords) this.stride += 8;
+            if (this.attribute_flags & AttributeType.Normals) this.stride += 12;
+            if (this.attribute_flags & AttributeType.Tangents) this.stride += 12;
+            if (this.attribute_flags & AttributeType.Bitangents) this.stride += 12;
         } else this.initSeparateBuffers(gl);
     }
 
     public bindBuffers(gl: WebGL2RenderingContext): void {
-        if(this.interleaved){
-            //TODO: add bind interleaved
-        }else{
+        if (this.interleaved) {
+            let offset = 0;
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO!);
+            if (this.attribute_flags & AttributeType.Vertex) {
+                gl.enableVertexAttribArray(0);
+                gl.vertexAttribPointer(0, 3, gl.FLOAT, false, this.stride, offset);
+                offset+=12;
+            } else gl.disableVertexAttribArray(0);
+
+            if (this.attribute_flags & AttributeType.Tex_Coords){
+                gl.enableVertexAttribArray(1);
+                gl.vertexAttribPointer(1, 2, gl.FLOAT, false, this.stride, offset);
+                offset+=8;
+            }else gl.disableVertexAttribArray(1);
+
+            if (this.attribute_flags & AttributeType.Normals){
+                gl.enableVertexAttribArray(2);
+                gl.vertexAttribPointer(2, 3, gl.FLOAT, true, this.stride, offset);
+                offset+=12;
+            }else gl.disableVertexAttribArray(2);
+
+            if (this.attribute_flags & AttributeType.Tangents){
+                gl.enableVertexAttribArray(3);
+                gl.vertexAttribPointer(3, 3, gl.FLOAT, true, this.stride, offset);
+                offset+=12;
+            }else gl.disableVertexAttribArray(3);
+
+            if (this.attribute_flags & AttributeType.Bitangents){
+                gl.enableVertexAttribArray(4);
+                gl.vertexAttribPointer(4, 3, gl.FLOAT, true, this.stride, offset);
+                offset+=12;
+            }else gl.disableVertexAttribArray(4);
+ 
+        } else {
             this.bindBuffer(gl, 0, AttributeType.Vertex);
             this.bindBuffer(gl, 1, AttributeType.Tex_Coords);
             this.bindBuffer(gl, 2, AttributeType.Normals);
             this.bindBuffer(gl, 3, AttributeType.Tangents);
-            this.bindBuffer(gl, 4, AttributeType.Bitangents); 
+            this.bindBuffer(gl, 4, AttributeType.Bitangents);
         }
-
     }
 
     private bindBuffer(gl: WebGL2RenderingContext, attribute_index: number, attribute_type: AttributeType): void {
