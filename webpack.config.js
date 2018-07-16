@@ -5,12 +5,10 @@ const ImageminPlugin = require('imagemin-webpack-plugin').default;
 module.exports = (env, argv) => {
 	const isProduction = argv.mode === 'production';
 	return {
-		entry: {
-			index: './src/main.ts'
-		},
+		entry: './src/main.ts',
 		output: {
 			path: path.resolve(__dirname, 'dist'),
-			filename: '[name].bundle.js',
+			filename: 'bundle.js',
 			publicPath: ''
 		},
 		plugins: [
@@ -41,8 +39,7 @@ module.exports = (env, argv) => {
 			modules: [
 				path.resolve(__dirname),
 				'src',
-				'node_modules',
-				'assets'
+				'node_modules'
 			],
 			// Add `.ts` and `.tsx` as a resolvable extension.
 			extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js', '.vert', '.frag'],

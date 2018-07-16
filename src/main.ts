@@ -55,10 +55,40 @@ let shader: Shader;
    //    img.width = 300;
    //    img.height = 240;
    // });
+    let now = performance.now();
+    setTimeout(function () {
+        let now = performance.now();
+        let image2 = ImageLoader.promise(b.src, global_root);
+        image2.then( (image:HTMLImageElement)=>{
+            console.log(performance.now() - now);
+            img.src = image.src;
+        })
+    }, 3000);
 
-    ImageLoader.load(b.src, global_root).then( (image) => {
-        img.src = image.src;
-    });
+    setTimeout(function () {
+        let now = performance.now();
+        let image = ImageLoader.load(b.src, global_root);
+        console.log(image.complete);
+        console.log(image.src);
+        if(image.complete && image.src){
+            console.log(img.complete);
+            img.src = image.src;
+        }
+        else
+            image.onload = function () {
+                console.log(performance.now() - now);
+                console.log("onload done");
+                console.log(img.complete);
+                img.src = image.src;
+
+            };
+    }, 0)
+
+
+
+
+
+ 
 
     console.log("after");
 

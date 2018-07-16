@@ -11,12 +11,12 @@ export class FileLoader {
 
     private static onAllComplete: (total_complete: number) => void = () => {};
 
-    static async loadAll(files: string[], base_url: string = ""): Promise<Blob[]> {
+    static async promiseAll(files: string[], base_url: string = ""): Promise<Blob[]> {
         let total = files.length;
         let num_complete = 0;
         let promises: Promise<Blob>[] = [];
         for (let file of files) {
-            let p = FileLoader.load(file, base_url);
+            let p = FileLoader.promise(file, base_url);
             promises.push(p);
             p.then(() => {
                 num_complete++;
@@ -31,7 +31,7 @@ export class FileLoader {
         return result;
     }
 
-    static load(file_name: string, base_url: string = ""): Promise<any> {
+    static promise(file_name: string, base_url: string = ""): Promise<any> {
         if (!base_url.endsWith("/")) base_url += "/";
 
         return fetch(base_url + file_name)
@@ -46,7 +46,7 @@ export class FileLoader {
                 }
 
                 const total = parseInt(contentLength, 10);
-                if(response.body && ReadableStream)
+                if(response.body && ReadableStream && false)
                     return FileLoader.readAllChunks(<any>response.body, total);
                 else return response;
             })
