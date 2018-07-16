@@ -27,6 +27,7 @@
 			font-weight: bold;
 		}
 		canvas {
+			z-index:0;
 			background-color: #EEEEEE;
 			bottom: 0;
 			display: block;
@@ -34,6 +35,10 @@
 			position: absolute;
 			right: 0;
 			top: 0;
+		}
+		#canvas-wrapper{
+			position:relative; width:800px; height:600px;
+			text-align: center;
 		}
 		#fpscounter {
 			z-index:2147483647;
@@ -43,8 +48,21 @@
 			left: 20px;
 			position: absolute;
 		}
+		#loading-text-wrapper{
+			z-index:2;
+			color: white;
+			top:50%;
+			position: relative;
+			display: block;
+			border: 1px solid green;
+		}
+		#loading-subtext{
+			border: 1px solid black;
+			position: relative;
+			display: block;
+		}
 		img{
-			z-index:2147483647;
+			z-index:3;
 			top: 600px;
 			display: block;
 			position: absolute;
@@ -53,8 +71,14 @@
 	</style>
 </head>
 <body>
-<canvas id="canvas" width="800" height="600"></canvas>
+<div id="canvas-wrapper">
+	<canvas id="canvas" width="800" height="600"></canvas>
+	<div id="loading-text-wrapper">
+		<span id="loading-subtext"></span>
+		<span id="loading-text"></span>
+	</div>
+</div>
 <div id="fpscounter"></div>
-<img id="img" src=""/>
+
 </body>
 </html>

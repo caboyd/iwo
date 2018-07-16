@@ -1,17 +1,17 @@
 const ReadableStream = (window as any).ReadableStream;
 
 export class FileLoader {
-    private static onProgress: (progress: number) => void = () => {};
+    protected static onProgress: (loaded_bytes: number, total_bytes:number, file_name:string) => void = () => {};
 
-    private static onFileComplete: (
+    protected static onFileComplete: (
         num_complete: number,
         total_to_complete: number,
         file_name: string
     ) => void = () => {};
 
-    private static onAllComplete: (total_complete: number) => void = () => {};
+    protected static onAllComplete: (total_complete: number) => void = () => {};
 
-    static async promiseAll(files: string[], base_url: string = ""): Promise<Blob[]> {
+    static async promiseAll(files: string[], base_url: string = ""): Promise<any[]> {
         let total = files.length;
         let num_complete = 0;
         let promises: Promise<Blob>[] = [];
@@ -46,8 +46,8 @@ export class FileLoader {
                 }
 
                 const total = parseInt(contentLength, 10);
-                if(response.body && ReadableStream && false)
-                    return FileLoader.readAllChunks(<any>response.body, total);
+                if(response.body && ReadableStream)
+                    return FileLoader.readAllChunks(<any>response.body, total, file_name);
                 else return response;
             })
             .then(response => response.blob())
@@ -56,7 +56,7 @@ export class FileLoader {
             });
     }
 
-    static setOnProgress(f: (progress: number) => void): void {
+    static setOnProgress(f: (loaded_bytes: number, total_bytes:number, file_name:string)=> void): void {
         this.onProgress = f;
     }
 
@@ -68,7 +68,7 @@ export class FileLoader {
         this.onAllComplete = f;
     }
 
-    private static readAllChunks(readableStream: ReadableStream, total_size: number): Response {
+    private static readAllChunks(readableStream: ReadableStream, total_size: number, file_name:string): Response {
         let loaded = 0;
         const reader = readableStream.getReader();
         let stream = new ReadableStream({
@@ -80,7 +80,7 @@ export class FileLoader {
                         break;
                     }
                     loaded += value.byteLength;
-                    FileLoader.onProgress((loaded / total_size) * 100);
+                    FileLoader.onProgress(loaded, total_size, file_name);
                     controller.enqueue(value);
                 }
                 controller.close();

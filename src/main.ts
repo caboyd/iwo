@@ -5,8 +5,9 @@ import { MeshInstance } from "src/meshes/MeshInstance";
 import { Material } from "src/materials/Material";
 import { Renderer } from "src/graphics/Renderer";
 import { Shader } from "src/renderers/Shader";
-import {FileLoader} from "./loader/FileLoader";
-import {ImageLoader} from "./loader/ImageLoader";
+import { FileLoader } from "./loader/FileLoader";
+import { ImageLoader } from "./loader/ImageLoader";
+import { Texture2D } from "./graphics/Texture2D";
 
 let canvas: HTMLCanvasElement;
 
@@ -30,77 +31,34 @@ let instance: MeshInstance;
 let renderer: Renderer;
 let shader: Shader;
 
+let loading_text = document.getElementById("loading-text")!;
+let loading_subtext = document.getElementById("loading-subtext")!;
+
 (function loadWebGL(): void {
     let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
-    let b = require("assets/container.jpg");
+    //  let b = require("assets/big.png");
+    let a = require("assets/container.jpg");
 
-    FileLoader.setOnProgress((progress: number) => {
-        console.log(progress.toFixed(2) + "% complete");
-    });
+    FileLoader.setOnProgress(onProgress);
+    FileLoader.setOnFileComplete(onFileComplete);
+    FileLoader.setOnAllComplete(onAllComplete);
 
-    FileLoader.setOnFileComplete((num_complete, total_to_complete, file_name) => {
-        console.log(file_name + " download complete. " + (num_complete / total_to_complete) * 100 + "% complete");
-    });
-
-    FileLoader.setOnAllComplete(total_complete => {
-        console.log(total_complete + " files completed.");
-    });
-
-    let img = <HTMLImageElement>document.getElementById("img");
-    //let a = FileLoader.load(b.src, global_root);
-    console.log("before");
-   //
-   // let c = FileLoader.loadAll( [b.src, d.src], global_root).then( data =>{
-   //    img.src = URL.createObjectURL(data[0]);
-   //    img.width = 300;
-   //    img.height = 240;
-   // });
-    let now = performance.now();
-    setTimeout(function () {
-        let now = performance.now();
-        let image2 = ImageLoader.promise(b.src, global_root);
-        image2.then( (image:HTMLImageElement)=>{
-            console.log(performance.now() - now);
-            img.src = image.src;
-        })
-    }, 3000);
-
-    setTimeout(function () {
-        let now = performance.now();
-        let image = ImageLoader.load(b.src, global_root);
-        console.log(image.complete);
-        console.log(image.src);
-        if(image.complete && image.src){
-            console.log(img.complete);
-            img.src = image.src;
-        }
-        else
-            image.onload = function () {
-                console.log(performance.now() - now);
-                console.log("onload done");
-                console.log(img.complete);
-                img.src = image.src;
-
-            };
-    }, 0)
-
-
-
-
-
- 
-
-    console.log("after");
+    // let img = ImageLoader.promiseAll([b.src, a.src], global_root);
+    let i2 = ImageLoader.load(a.src, global_root);
 
     canvas = <HTMLCanvasElement>document.getElementById("canvas");
 
     gl = initGL();
-    box = new BoxGeometry(2, 1, 1, 1, 1, 1);
+    initShaders();
+    box = new BoxGeometry(4, 1, 1, 1, 1, 1, false);
     mesh = new Mesh(gl, box);
-    instance = new MeshInstance(mesh, [new Material()]);
+
+    let mat = new Material(shader!);
+    mat.albedo = new Texture2D(gl, i2, true);
+    instance = new MeshInstance(mesh, [mat]);
     renderer = new Renderer(gl);
 
-    initShaders();
+    // img.then((images: HTMLImageElement[]) => {});
 
     gl.clearColor(0.2, 0.3, 0.3, 1.0);
 
@@ -155,7 +113,29 @@ function drawScene(): void {
     shader.setMat4ByName("u_normalview_matrix", normalview_matrix);
     shader.setMat4ByName("u_mvp_matrix", mvp_matrix);
 
-    renderer.draw(mesh.draw_mode, mesh.count, 0, mesh.index_buffer, mesh.vertex_buffer, shader);
+    instance.render(gl, renderer);
+
+    //  renderer.draw(mesh.draw_mode, mesh.count, 0, mesh.index_buffer, mesh.vertex_buffer, shader);
 
     requestAnimationFrame(drawScene);
+}
+
+function onProgress(loaded_bytes: number, total_bytes: number, file_name: string) {
+    let text = ((loaded_bytes / total_bytes) * 100).toFixed(2) + "% complete";
+    // console.log(text);
+    loading_subtext.innerText = text;
+}
+
+function onFileComplete(num_complete: number, total: number, file_name: string) {
+    // console.log(file_name + " download complete. ");
+    // console.log(num_complete + "/" + total + " files completed.");
+    loading_text.innerText = num_complete + "/" + total + " files completed.";
+}
+
+function onAllComplete(total_complete: number) {
+    // console.log(total_complete + " files completed.");
+    let a = document.getElementById("loading-text-wrapper")!;
+    a.innerHTML = "";
+    a.remove();
+    //a = new HTMLElement();
 }

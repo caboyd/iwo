@@ -25,7 +25,8 @@ export class BoxGeometry implements Geometry {
         depth: number = 1,
         width_segments: number = 1,
         height_segments: number = 1,
-        depth_segments: number = 1
+        depth_segments: number = 1,
+        stretch_texture:boolean = true
     ) {
         this.attributes = new Map<AttributeType, ArrayBufferView>();
 
@@ -144,6 +145,8 @@ export class BoxGeometry implements Geometry {
             let horizontal_step = horizontal_size / horizontal_steps;
             let vertical_step = vertical_size / vertical_steps;
 
+            
+            
             let i = 0;
             for (let x = -half_horizontal; x <= half_horizontal; x += horizontal_step) {
                 let j = 0;
@@ -160,8 +163,8 @@ export class BoxGeometry implements Geometry {
                     interleaved[ipy] = verts[py] = y * y_dir;
                     interleaved[ipz] = verts[pz] = plane;
                     
-                    interleaved[interleaved_ptr + 3] = tex_coords[tex_ptr++] = (i * horizontal_step) / horizontal_size;
-                    interleaved[interleaved_ptr + 4] = tex_coords[tex_ptr++] = (j * vertical_step) / vertical_size;
+                    interleaved[interleaved_ptr + 3] = tex_coords[tex_ptr++] = stretch_texture ? (i * horizontal_step) / horizontal_size :  (i * horizontal_step);
+                    interleaved[interleaved_ptr + 4] = tex_coords[tex_ptr++] = stretch_texture ?  (j * vertical_step) / vertical_size :  (j * vertical_step);
 
                     interleaved[ipx + 5] = normals[px] = 0;
                     interleaved[ipy + 5] = normals[py] = 0;
