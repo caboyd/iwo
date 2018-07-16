@@ -1,15 +1,16 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
 
 module.exports = (env, argv) => {
 	const isProduction = argv.mode === 'production';
 	return {
-		entry: './src/main.ts',
+		entry: {
+			index: './src/main.ts'
+		},
 		output: {
-			path: path.resolve(__dirname, 'docs'),
-			filename: 'bundle.js',
+			path: path.resolve(__dirname, 'dist'),
+			filename: '[name].bundle.js',
 			publicPath: ''
 		},
 		plugins: [
@@ -23,17 +24,15 @@ module.exports = (env, argv) => {
 					}
 				}
 			),
-			new CopyWebpackPlugin([
-				{from: 'assets',
-					to: 'assets',
-					ignore: [ '*.bmp' ]
-				}
-			]),
 			new ImageminPlugin(
 				{
+					disable: !isProduction,
 					test: /\.(jpe?g|png|gif|svg)$/i,
 					jpegtran: {
 						progressive: true
+					},
+					optipng: {
+						optimizationLevel: 3
 					}
 				}
 			)
@@ -42,7 +41,8 @@ module.exports = (env, argv) => {
 			modules: [
 				path.resolve(__dirname),
 				'src',
-				'node_modules'
+				'node_modules',
+				'assets'
 			],
 			// Add `.ts` and `.tsx` as a resolvable extension.
 			extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js', '.vert', '.frag'],
@@ -59,8 +59,16 @@ module.exports = (env, argv) => {
 					loader: 'raw-loader'
 				},
 				{
-					test: /\.(txt|obj|mtl|bmp|jpg)$/,
+					test: /\.(txt|obj|mtl)$/,
 					loader: 'raw-loader'
+				},
+				{
+					test: /\.(gif|jpeg|jpg|png|svg)$/,
+					loader: 'image-size-loader',
+					options: {
+						name: '[path][name].[ext]'
+					},
+				
 				}
 			]
 		},

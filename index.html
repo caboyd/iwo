@@ -1,5 +1,8 @@
 <html>
 <head>
+	<script>
+
+	</script>
 	<style>
 		/* Don't highlight anything on click-and-drag. */
 		:not(input):not(textarea) {
@@ -40,11 +43,18 @@
 			left: 20px;
 			position: absolute;
 		}
+		img{
+			z-index:2147483647;
+			top: 600px;
+			display: block;
+			position: absolute;
+		}
 
 	</style>
 </head>
 <body>
 <canvas id="canvas" width="800" height="600"></canvas>
 <div id="fpscounter"></div>
+<img id="img" src=""/>
 </body>
 </html>

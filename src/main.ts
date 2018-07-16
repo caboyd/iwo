@@ -5,6 +5,8 @@ import { MeshInstance } from "src/meshes/MeshInstance";
 import { Material } from "src/materials/Material";
 import { Renderer } from "src/graphics/Renderer";
 import { Shader } from "src/renderers/Shader";
+import {FileLoader} from "./loader/FileLoader";
+import {ImageLoader} from "./loader/ImageLoader";
 
 let canvas: HTMLCanvasElement;
 
@@ -29,6 +31,37 @@ let renderer: Renderer;
 let shader: Shader;
 
 (function loadWebGL(): void {
+    let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
+    let b = require("assets/container.jpg");
+
+    FileLoader.setOnProgress((progress: number) => {
+        console.log(progress.toFixed(2) + "% complete");
+    });
+
+    FileLoader.setOnFileComplete((num_complete, total_to_complete, file_name) => {
+        console.log(file_name + " download complete. " + (num_complete / total_to_complete) * 100 + "% complete");
+    });
+
+    FileLoader.setOnAllComplete(total_complete => {
+        console.log(total_complete + " files completed.");
+    });
+
+    let img = <HTMLImageElement>document.getElementById("img");
+    //let a = FileLoader.load(b.src, global_root);
+    console.log("before");
+   //
+   // let c = FileLoader.loadAll( [b.src, d.src], global_root).then( data =>{
+   //    img.src = URL.createObjectURL(data[0]);
+   //    img.width = 300;
+   //    img.height = 240;
+   // });
+
+    ImageLoader.load(b.src, global_root).then( (image) => {
+        img.src = image.src;
+    });
+
+    console.log("after");
+
     canvas = <HTMLCanvasElement>document.getElementById("canvas");
 
     gl = initGL();

@@ -1,5 +1,4 @@
-src/**/*.map
-src/**/*.js
 .idea/
 node_modules/
 .git/
+dist/
