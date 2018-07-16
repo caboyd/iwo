@@ -190,21 +190,21 @@ export class BoxGeometry implements Geometry {
             let start_vertex = vertex_index;
             for (let i = 0; i < horizontal_steps; i++) {
                 for (let j = 0; j < vertical_steps; j++) {
-                    let lower_left = start_vertex + (vertical_steps + 1) * i;
-                    let lower_right = start_vertex + (vertical_steps + 1) * (i + 1);
+                    let lower_left = start_vertex + (vertical_steps + 1) * i + j;
+                    let lower_right = start_vertex + (vertical_steps + 1) * (i + 1) + j;
                     let upper_left = lower_left + 1;
                     let upper_right = lower_right + 1;
 
                     //Counter Clockwise Triangles
 
                     //Triangle 1
-                    //0 1 2
+                    //0 2 1
                     indices[i_ptr++] = lower_left;
                     indices[i_ptr++] = lower_right;
                     indices[i_ptr++] = upper_left;
 
                     //Triangle 2
-                    //2 1 3
+                    //1 2 3
                     indices[i_ptr++] = upper_left;
                     indices[i_ptr++] = lower_right;
                     indices[i_ptr++] = upper_right;
@@ -212,12 +212,14 @@ export class BoxGeometry implements Geometry {
                     //number of indexes for a quad
                     index_count += 6;
                     
-                    //increment by 2 per segment
-                    vertex_index += 2;
+                    //increment by 2 per segment for first vertical section 
+                    //but only 1 after because we are reusing 1 vertex 
+                    vertex_index += i == 0 ? 2: 1;
                 }
+                //increment by initial 2 vertexes of quad
+                //but only 1 after because we are reusing 1 vertex
+                vertex_index += i == 0 ?  2 : 1;
             }
-            //increment by initial 2 vertexes of quad
-            vertex_index += 2;
             
             groups.push({ count: index_count, offset: i_ptr - index_count, material_index: mat_index } as Group);
         }
