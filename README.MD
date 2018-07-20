@@ -33,17 +33,22 @@ npm run dev
 https://gist.github.com/cobyism/4730490#gistcomment-2375522
 
 #### Pre-Setup
-Make sure there is a gh-pages branch in the repository. If not then create an empty one
+Make sure there is a gh-pages branch in the repository. If not then create an empty one.
+Commit and push anything in master branch because it will be deleted locally
 
 ```
 git checkout --orphan gh-pages
 git rm --cached -r .
 ```
-
 Delete all of the files then commit an empty branch
 ```
 git commit -m "First commit" --allow-empty
 git push -u origin gh-pages
+```
+Get the master branch back
+```
+git checkout master
+git pull origin master
 ```
 
 #### Setup
