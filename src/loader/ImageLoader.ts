@@ -1,7 +1,10 @@
 import { FileLoader } from "./FileLoader";
 
 export class ImageLoader extends FileLoader {
-    static promise(file_name: string, base_url: string = ""): Promise<HTMLImageElement> {
+    static promise(
+        file_name: string,
+        base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
+    ): Promise<HTMLImageElement> {
         return new Promise<HTMLImageElement>(resolve => {
             super.promise(file_name, base_url).then(data => {
                 let img = new Image();
@@ -11,7 +14,10 @@ export class ImageLoader extends FileLoader {
         });
     }
 
-    static promiseAll(files: string[], base_url: string = ""): Promise<HTMLImageElement[]> {
+    static promiseAll(
+        files: string[],
+        base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
+    ): Promise<HTMLImageElement[]> {
         let imgs = Array.from({ length: files.length }, u => new Image());
         let promises: Promise<HTMLImageElement>[] = [];
 
@@ -24,10 +30,10 @@ export class ImageLoader extends FileLoader {
                 });
                 promises.push(promise);
             }
-            return Promise.all(promises).then( images => {return images});
+            return Promise.all(promises).then(images => {
+                return images;
+            });
         });
-        
-      
     }
 
     static load(file_name: string, base_url: string = ""): HTMLImageElement {
@@ -35,7 +41,7 @@ export class ImageLoader extends FileLoader {
         super.promise(file_name, base_url).then(data => {
             img.src = URL.createObjectURL(data);
         });
-        super.onAllComplete(1);
+        // super.onAllComplete(1);
         return img;
     }
 }

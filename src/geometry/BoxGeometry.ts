@@ -46,8 +46,13 @@ export class BoxGeometry implements Geometry {
 
         let total_indices = 6 * 2 * (front_back + left_right + top_bottom);
 
-        if (total_verts >= 65536) this.indices = new Uint32Array(total_indices);
+        let index_size = 2;
+        if (total_verts >= 65536) {
+            this.indices = new Uint32Array(total_indices);
+            index_size = 4;
+        }
         else this.indices = new Uint16Array(total_indices);
+
         let indices = this.indices;
 
         let verts = new Float32Array(total_verts * 3);
@@ -232,7 +237,8 @@ export class BoxGeometry implements Geometry {
                 }
             }
             //Each side is a seperate group so they can be rendered with different materials
-            groups.push({ count: index_count, offset: i_ptr - index_count, material_index: mat_index } as Group);
+            groups.push({ count: index_count, offset: (i_ptr - index_count)*index_size, material_index: mat_index } as Group);
+
         }
     }
 }

@@ -8,8 +8,7 @@
     "build": "webpack --progress --colors --mode=production",
     "builddev": "webpack --progress --colors --mode=development",
     "dev": "webpack-dev-server --content-base ./ --colors --hot --inline --mode=development",
-    "gh-publish": "npm run builddev&&cd dist&&git add --all&&git commit -m \"Deploy to gh-pages\"&&git push origin gh-pages&&cd..",
-    "test": "cd dist&&dir&&cd..&&dir"
+    "gh-publish": "npm run builddev&&cd dist&&git add --all&&git commit -m \"Deploy to gh-pages\"&&git push origin gh-pages&&cd.."
   },
   "author": "Chris Boyd",
   "license": "MIT",
@@ -20,7 +19,8 @@
     "tabWidth": 4,
     "useTabs": false,
     "printWidth": 120,
-    "parser": "typescript"
+    "parser": "typescript",
+    "semi": true
   },
   "dependencies": {},
   "devDependencies": {

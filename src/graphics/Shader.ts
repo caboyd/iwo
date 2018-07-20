@@ -1,4 +1,10 @@
-import { mat4, vec3, vec4 } from "gl-matrix";
+import {mat3, mat4, vec3, vec4} from "gl-matrix";
+import {Renderer} from "./Renderer";
+
+let view_matrix3x3:mat3 = mat3.create();
+let modelview_matrix:mat4 = mat4.create();
+let normalview_matrix:mat3 = mat3.create();
+let mvp_matrix:mat4 = mat4.create();
 
 
 export class Shader {
@@ -24,6 +30,22 @@ export class Shader {
 
         this.uniforms = new Map<String, WebGLUniformLocation>();
         this.attributes = new Map<String, GLint>();
+    }
+    
+    public setMatrixBlock(model_matrix:mat4,normal_matrix:mat3, view_matrix:mat4, proj_matrix:mat4):void{
+        //Model view matrix
+        mat4.mul(modelview_matrix, view_matrix, model_matrix);
+
+        //Normal matrix in view space
+        mat3.mul(normalview_matrix, view_matrix3x3, normal_matrix);
+
+        //MVP Matrix
+        mat4.mul(mvp_matrix, proj_matrix, modelview_matrix);
+
+        this.setMat4ByName("u_model_matrix", model_matrix);
+        this.setMat4ByName("u_modelview_matrix", modelview_matrix);
+        this.setMat3ByName("u_normalview_matrix", normalview_matrix);
+        this.setMat4ByName("u_mvp_matrix", mvp_matrix);
     }
 
     public delete(): void {
@@ -105,6 +127,14 @@ export class Shader {
 
     public setMat4ByName(name: string, matrix: mat4 | number[] | Float32Array): void {
         this.gl.uniformMatrix4fv(this.getUniformLocation(name), false, matrix);
+    }
+
+    public setMat3(id: number | WebGLUniformLocation, matrix: mat4 | number[] | Float32Array): void {
+        this.gl.uniformMatrix3fv(id, false, matrix);
+    }
+
+    public setMat3ByName(name: string, matrix: mat4 | number[] | Float32Array): void {
+        this.gl.uniformMatrix3fv(this.getUniformLocation(name), false, matrix);
     }
 
     public setVec3(id: number | WebGLUniformLocation, vec: vec3 | number[] | Float32Array): void {
