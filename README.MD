@@ -2,6 +2,8 @@
 
 Physically Based Renderer written in Typescript
 
+Current demo [https://iwanttoeatyo.github.io/ts-pbr-renderer/index.html](https://iwanttoeatyo.github.io/ts-pbr-renderer/index.html)
+
 ## Getting Started
 
 These instructions will get you a copy of the project up and running on your local machine.
