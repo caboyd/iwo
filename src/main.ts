@@ -113,7 +113,7 @@ function update(): void {
     if (keys[65]) camera.processKeyboard(Camera_Movement.LEFT, 0.001);
     else if (keys[68]) camera.processKeyboard(Camera_Movement.RIGHT, 0.001);
     
-    if (keys[82]) camera.lookAt(vec3.fromValues(0, 0, -1));
+    if (keys[82]) camera.lookAt(vec3.fromValues(0, 0, 0));
 
     camera.processMouseMovement(-mouse_x_total, -mouse_y_total, true);
     mouse_x_total = 0;

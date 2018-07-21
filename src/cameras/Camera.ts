@@ -38,10 +38,12 @@ export class Camera {
         vec3.normalize(this.front,this.front);
         
         this.worldUp = vec3.fromValues(0, 1, 0);
-        this.right = vec3.cross(vec3.create(), this.front, this.worldUp);
+        this.right = vec3.cross(vec3.create(), this.front, up);
+        this.right[0] = Math.abs(this.right[0]);
         vec3.normalize(this.right,this.right);
-        this.up = vec3.clone(up);
-
+        
+        this.up = vec3.cross(vec3.create(), this.right,this.front);
+        
         vec3.normalize(this.up,this.up);
         
         console.log(this.front);
@@ -50,10 +52,10 @@ export class Camera {
         
         this.movementSpeed = SPEED;
         this.mouseSensitivity = SENSITIVITY;
-       
-        this.pitch =  Math.asin(-this.front[1]);
-        this.heading = -Math.atan2(this.front[0], this.front[2]) - Math.PI;
-    
+
+        this.pitch = -Math.asin(this.front[1]);
+        this.heading = -(Math.atan2(this.front[0], this.front[2]) - Math.PI);
+
         this.orientation = quat.create();
         this.calculateOrientation();
     }
@@ -73,15 +75,12 @@ export class Camera {
     }
 
     public lookAt(target: vec3): void {
-        vec3.sub(this.front,target,this.position);
-        vec3.normalize(this.front,this.front);
-       
-         this.pitch = -Math.asin(this.front[1]);
-         this.heading = -Math.atan2(this.front[0], this.front[2]) - Math.PI;
-            
-         console.log(this.front);
-         console.log(this.heading);
-         this.calculateOrientation();
+        vec3.sub(this.front, target, this.position);
+        vec3.normalize(this.front, this.front);
+        this.pitch = -Math.asin(this.front[1]);
+        this.heading = -(Math.atan2(this.front[0], this.front[2]) - Math.PI);
+
+        this.calculateOrientation();
     }
 
     public getViewMatrix(out: mat4): mat4 {
