@@ -32,7 +32,7 @@ export class Shader {
         this.attributes = new Map<String, GLint>();
     }
     
-    public setMatrixBlock(model_matrix:mat4,normal_matrix:mat3, view_matrix:mat4, proj_matrix:mat4):void{
+    public setModelViewBlock(model_matrix:mat4, normal_matrix:mat3, view_matrix:mat4, proj_matrix:mat4):void{
         //Model view matrix
         mat4.mul(modelview_matrix, view_matrix, model_matrix);
 
@@ -46,6 +46,13 @@ export class Shader {
         this.setMat4ByName("u_modelview_matrix", modelview_matrix);
         this.setMat3ByName("u_normalview_matrix", normalview_matrix);
         this.setMat4ByName("u_mvp_matrix", mvp_matrix);
+    }
+    
+    public setViewProjBlock(view_matrix:mat4, proj_matrix:mat4):void{
+        mat4.mul(mvp_matrix, proj_matrix, view_matrix);
+        this.setMat4ByName("u_view_matrix", view_matrix);
+        this.setMat4ByName("u_proj_matrix", proj_matrix);
+        this.setMat3ByName("u_vp_matrix", mvp_matrix);
     }
 
     public delete(): void {

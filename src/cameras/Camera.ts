@@ -7,7 +7,8 @@ export enum Camera_Movement {
     FORWARD,
     BACKWARD,
     LEFT,
-    RIGHT
+    RIGHT,
+    UP,
 }
 
 let forward = vec3.create();
@@ -21,9 +22,9 @@ export class Camera {
     public front: vec3;
     public up: vec3;
 
-    private right: vec3;
     private worldUp: vec3;
-
+    private worldRight: vec3;
+    
     private movementSpeed: number;
     private mouseSensitivity: number;
 
@@ -38,16 +39,13 @@ export class Camera {
         vec3.normalize(this.front,this.front);
         
         this.worldUp = vec3.fromValues(0, 1, 0);
-        this.right = vec3.cross(vec3.create(), this.front, up);
-        this.right[0] = Math.abs(this.right[0]);
-        vec3.normalize(this.right,this.right);
+        this.worldRight = vec3.fromValues(1,0,0);
         
-        this.up = vec3.cross(vec3.create(), this.right,this.front);
-        
+        this.up = vec3.clone(up);
         vec3.normalize(this.up,this.up);
         
         console.log(this.front);
-        console.log(this.right);
+        console.log(this.worldRight);
         console.log(this.up);
         
         this.movementSpeed = SPEED;
@@ -102,17 +100,15 @@ export class Camera {
         right = this.getRight(right);
 
         if (direction == Camera_Movement.FORWARD) {
-            vec3.scale(forward, forward, velocity);
-            vec3.add(this.position, this.position, forward);
+            vec3.scaleAndAdd(this.position,this.position,forward,velocity);
         } else if (direction == Camera_Movement.BACKWARD) {
-            vec3.scale(forward, forward, -velocity);
-            vec3.add(this.position, this.position, forward);
+            vec3.scaleAndAdd(this.position,this.position,forward,-velocity);
         } else if (direction == Camera_Movement.LEFT) {
-            vec3.scale(right, right, -velocity);
-            vec3.add(this.position, this.position, right);
+            vec3.scaleAndAdd(this.position,this.position,right,-velocity);
         } else if (direction == Camera_Movement.RIGHT) {
-            vec3.scale(right, right, velocity);
-            vec3.add(this.position, this.position, right);
+            vec3.scaleAndAdd(this.position,this.position,right,velocity);
+        }else if(direction == Camera_Movement.UP){
+            vec3.scaleAndAdd(this.position,this.position,this.worldUp,velocity);
         }
     }
 
@@ -139,7 +135,7 @@ export class Camera {
     }
 
     private calculateOrientation() {
-        let pitch_quat = quat.setAxisAngle(quat.create(), this.right, this.pitch);
+        let pitch_quat = quat.setAxisAngle(quat.create(), this.worldRight, this.pitch);
         let heading_qat = quat.setAxisAngle(quat.create(), this.worldUp, this.heading);
 
         quat.identity(this.orientation);

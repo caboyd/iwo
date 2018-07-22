@@ -13,6 +13,8 @@ export class Renderer {
 
     private static _EMPTY_TEXTURE:WebGLTexture;
     private static _PBRShader:PBRShader;
+    
+    private static _GridShader:Shader;
 
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
@@ -28,6 +30,8 @@ export class Renderer {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, pixel);
         
         Renderer._PBRShader = new PBRShader(gl);
+        Renderer._GridShader = new Shader(gl,
+            require("src/shaders/grid.vert"), require("src/shaders/grid.frag"));
     }
     
     
@@ -76,5 +80,9 @@ export class Renderer {
     
     static get PBRShader(): PBRShader{
         return this._PBRShader;
+    }
+    
+    static get GridShader():Shader{
+        return this._GridShader;
     }
 }
