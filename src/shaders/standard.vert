@@ -14,24 +14,23 @@ layout (location = 4) in vec3 a_bitangent;
 //};
 
 uniform mat4 u_model_matrix;
-
 uniform mat4 u_modelview_matrix;
+uniform mat3 u_normal_matrix;
 uniform mat3 u_normalview_matrix;
-
 uniform mat4 u_mvp_matrix;
 
-uniform vec3 u_eye_pos;
+uniform vec3 u_camera_pos;
 
 out vec3 normal;
 out vec2 tex_coord;
-out vec3 pos;
+out vec3 world_pos;
 
 void main() {
     gl_Position = u_mvp_matrix * vec4(a_vertex,1.0f);
     
-    normal =  u_normalview_matrix * a_normal ;
+    normal =  u_normal_matrix * a_normal ;
     
-    pos = mat3(u_model_matrix)* (a_vertex  ) ;
+    world_pos = (u_model_matrix * vec4(a_vertex,1.0f)).xyz ;
     
     tex_coord = a_tex_coord;
 }

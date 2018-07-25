@@ -1,4 +1,4 @@
-import {glMatrix, mat3, mat4, vec3, vec4} from "gl-matrix";
+import { glMatrix, mat3, mat4, vec3, vec4 } from "gl-matrix";
 import { BoxGeometry } from "src/geometry/BoxGeometry";
 import { Mesh } from "src/meshes/Mesh";
 import { MeshInstance } from "src/meshes/MeshInstance";
@@ -8,20 +8,22 @@ import { FileLoader } from "./loader/FileLoader";
 import { TextureLoader } from "./loader/TextureLoader";
 import { SphereGeometry } from "./geometry/SphereGeometry";
 import { Camera, Camera_Movement } from "./cameras/Camera";
-import {PlaneGeometry} from "./geometry/PlaneGeometry";
-import {GridMaterial} from "./materials/GridMaterial";
+import { PlaneGeometry } from "./geometry/PlaneGeometry";
+import { GridMaterial } from "./materials/GridMaterial";
+import {PBRMaterial} from "./materials/PBRMaterial";
 
 let canvas: HTMLCanvasElement;
 
 let gl: WebGL2RenderingContext;
 
 let view_matrix: mat4 = mat4.create();
-let view_matrix3x3: mat3 = mat3.create();
 let proj_matrix: mat4 = mat4.create();
 
-let cPos: vec3 = vec3.fromValues(0, 3,6.0);
+let cPos: vec3 = vec3.fromValues(0.5, 8, 7.0);
 let cUp: vec3 = vec3.fromValues(0, 1, 0);
 let cFront: vec3 = vec3.fromValues(0, 0, -1);
+
+let light_color: vec3 = vec3.fromValues(300.47, 300.31, 300.79);
 
 let camera: Camera;
 
@@ -32,7 +34,8 @@ let keys: Array<boolean> = [];
 let mesh: Mesh;
 let box: MeshInstance;
 let sphere: MeshInstance;
-let grid:MeshInstance;
+let sphere_mat:PBRMaterial;
+let grid: MeshInstance;
 let renderer: Renderer;
 
 let loading_text = document.getElementById("loading-text")!;
@@ -66,28 +69,28 @@ const moveCallback = (e: MouseEvent): void => {
     gl = initGL();
     camera = new Camera(cPos, cFront, cUp);
 
-    let sphere_g = new SphereGeometry(0.7, 16, 16);
+    let sphere_g = new SphereGeometry(0.7, 64, 64);
     let box_g = new BoxGeometry(2.0, 1.0, 1, 2, 1, 1, false);
-    let grid_g = new PlaneGeometry(100,100,1,1);
-    
+    let grid_g = new PlaneGeometry(100, 100, 1, 1);
+
     mesh = new Mesh(gl, box_g);
     let mesh2 = new Mesh(gl, sphere_g);
     let mesh3 = new Mesh(gl, grid_g);
 
-    let mat = new Material();
-    mat.albedo = TextureLoader.load(gl, a.src, global_root);
-    mat.color = vec3.fromValues(0.8,0.2,0.5);
-    let mat2 = new Material();
-    mat2.albedo = TextureLoader.load(gl, b.src, global_root);
+    let mat = new PBRMaterial(vec4.fromValues(1,0,1,1),0.0,1.0);
+    mat.albedo_texture = TextureLoader.load(gl, a.src, global_root);
+    sphere_mat = new PBRMaterial(vec4.fromValues(0.5,0,0,1),0.0,0.0);
+    sphere_mat.albedo_texture = TextureLoader.load(gl, b.src, global_root);
+    
     total_files = 2;
 
     box = new MeshInstance(mesh, mat);
     mat4.translate(box.model_matrix, box.model_matrix, vec3.fromValues(0, 3, 0));
-    sphere = new MeshInstance(mesh2, mat2);
-    
+    sphere = new MeshInstance(mesh2, sphere_mat);
+
     let grid_mat = new GridMaterial();
-    grid = new MeshInstance(mesh3,grid_mat);
-    
+    grid = new MeshInstance(mesh3, grid_mat);
+
     renderer = new Renderer(gl);
 
     gl.clearColor(0.2, 0.3, 0.3, 1.0);
@@ -100,6 +103,23 @@ const moveCallback = (e: MouseEvent): void => {
     mat4.perspective(proj_matrix, glMatrix.toRadian(90), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
 
     loading_text.innerText = files_completed + "/" + total_files + " files completed.";
+
+
+    Renderer.PBRShader.setVec4ByName("u_lights[0].position", vec4.fromValues( -10 ,15, 10, 0));
+    Renderer.PBRShader.setVec3ByName("u_lights[0].color", vec3.fromValues(50,50,50));
+
+    Renderer.PBRShader.setVec4ByName("u_lights[1].position", vec4.fromValues( 10 ,15, 10, 1));
+    Renderer.PBRShader.setVec3ByName("u_lights[1].color", light_color);
+
+    Renderer.PBRShader.setVec4ByName("u_lights[2].position", vec4.fromValues( -10 ,5, 10, 1));
+    Renderer.PBRShader.setVec3ByName("u_lights[2].color", light_color);
+
+    Renderer.PBRShader.setVec4ByName("u_lights[3].position", vec4.fromValues( 10 ,5, 10, 1));
+    Renderer.PBRShader.setVec3ByName("u_lights[3].color", light_color);
+    
+    Renderer.PBRShader.setIntByName("u_light_count", 4);
+    
+
 
     requestAnimationFrame(update);
 })();
@@ -122,9 +142,9 @@ function update(): void {
     else if (keys[83]) camera.processKeyboard(Camera_Movement.BACKWARD, 0.001);
     if (keys[65]) camera.processKeyboard(Camera_Movement.LEFT, 0.001);
     else if (keys[68]) camera.processKeyboard(Camera_Movement.RIGHT, 0.001);
-    
+
     if (keys[82]) camera.lookAt(vec3.fromValues(0, 0, 0));
-    if( keys[32]) camera.processKeyboard(Camera_Movement.UP , 0.001);
+    if (keys[32]) camera.processKeyboard(Camera_Movement.UP, 0.001);
 
     camera.processMouseMovement(-mouse_x_total, -mouse_y_total, true);
     mouse_x_total = 0;
@@ -138,45 +158,42 @@ function drawScene(): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     camera.getViewMatrix(view_matrix);
-    mat3.fromMat4(view_matrix3x3, view_matrix);
 
-    Renderer.PBRShader.setVec3ByName("u_eye_pos", camera.position);
+    Renderer.PBRShader.use();
+    Renderer.PBRShader.setVec3ByName("u_camera_pos", camera.position);
     Renderer.GridShader.use();
-    Renderer.GridShader.setVec3ByName("u_eye_pos", camera.position);
+    Renderer.GridShader.setVec3ByName("u_camera_pos", camera.position);
+    
     //mat4.identity(model_matrix);
 
-    mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
-    mat4.rotateZ(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.5));
-    mat3.normalFromMat4(box.normal_matrix, box.model_matrix);
-
-    box.render(gl, renderer, view_matrix, proj_matrix);
-    
-    
-
+    // mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
+    // mat4.rotateZ(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.5));
+    // mat3.normalFromMat4(box.normal_matrix, box.model_matrix);
+    //
+    // box.render(gl, renderer, view_matrix, proj_matrix);
 
     let model = sphere.model_matrix;
-    let normal = sphere.normal_matrix;
 
-    for (let i = 0; i < 11; i++) {
-        for (let k = 0; k < 8; k++) {
-            let j = i - 5;
-            let w = k;
+    for (let i = 0; i <= 6; i++) {
+        for (let k = 0; k <= 6; k++) {
             mat4.identity(model);
-            mat4.translate(model, model, vec3.fromValues(j * 2, w * 2, -2 + (j & 1) + (k & 1)));
+            mat4.translate(model, model, vec3.fromValues((i - 3) * 2, k * 2, 0));
 
-            mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
+            //mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
             //mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
 
-            mat3.normalFromMat4(normal, model);
+            sphere_mat.roughness = Math.min(1, Math.max(0.01, i/ 10));
+            sphere_mat.metallic = k / 10;
+            
             sphere.render(gl, renderer, view_matrix, proj_matrix);
         }
     }
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-    
-    grid.render(gl,renderer,view_matrix,proj_matrix);
-    
+
+    grid.render(gl, renderer, view_matrix, proj_matrix);
+
     gl.disable(gl.BLEND);
 }
 

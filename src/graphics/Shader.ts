@@ -32,13 +32,16 @@ export class Shader {
         this.attributes = new Map<String, GLint>();
     }
     
-    public setModelViewBlock(model_matrix:mat4, normal_matrix:mat3, view_matrix:mat4, proj_matrix:mat4):void{
+    public setModelViewBlock(model_matrix:mat4, view_matrix:mat4, proj_matrix:mat4):void{   
         //Model view matrix
         mat4.mul(modelview_matrix, view_matrix, model_matrix);
 
         //Normal matrix in view space
-        mat3.mul(normalview_matrix, view_matrix3x3, normal_matrix);
+        mat3.normalFromMat4(normalview_matrix,model_matrix);
+        this.setMat3ByName("u_normal_matrix", normalview_matrix);
 
+        mat3.normalFromMat4(normalview_matrix,modelview_matrix);
+        
         //MVP Matrix
         mat4.mul(mvp_matrix, proj_matrix, modelview_matrix);
 

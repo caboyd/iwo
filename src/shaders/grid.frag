@@ -5,7 +5,7 @@ out vec4 frag_color;
 
 in vec3 pos;
 
-uniform vec3 u_eye_pos;
+uniform vec3 u_camera_pos;
 
 void main() {
 	
@@ -30,7 +30,7 @@ void main() {
      }
      
     float transition = 10.0;
-    float dist = length(pos - u_eye_pos);
+    float dist = length(pos - u_camera_pos);
     dist = dist - (50.0 - transition);
     dist = dist / transition;
     alpha = clamp(alpha - dist, 0.0, alpha);

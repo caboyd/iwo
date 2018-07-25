@@ -20,14 +20,14 @@ uniform mat3 u_normalview_matrix;
 
 uniform mat4 u_mvp_matrix;
 
-uniform vec3 u_eye_pos;
+uniform vec3 u_camera_pos;
 
 out vec3 normal;
 out vec2 tex_coord;
 out vec3 pos;
 
 void main() {
-    vec3 offset = vec3(u_eye_pos.x, 0, u_eye_pos.z);
+    vec3 offset = vec3(u_camera_pos.x, 0, u_camera_pos.z);
 
     gl_Position = u_mvp_matrix * vec4(a_vertex + offset,1.0f);
     

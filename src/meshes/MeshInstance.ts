@@ -9,14 +9,12 @@ export class MeshInstance {
     materials: Material[] | Material;
 
     model_matrix:mat4;
-    normal_matrix:mat3;
     
     constructor(mesh: Mesh, materials: Material[] | Material) {
         this.mesh = mesh;
         this.materials = materials;
         
         this.model_matrix = mat4.create();
-        this.normal_matrix = mat3.create();
     }
     
     
@@ -29,7 +27,7 @@ export class MeshInstance {
                 shader = mat.shader;
                 shader.use();
                 //TODO: add uniforms blocks so this can be shared between shaders
-                shader.setModelViewBlock(this.model_matrix,this.normal_matrix,view_matrix,proj_matrix);
+                shader.setModelViewBlock(this.model_matrix,view_matrix,proj_matrix);
                 
                 mat.activate(gl);
                 for(let submesh of this.mesh.sub_meshes){
@@ -41,7 +39,7 @@ export class MeshInstance {
             shader = this.materials.shader;
             shader.use();
             //TODO: add uniforms blocks so this can be shared between shaders
-            shader.setModelViewBlock(this.model_matrix,this.normal_matrix,view_matrix,proj_matrix);
+            shader.setModelViewBlock(this.model_matrix,view_matrix,proj_matrix);
             
             this.materials.activate(gl);
             renderer.draw(this.mesh.draw_mode,this.mesh.count,0,this.mesh.index_buffer,this.mesh.vertex_buffer, shader);
