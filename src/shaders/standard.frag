@@ -117,10 +117,15 @@ void main() {
     vec3 ambient = vec3(0.03) * u_material.albedo.rgb * u_material.ao;
     vec3 color = ambient + Lo;
     
-    //HDR correction
-    color = color / (color + vec3(1.0));
-    //Gamme correction
-    color = pow(color, vec3(1.0/2.2));    
+//    //HDR correction
+//    color = color / (color + vec3(1.0));
+//    //Gamme correction
+//    color = pow(color, vec3(1.0/2.2));    
+
+    //HDR + Gamma Correction Magic
+    //https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting  slide 140
+    color = max(vec3(0.0), color - 0.004);
+    color = (color * (6.2*color + 0.5)) / (color *(6.2*color + 1.7)+0.06);
 
     frag_color = vec4(color, 1.0);
 
