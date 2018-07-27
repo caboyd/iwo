@@ -4,12 +4,19 @@ import {Renderer} from "../graphics/Renderer";
 
 export class GridMaterial extends Material{
     
+    distance:number;
+    frequency:number;
     
-    constructor(){
+    constructor(view_distance:number, frequency:number = 1){
      super();   
+     this.distance = view_distance;
+     this.frequency = frequency;
     }
     
     activate(gl:WebGL2RenderingContext):void{
+        let shader = this.shader;
+        shader.setFloatByName("distance", this.distance);
+        shader.setFloatByName("frequency", this.frequency);
     }
 
     public get shader():Shader{

@@ -18,7 +18,7 @@ export class SphereGeometry implements Geometry {
         horizontal_segments: number,
         vertical_segments: number,
         phi_start: number = 0,
-        phi_length: number = 2 * Math.PI,
+        phi_length: number = (2 * Math.PI),
         theta_start = 0,
         theta_length: number = Math.PI
     ) {

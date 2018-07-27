@@ -13,32 +13,34 @@ export class Renderer {
 
     private static _EMPTY_TEXTURE:WebGLTexture;
     private static _PBRShader:PBRShader;
-    
+    private static _NormalOnlyShader:Shader;
     private static _GridShader:Shader;
+    
+    private uboGlobalBlock:WebGLBuffer;
 
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
 
-        Renderer._EMPTY_TEXTURE = gl.createTexture()!;
+        Renderer._EMPTY_TEXTURE = new Texture2D(gl,null).texture_id;
+        
         gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer._EMPTY_TEXTURE);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-        const pixel = new Uint8Array([255, 0, 255, 255]); // pink
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, pixel);
+        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
         
         Renderer._PBRShader = new PBRShader(gl);
         Renderer._GridShader = new Shader(gl,
             require("src/shaders/grid.vert"), require("src/shaders/grid.frag"));
+        Renderer._NormalOnlyShader = new Shader(gl,
+            require("src/shaders/standard.vert"), require("src/shaders/normals.frag"));
+        
+        
+        this.uboGlobalBlock = gl.createBuffer()!;
+        gl.bindBuffer(gl.UNIFORM_BUFFER, this.uboGlobalBlock);
+        gl.bufferData(gl.UNIFORM_BUFFER, 192, gl.STATIC_DRAW);
     }
     
-    
-    public setViewProjUniformBuffer(view:mat4, proj:mat4):void{
+    public setPerFrameUniforms(view:mat4, proj:mat4):void{
         
     }
-    
 
     public draw(
         draw_mode: number,
@@ -84,5 +86,9 @@ export class Renderer {
     
     static get GridShader():Shader{
         return this._GridShader;
+    }
+    
+    static get NormalOnlyShader():Shader{
+        return this._NormalOnlyShader;
     }
 }

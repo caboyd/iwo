@@ -13,27 +13,20 @@ layout (location = 4) in vec3 a_bitangent;
 //    mat4 view_projection;
 //};
 
-uniform mat4 u_model_matrix;
-
 uniform mat4 u_modelview_matrix;
-uniform mat3 u_normalview_matrix;
-
 uniform mat4 u_mvp_matrix;
 
-uniform vec3 u_camera_pos;
-
-out vec3 normal;
-out vec2 tex_coord;
-out vec3 pos;
+out vec3 world_pos;
+out vec3 view_pos;
 
 void main() {
-    vec3 offset = vec3(u_camera_pos.x, 0, u_camera_pos.z);
 
-    gl_Position = u_mvp_matrix * vec4(a_vertex + offset,1.0f);
+    vec3 camera_pos =  inverse(u_modelview_matrix)[3].xyz;
+    camera_pos.y = 0.0;
     
-    normal =  u_normalview_matrix * a_normal ;
+    world_pos = a_vertex + camera_pos;
     
-    pos = mat3(u_model_matrix)* (a_vertex + offset  ) ;
-    
-    tex_coord = a_tex_coord;
+    gl_Position = u_mvp_matrix * vec4(world_pos,1.0f);
+
+    view_pos = (u_modelview_matrix *  vec4(world_pos,1.0f)).xyz;
 }

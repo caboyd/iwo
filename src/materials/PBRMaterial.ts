@@ -7,7 +7,7 @@ import {vec3, vec4} from "gl-matrix";
 export class PBRMaterial extends  Material{
  
    
-    albedo:vec4;
+    albedo:vec3;
     metallic:number;
     roughness:number;
     ao:number;
@@ -15,13 +15,13 @@ export class PBRMaterial extends  Material{
     albedo_texture:Texture2D | undefined;
 
 
-    constructor( color: vec4, metallic:number, roughness:number){
+    constructor( color: vec3, metallic:number, roughness:number, ambient_occlusion:number = 1.0){
         super();
         
         this.albedo = color;
         this.metallic = metallic;
         this.roughness = roughness;
-        this.ao = 1;
+        this.ao = ambient_occlusion;
     }
 
 
@@ -31,11 +31,10 @@ export class PBRMaterial extends  Material{
             this.albedo_texture.bind(gl,0);
             shader.setBoolByName("u_active_textures[0]", true);
         }else{
-            gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
             shader.setBoolByName("u_material.active_textures[0]", false);
         }
         
-        shader.setVec4ByName("u_material.albedo", this.albedo);
+        shader.setVec3ByName("u_material.albedo", this.albedo);
         shader.setFloatByName("u_material.roughness", this.roughness);
         shader.setFloatByName("u_material.metallic", this.metallic);
         shader.setFloatByName("u_material.ao", this.ao);

@@ -11,6 +11,7 @@ import { Camera, Camera_Movement } from "./cameras/Camera";
 import { PlaneGeometry } from "./geometry/PlaneGeometry";
 import { GridMaterial } from "./materials/GridMaterial";
 import {PBRMaterial} from "./materials/PBRMaterial";
+import {NormalOnlyMaterial} from "./materials/NormalOnlyMaterial";
 
 let canvas: HTMLCanvasElement;
 
@@ -67,31 +68,32 @@ const moveCallback = (e: MouseEvent): void => {
     document.addEventListener("mousemove", moveCallback, false);
 
     gl = initGL();
+    renderer = new Renderer(gl);
     camera = new Camera(cPos, cFront, cUp);
 
-    let sphere_g = new SphereGeometry(0.7, 64, 64);
-    let box_g = new BoxGeometry(2.0, 1.0, 1, 2, 1, 1, false);
-    let grid_g = new PlaneGeometry(100, 100, 1, 1);
+    let sphere_geom = new SphereGeometry(0.7, 64, 64);
+    let box_geom = new BoxGeometry(2.0, 1.0, 1, 2, 1, 1, false);
+    let plane_geom = new PlaneGeometry(100, 100, 1, 1);
 
-    mesh = new Mesh(gl, box_g);
-    let mesh2 = new Mesh(gl, sphere_g);
-    let mesh3 = new Mesh(gl, grid_g);
+    let sphere_mesh = new Mesh(gl, sphere_geom);
+    let box_mesh = new Mesh(gl, box_geom);
+    let plane_mesh = new Mesh(gl, plane_geom);
 
-    let mat = new PBRMaterial(vec4.fromValues(1,0,1,1),0.0,1.0);
-    mat.albedo_texture = TextureLoader.load(gl, a.src, global_root);
-    sphere_mat = new PBRMaterial(vec4.fromValues(0.5,0,0,1),0.0,0.0);
-    sphere_mat.albedo_texture = TextureLoader.load(gl, b.src, global_root);
-    
-    total_files = 2;
+    let mat = new PBRMaterial(vec3.fromValues(1,0,1),0.0,1.0);
+   // mat.albedo_texture = TextureLoader.load(gl, a.src, global_root);
+    sphere_mat = new PBRMaterial(vec3.fromValues(1,0,0),0.0,0.0, 0);
+  //  sphere_mat.albedo_texture = TextureLoader.load(gl, b.src, global_root);
+    let normal_mat = new NormalOnlyMaterial();
+    total_files = 0;
 
-    box = new MeshInstance(mesh, mat);
+    box = new MeshInstance(box_mesh, mat);
     mat4.translate(box.model_matrix, box.model_matrix, vec3.fromValues(0, 3, 0));
-    sphere = new MeshInstance(mesh2, sphere_mat);
+    sphere = new MeshInstance(sphere_mesh, sphere_mat);
 
-    let grid_mat = new GridMaterial();
-    grid = new MeshInstance(mesh3, grid_mat);
+    let grid_mat = new GridMaterial(50 );
+    grid = new MeshInstance(plane_mesh, grid_mat);
 
-    renderer = new Renderer(gl);
+
 
     gl.clearColor(0.2, 0.3, 0.3, 1.0);
 
@@ -103,8 +105,7 @@ const moveCallback = (e: MouseEvent): void => {
     mat4.perspective(proj_matrix, glMatrix.toRadian(90), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
 
     loading_text.innerText = files_completed + "/" + total_files + " files completed.";
-
-
+    
     Renderer.PBRShader.setVec4ByName("u_lights[0].position", vec4.fromValues( -10 ,15, 10, 0));
     Renderer.PBRShader.setVec3ByName("u_lights[0].color", vec3.fromValues(50,50,50));
 
@@ -119,7 +120,7 @@ const moveCallback = (e: MouseEvent): void => {
     
     Renderer.PBRShader.setIntByName("u_light_count", 4);
     
-
+    onFileComplete("");
 
     requestAnimationFrame(update);
 })();
@@ -142,7 +143,6 @@ function update(): void {
     else if (keys[83]) camera.processKeyboard(Camera_Movement.BACKWARD, 0.001);
     if (keys[65]) camera.processKeyboard(Camera_Movement.LEFT, 0.001);
     else if (keys[68]) camera.processKeyboard(Camera_Movement.RIGHT, 0.001);
-
     if (keys[82]) camera.lookAt(vec3.fromValues(0, 0, 0));
     if (keys[32]) camera.processKeyboard(Camera_Movement.UP, 0.001);
 
@@ -158,11 +158,8 @@ function drawScene(): void {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     camera.getViewMatrix(view_matrix);
-
-    Renderer.PBRShader.use();
-    Renderer.PBRShader.setVec3ByName("u_camera_pos", camera.position);
-    Renderer.GridShader.use();
-    Renderer.GridShader.setVec3ByName("u_camera_pos", camera.position);
+    
+    renderer.setPerFrameUniforms(view_matrix, proj_matrix);
     
     //mat4.identity(model_matrix);
 
@@ -173,17 +170,19 @@ function drawScene(): void {
     // box.render(gl, renderer, view_matrix, proj_matrix);
 
     let model = sphere.model_matrix;
-
-    for (let i = 0; i <= 6; i++) {
-        for (let k = 0; k <= 6; k++) {
+    
+    let num_cols = 6;
+    let num_rows = 6;
+    for (let i = 0; i <= num_cols; i++) {
+        for (let k = 0; k <= num_rows; k++) {
             mat4.identity(model);
             mat4.translate(model, model, vec3.fromValues((i - 3) * 2, k * 2, 0));
 
-            //mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
-            //mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
+            mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
+            mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
 
-            sphere_mat.roughness = Math.min(1, Math.max(0.01, i/ 10));
-            sphere_mat.metallic = k / 10;
+            sphere_mat.roughness = Math.min(1, Math.max(0.025, i/ num_cols));
+            sphere_mat.metallic = k / num_rows;
             
             sphere.render(gl, renderer, view_matrix, proj_matrix);
         }
@@ -191,6 +190,9 @@ function drawScene(): void {
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
 
     grid.render(gl, renderer, view_matrix, proj_matrix);
 

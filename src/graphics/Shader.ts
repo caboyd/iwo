@@ -1,11 +1,8 @@
-import {mat3, mat4, vec3, vec4} from "gl-matrix";
-import {Renderer} from "./Renderer";
+import { mat3, mat4, vec3, vec4 } from "gl-matrix";
 
-let view_matrix3x3:mat3 = mat3.create();
-let modelview_matrix:mat4 = mat4.create();
-let normalview_matrix:mat3 = mat3.create();
-let mvp_matrix:mat4 = mat4.create();
-
+let modelview_matrix: mat4 = mat4.create();
+let normalview_matrix: mat3 = mat3.create();
+let mvp_matrix: mat4 = mat4.create();
 
 export class Shader {
     public uniforms: Map<String, WebGLUniformLocation>;
@@ -31,27 +28,27 @@ export class Shader {
         this.uniforms = new Map<String, WebGLUniformLocation>();
         this.attributes = new Map<String, GLint>();
     }
-    
-    public setModelViewBlock(model_matrix:mat4, view_matrix:mat4, proj_matrix:mat4):void{   
+
+    public setModelViewBlock(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4): void {
         //Model view matrix
         mat4.mul(modelview_matrix, view_matrix, model_matrix);
 
         //Normal matrix in view space
-        mat3.normalFromMat4(normalview_matrix,model_matrix);
-        this.setMat3ByName("u_normal_matrix", normalview_matrix);
+        // mat3.normalFromMat4(normalview_matrix,model_matrix);
+        // this.setMat3ByName("u_normal_matrix", normalview_matrix);
+        mat3.normalFromMat4(normalview_matrix, modelview_matrix);
 
-        mat3.normalFromMat4(normalview_matrix,modelview_matrix);
-        
         //MVP Matrix
         mat4.mul(mvp_matrix, proj_matrix, modelview_matrix);
 
-        this.setMat4ByName("u_model_matrix", model_matrix);
+        //   this.setMat4ByName("u_model_matrix", model_matrix);
+        this.setMat4ByName("u_view_matrix", view_matrix);
         this.setMat4ByName("u_modelview_matrix", modelview_matrix);
         this.setMat3ByName("u_normalview_matrix", normalview_matrix);
         this.setMat4ByName("u_mvp_matrix", mvp_matrix);
     }
-    
-    public setViewProjBlock(view_matrix:mat4, proj_matrix:mat4):void{
+
+    public setViewProjBlock(view_matrix: mat4, proj_matrix: mat4): void {
         mat4.mul(mvp_matrix, proj_matrix, view_matrix);
         this.setMat4ByName("u_view_matrix", view_matrix);
         this.setMat4ByName("u_proj_matrix", proj_matrix);
@@ -85,12 +82,12 @@ export class Shader {
     }
 
     public getUniformLocation(name: string): WebGLUniformLocation {
-        let a = this.uniforms.get(name);
-        if (a === undefined) {
-            a = this.gl.getUniformLocation(this.ID, name)!;
-            this.uniforms.set(name, a);
+        let id = this.uniforms.get(name);
+        if (id === undefined) {
+            id = this.gl.getUniformLocation(this.ID, name)!;
+            this.uniforms.set(name, id);
         }
-        return a;
+        return id;
     }
 
     public getAttribLocation(name: string): GLint {

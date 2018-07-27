@@ -2,16 +2,21 @@ export class Texture2D {
     public texture_id: WebGLTexture;
 
 
-    constructor(gl: WebGL2RenderingContext, image: HTMLImageElement, alpha: boolean = false, flip: boolean = true) {
+    constructor(gl: WebGL2RenderingContext, image: HTMLImageElement | null, alpha: boolean = false, flip: boolean = true) {
         this.texture_id = gl.createTexture()!;
         //gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, this.texture_id);
         let format = alpha ? gl.RGBA : gl.RGB;
         if (flip) gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-
-        if (image.complete && image.src) {
+        
+        
+        if (image && image.complete && image.src) {
             Texture2D.load(gl,image,format);
         } else {
+            if(image)
+                image.addEventListener("load", () => {
+                    Texture2D.load(gl,image,format);
+                }, {once: true});
             // Fill the texture with a 16x16 pink/black checkerboard to denote missing texture.
             //prettier-ignore
             gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 16, 16,
@@ -21,12 +26,7 @@ export class Texture2D {
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.MIRRORED_REPEAT);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-            image.addEventListener("load", () => {
-                Texture2D.load(gl,image,format);
-            }, {once: true});
         }
-        
-
     }
 
     public bind(gl: WebGL2RenderingContext, location: number): void {
