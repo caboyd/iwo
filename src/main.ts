@@ -106,19 +106,19 @@ const moveCallback = (e: MouseEvent): void => {
 
     loading_text.innerText = files_completed + "/" + total_files + " files completed.";
     
-    Renderer.PBRShader.setVec4ByName("u_lights[0].position", vec4.fromValues( -10 ,15, 10, 0));
-    Renderer.PBRShader.setVec3ByName("u_lights[0].color", vec3.fromValues(50,50,50));
+    Renderer.PBRShader.setUniform("u_lights[0].position", [ -10 ,15, 10, 0]);
+    Renderer.PBRShader.setUniform("u_lights[0].color", [50,50,50]);
 
-    Renderer.PBRShader.setVec4ByName("u_lights[1].position", vec4.fromValues( 10 ,15, 10, 1));
-    Renderer.PBRShader.setVec3ByName("u_lights[1].color", light_color);
+    Renderer.PBRShader.setUniform("u_lights[1].position", [ 10 ,15, 10, 1]);
+    Renderer.PBRShader.setUniform("u_lights[1].color", light_color);
 
-    Renderer.PBRShader.setVec4ByName("u_lights[2].position", vec4.fromValues( -10 ,5, 10, 1));
-    Renderer.PBRShader.setVec3ByName("u_lights[2].color", light_color);
+    Renderer.PBRShader.setUniform("u_lights[2].position", [ -10 ,5, 10, 1]);
+    Renderer.PBRShader.setUniform("u_lights[2].color", light_color);
 
-    Renderer.PBRShader.setVec4ByName("u_lights[3].position", vec4.fromValues( 10 ,5, 10, 1));
-    Renderer.PBRShader.setVec3ByName("u_lights[3].color", light_color);
+    Renderer.PBRShader.setUniform("u_lights[3].position", [10 ,5, 10, 1]);
+    Renderer.PBRShader.setUniform("u_lights[3].color", light_color);
     
-    Renderer.PBRShader.setIntByName("u_light_count", 4);
+    Renderer.PBRShader.setUniform("u_light_count", 4);
     
     onFileComplete("");
 

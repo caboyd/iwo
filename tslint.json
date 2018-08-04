@@ -4,6 +4,7 @@
       true,
       "call-signature",
       "property-declaration"
-    ]
+    ],
+    "trailing-comma": true
   }
 }

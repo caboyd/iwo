@@ -7,7 +7,7 @@ export class PBRShader extends Shader{
         super(gl, require("src/shaders/standard.vert"),require("src/shaders/standard.frag"));
         this.use();
         
-        this.setIntByName("u_albedo", 0);
+        this.setUniform("u_material.albedo_sampler", 0);
         
     }
 }

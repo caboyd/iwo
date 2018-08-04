@@ -15,8 +15,8 @@ export class GridMaterial extends Material{
     
     activate(gl:WebGL2RenderingContext):void{
         let shader = this.shader;
-        shader.setFloatByName("distance", this.distance);
-        shader.setFloatByName("frequency", this.frequency);
+        shader.setUniform("distance", this.distance);
+        shader.setUniform("frequency", this.frequency);
     }
 
     public get shader():Shader{

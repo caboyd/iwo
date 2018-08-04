@@ -9,7 +9,13 @@ in vec3 view_pos;
 in vec2 tex_coord;
 in vec3 view_normal;
 
-uniform vec3 u_camera_pos;
+layout (std140) uniform ubo_global{
+                          // base alignment   // aligned offset
+    mat4 view;            // 64               // 0
+    mat4 projection;      // 64               // 64
+    mat4 view_projection; // 64               // 128
+ 
+};
 
 struct Material {
     vec3 albedo;
@@ -29,7 +35,6 @@ struct Light {
 uniform int u_light_count;
 uniform Light u_lights[16];
 uniform Material u_material;
-uniform mat4 u_view_matrix;
 
 float DistributionGGX_Trowbridge_Reitz (vec3 N, vec3 H, float roughness) {
     float alphaRoughness = roughness * roughness;
@@ -80,7 +85,7 @@ void main() {
     
         // calculate per-light radiance
         
-        vec3 light_pos = (u_view_matrix * (u_lights[i].position)).xyz;
+        vec3 light_pos = (view * (u_lights[i].position)).xyz;
         vec3 L = light_pos;
         vec3 radiance = u_lights[i].color;
         //point light

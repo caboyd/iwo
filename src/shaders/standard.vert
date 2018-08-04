@@ -8,26 +8,27 @@ layout (location = 3) in vec3 a_tangent;
 layout (location = 4) in vec3 a_bitangent;
 
 
-//layout (std140) uniform ubo_global{
-//                          // base alignment   // aligned offset
-//    mat4 view;            // 64               // 0
-//    mat4 projection;      // 64               // 64
-//    mat4 view_projection; // 64               // 128
-//};
-//
-//layout (std140) uniform ubo_per_draw{
-//                          // base alignment   // aligned offset
-//    mat4 model_view;      // 64               // 0
-//    mat3 normal_view;     // 48               // 64
-//    mat4 mvp;             // 64               // 112
-//};
+layout (std140) uniform ubo_per_frame{
+                          // base alignment   // aligned offset
+    mat4 view;            // 64               // 0
+    mat4 projection;      // 64               // 64
+    mat4 view_projection; // 64               // 128
+
+};
+
+layout (std140) uniform ubo_per_model{
+                          // base alignment   // aligned offset
+    mat4 model_view;      // 64               // 0
+    mat3 normal_view;     // 48               // 64
+    mat4 mvp;             // 64               // 112
+};
 
 
 //uniform mat4 u_model_matrix;
-uniform mat4 u_modelview_matrix;
+//uniform mat4 u_modelview_matrix;
 //uniform mat3 u_normal_matrix;
-uniform mat3 u_normalview_matrix;
-uniform mat4 u_mvp_matrix;
+//uniform mat3 u_normalview_matrix;
+//uniform mat4 u_mvp_matrix;
 
 
 out vec3 view_pos;
@@ -35,10 +36,10 @@ out vec2 tex_coord;
 out vec3 view_normal;
 
 void main() {
-    gl_Position = u_mvp_matrix * vec4(a_vertex,1.0f);
+    gl_Position = mvp * vec4(a_vertex,1.0f);
     
-    view_pos = (u_modelview_matrix * vec4(a_vertex,1.0f)).xyz ;
-    view_normal =  u_normalview_matrix * a_normal ;
+    view_pos = (model_view * vec4(a_vertex,1.0f)).xyz ;
+    view_normal =  normal_view * a_normal ;
         
     tex_coord = a_tex_coord;
 }

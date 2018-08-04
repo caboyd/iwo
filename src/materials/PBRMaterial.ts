@@ -29,15 +29,16 @@ export class PBRMaterial extends  Material{
         let shader = this.shader;
         if(this.albedo_texture){
             this.albedo_texture.bind(gl,0);
-            shader.setBoolByName("u_active_textures[0]", true);
+            shader.setUniform("u_active_textures[0]", true);
         }else{
-            shader.setBoolByName("u_material.active_textures[0]", false);
+            shader.setUniform("u_material.active_textures[0]", false);
         }
         
-        shader.setVec3ByName("u_material.albedo", this.albedo);
-        shader.setFloatByName("u_material.roughness", this.roughness);
-        shader.setFloatByName("u_material.metallic", this.metallic);
-        shader.setFloatByName("u_material.ao", this.ao);
+        shader.setUniform("u_material.albedo", this.albedo);
+        shader.setUniform("u_material.roughness", this.roughness);
+        shader.setUniform("u_material.metallic", this.metallic);
+        shader.setUniform("u_material.ao", this.ao);
+        shader.setUniform("my_array[0]",[1,1,1,1,1]);
         
     }
 
