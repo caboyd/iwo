@@ -44,9 +44,9 @@ export class Camera {
         this.up = vec3.clone(up);
         vec3.normalize(this.up,this.up);
         
-        console.log(this.front);
-        console.log(this.worldRight);
-        console.log(this.up);
+        // console.log(this.front);
+        // console.log(this.worldRight);
+        // console.log(this.up);
         
         this.movementSpeed = SPEED;
         this.mouseSensitivity = SENSITIVITY;

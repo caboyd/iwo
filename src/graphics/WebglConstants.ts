@@ -5,5 +5,6 @@ export const enum DrawMode {
     LINE_STRIP = 0x0003,
     TRIANGLES = 0x0004,
     TRIANGLE_STRIP = 0x0005,
-    TRIANGLE_FAN = 0x00006
+    TRIANGLE_FAN = 0x0006,
 }
+

@@ -4,6 +4,7 @@ import {Shader} from "../graphics/Shader";
 
 export class NormalOnlyMaterial extends  Material{
     constructor(){
+        //TODO: Allows normal in world or view space
         super();
     }
 

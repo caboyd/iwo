@@ -1,6 +1,7 @@
+type TexImageSource = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap | ImageData;
+
 export class Texture2D {
     public texture_id: WebGLTexture;
-
 
     constructor(gl: WebGL2RenderingContext, image: HTMLImageElement | null, alpha: boolean = false, flip: boolean = true) {
         this.texture_id = gl.createTexture()!;
