@@ -99,7 +99,11 @@ export class SphereGeometry implements Geometry {
         this.attributes.set(AttributeType.Vertex, new Float32Array(verts));
         this.attributes.set(AttributeType.Normals, new Float32Array(verts));
         this.attributes.set(AttributeType.Tex_Coords, new Float32Array(tex_coords));
-        this.indices = new Uint16Array(indices);
+        if (verts.length >= 65536) {
+            this.indices = new Uint32Array(indices);
+        }
+        else this.indices = new Uint16Array(indices);
+        
         this.groups.push({ count: indices.length, offset: 0, material_index: 0 } as Group);
     }
 }

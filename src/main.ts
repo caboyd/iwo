@@ -24,7 +24,9 @@ let cPos: vec3 = vec3.fromValues(0.5, 8, 7.0);
 let cUp: vec3 = vec3.fromValues(0, 1, 0);
 let cFront: vec3 = vec3.fromValues(0, 0, -1);
 
-let light_color: vec3 = vec3.fromValues(300.47, 300.31, 300.79);
+let light_color: vec3 = vec3.fromValues(12.47, 12.31, 12.79);
+let light_positions: [number,number,number,number][] = [
+    [ 10 ,15, 10, 1],[ -10 ,5, 10, 1],[0 ,5, -10, 1]];
 
 let camera: Camera;
 
@@ -32,9 +34,10 @@ let mouse_x_total = 0;
 let mouse_y_total = 0;
 let keys: Array<boolean> = [];
 
-let mesh: Mesh;
 let box: MeshInstance;
+let light_boxes:MeshInstance[];
 let sphere: MeshInstance;
+let spheres: MeshInstance[];
 let sphere_mat:PBRMaterial;
 let grid: MeshInstance;
 let renderer: Renderer;
@@ -71,27 +74,28 @@ const moveCallback = (e: MouseEvent): void => {
     renderer = new Renderer(gl);
     camera = new Camera(cPos, cFront, cUp);
 
-    let sphere_geom = new SphereGeometry(0.7, 64, 64);
-    let box_geom = new BoxGeometry(2.0, 1.0, 1, 2, 1, 1, false);
-    let plane_geom = new PlaneGeometry(100, 100, 1, 1);
+    let sphere_geom = new SphereGeometry(0.7, 48, 48);
+    let box_geom = new BoxGeometry(1.0, 1.0, 1, 2, 1, 1, false);
+    let plane_geom = new PlaneGeometry(100, 100, 1, 1,true);
 
     let sphere_mesh = new Mesh(gl, sphere_geom);
     let box_mesh = new Mesh(gl, box_geom);
     let plane_mesh = new Mesh(gl, plane_geom);
 
-    let mat = new PBRMaterial(vec3.fromValues(1,0,1),0.0,1.0);
-   // mat.albedo_texture = TextureLoader.load(gl, a.src, global_root);
-    sphere_mat = new PBRMaterial(vec3.fromValues(1,0,0),0.0,0.0, 0);
-  //  sphere_mat.albedo_texture = TextureLoader.load(gl, b.src, global_root);
+    let mat = new PBRMaterial(vec3.fromValues(1000,1000,1000),0.0,1.0);
+   //mat.albedo_texture = TextureLoader.load(gl, a.src, global_root);
+    sphere_mat = new PBRMaterial(vec3.fromValues(1,0,0),0.0,0.0);
+    sphere_mat.albedo_texture = TextureLoader.load(gl, b.src, global_root);
     let normal_mat = new NormalOnlyMaterial();
     total_files = 0;
 
     box = new MeshInstance(box_mesh, mat);
-    mat4.translate(box.model_matrix, box.model_matrix, vec3.fromValues(0, 3, 0));
+    mat4.translate(box.model_matrix, box.model_matrix, vec3.fromValues(0, 3, 6));
     sphere = new MeshInstance(sphere_mesh, sphere_mat);
 
     let grid_mat = new GridMaterial(50 );
     grid = new MeshInstance(plane_mesh, grid_mat);
+    mat4.translate(grid.model_matrix,grid.model_matrix,vec3.fromValues(0,0 ,0));
 
 
 
@@ -107,21 +111,23 @@ const moveCallback = (e: MouseEvent): void => {
     loading_text.innerText = files_completed + "/" + total_files + " files completed.";
     
     Renderer.PBRShader.setUniform("u_lights[0].position", [ -10 ,15, 10, 0]);
-    Renderer.PBRShader.setUniform("u_lights[0].color", [50,50,50]);
+    Renderer.PBRShader.setUniform("u_lights[0].color", [1,1,1]);
 
-    Renderer.PBRShader.setUniform("u_lights[1].position", [ 10 ,15, 10, 1]);
+    Renderer.PBRShader.setUniform("u_lights[1].position", light_positions[0]);
     Renderer.PBRShader.setUniform("u_lights[1].color", light_color);
 
-    Renderer.PBRShader.setUniform("u_lights[2].position", [ -10 ,5, 10, 1]);
+    Renderer.PBRShader.setUniform("u_lights[2].position", light_positions[1]);
     Renderer.PBRShader.setUniform("u_lights[2].color", light_color);
 
-    Renderer.PBRShader.setUniform("u_lights[3].position", [10 ,5, 10, 1]);
+    Renderer.PBRShader.setUniform("u_lights[3].position", light_positions[2]);
     Renderer.PBRShader.setUniform("u_lights[3].color", light_color);
     
     Renderer.PBRShader.setUniform("u_light_count", 4);
     
     onFileComplete("");
 
+    initScene();
+    
     requestAnimationFrame(update);
 })();
 
@@ -136,6 +142,37 @@ function initGL(): WebGL2RenderingContext {
         alert("WebGL is not available on your browser.");
     }
     return gl;
+}
+
+function initScene():void{
+    light_boxes = [];
+    for(let pos of light_positions){
+        let lb = new MeshInstance(box.mesh,box.materials);
+        let a = [...pos];
+        a.pop();
+        mat4.translate(lb.model_matrix,lb.model_matrix, a);
+        light_boxes.push(lb);
+    }
+
+    
+    spheres = [];
+    let num_cols = 6;
+    let num_rows = 6;
+    for (let i = 0; i <= num_cols; i++) {
+        for (let k = 0; k <= num_rows; k++) {
+            let mat = new PBRMaterial(vec3.fromValues(1,0,0),k / num_rows, Math.min(1, Math.max(0.025, i/ num_cols)), 0);
+            mat.albedo_texture = sphere_mat.albedo_texture;
+            let s = new MeshInstance(sphere.mesh, mat);
+            spheres.push(s);
+            
+            let model = s.model_matrix;
+            mat4.identity(model);
+            mat4.translate(model, model, vec3.fromValues((i - 3) * 2, k * 2, 0));
+            mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
+            mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
+        }
+    }
+    
 }
 
 function update(): void {
@@ -160,40 +197,25 @@ function drawScene(): void {
     camera.getViewMatrix(view_matrix);
     
     renderer.setPerFrameUniforms(view_matrix, proj_matrix);
+
+    mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
+    mat4.rotateZ(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.5));
+    //box.render(gl, renderer, view_matrix, proj_matrix);
     
-    //mat4.identity(model_matrix);
+    for(let lb of light_boxes)
+        lb.render(gl,renderer,view_matrix,proj_matrix);
 
-    // mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
-    // mat4.rotateZ(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.5));
-    // mat3.normalFromMat4(box.normal_matrix, box.model_matrix);
-    //
-    // box.render(gl, renderer, view_matrix, proj_matrix);
-
-    let model = sphere.model_matrix;
-    
-    let num_cols = 6;
-    let num_rows = 6;
-    for (let i = 0; i <= num_cols; i++) {
-        for (let k = 0; k <= num_rows; k++) {
-            mat4.identity(model);
-            mat4.translate(model, model, vec3.fromValues((i - 3) * 2, k * 2, 0));
-
-            mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
-            mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
-
-            sphere_mat.roughness = Math.min(1, Math.max(0.025, i/ num_cols));
-            sphere_mat.metallic = k / num_rows;
-            
-            sphere.render(gl, renderer, view_matrix, proj_matrix);
-        }
+    for(let sphere of spheres){
+        sphere.render(gl,renderer,view_matrix,proj_matrix);
     }
 
+  
+    
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
     
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
-
     grid.render(gl, renderer, view_matrix, proj_matrix);
 
     gl.disable(gl.BLEND);
@@ -217,6 +239,7 @@ function onFileComplete(file_name: string) {
 
     if (files_completed >= total_files) {
         let a = document.getElementById("loading-text-wrapper")!;
+        if(a)
         a.remove();
     }
 }

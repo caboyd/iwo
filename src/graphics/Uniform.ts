@@ -134,6 +134,7 @@ export class UniformBlock {
 
         if (!uniform_info.Type) throw "Samplers not allowed in Uniform Buffers";
 
+        //Buffer view as a Typed Array (float/int)
         this._buffer_view = new uniform_info.Type(buffer, offset, size);
 
         if (total_count > 1 && uniform_info.items_per_row < 4) {

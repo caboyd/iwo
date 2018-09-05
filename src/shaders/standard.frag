@@ -71,13 +71,19 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0){
 }
 
 void main() {
+   vec3 albedo;
+    if(u_material.active_textures[0])
+        albedo = texture( u_material.albedo_sampler,tex_coord).rgb;
+    else 
+        albedo = u_material.albedo.rgb;
+        
     //Normal
     vec3 N = normalize(view_normal);
     //View Direction
     vec3 V = normalize(-view_pos);
     
     vec3 F0 = vec3(0.04);
-    F0 = mix(F0, u_material.albedo.rgb, u_material.metallic);
+    F0 = mix(F0, albedo, u_material.metallic);
             
     vec3 Lo = vec3(0.0);
     
@@ -115,11 +121,12 @@ void main() {
         
         // add to outgoing radiance Lo
         float NdotL = max(dot(N,L), 0.0);
-        Lo += (kD * u_material.albedo.rgb / PI + specular) * radiance * NdotL;
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
     }
     
+ 
     
-    vec3 ambient = vec3(0.03) * u_material.albedo.rgb * u_material.ao;
+    vec3 ambient = vec3(0.03) * albedo * u_material.ao;
     vec3 color = ambient + Lo;
     
 //    //HDR correction

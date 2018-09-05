@@ -17,32 +17,19 @@ export class MeshInstance {
         this.model_matrix = mat4.create();
     }
     
-    
     render(gl:WebGL2RenderingContext,renderer:Renderer, view_matrix:mat4, proj_matrix:mat4){
-        let shader:Shader;
-
         renderer.setPerModelUniforms(this.model_matrix,view_matrix,proj_matrix);
         
         if(Array.isArray(this.materials)){
             for(let i of this.materials.keys()){
                 let mat = this.materials[i];
-                shader = mat.shader;
-                shader.use();
-
- 
-                
-                mat.activate(gl);
                 for(let submesh of this.mesh.sub_meshes){
                     if(submesh.material_index === i)
-                        renderer.draw(this.mesh.draw_mode,submesh.count,submesh.offset,submesh.index_buffer,submesh.vertex_buffer, shader);
+                        renderer.draw(this.mesh.draw_mode,submesh.count,submesh.offset,submesh.index_buffer,submesh.vertex_buffer, mat);
                 }
             }
         }else{
-            shader = this.materials.shader;
-            shader.use();
-            
-            this.materials.activate(gl);
-            renderer.draw(this.mesh.draw_mode,this.mesh.count,0,this.mesh.index_buffer,this.mesh.vertex_buffer, shader);
+            renderer.draw(this.mesh.draw_mode,this.mesh.count,0,this.mesh.index_buffer,this.mesh.vertex_buffer, this.materials);
         }
     }
 }

@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
 
 module.exports = (env, argv) => {
-	const isProduction = argv.mode === 'production';
+	const is_production = argv.mode === 'production';
 	return {
 		entry: './src/main.ts',
 		output: {
@@ -17,14 +17,14 @@ module.exports = (env, argv) => {
 					filename: 'index.html',
 					template: 'index.html',
 					minify: {
-						collapseWhitespace: isProduction,
-						minifyCSS: isProduction
+						collapseWhitespace: is_production,
+						minifyCSS: is_production
 					}
 				}
 			),
 			new ImageminPlugin(
 				{
-					disable: !isProduction,
+					disable: !is_production,
 					test: /\.(jpe?g|png|gif|svg)$/i,
 					jpegtran: {
 						progressive: true

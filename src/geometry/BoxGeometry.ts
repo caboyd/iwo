@@ -190,7 +190,7 @@ export class BoxGeometry implements Geometry {
                     //The normal is just 1 in the direction of the side
                     interleaved[ipx + 5] = normals[px] = 0;
                     interleaved[ipy + 5] = normals[py] = 0;
-                    interleaved[ipz + 5] = normals[pz] = plane > 0 ? 1 : -1;
+                    interleaved[ipz + 5] = normals[pz] = plane >= 0 ? 1 : -1;
 
                     //The tangent is any vector orthogonal to the normal
                     interleaved[ipx + 8] = tangents[px] = x_dir;

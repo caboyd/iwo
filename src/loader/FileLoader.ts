@@ -36,11 +36,23 @@ export class FileLoader {
     }
 
     static setOnProgress(f: (loaded_bytes: number, total_bytes: number, file_name: string) => void): void {
-        this.onProgress = f;
+        this.onProgress = (loaded_bytes: number, total_bytes: number, file_name: string) => {
+            try {
+                f(loaded_bytes,total_bytes,file_name);
+            } catch (e) {
+                console.error(e);
+            }
+        };
     }
 
     static setOnFileComplete(f: (file_name: string) => void): void {
-        this.onFileComplete = f;
+        this.onFileComplete = (file_name:string) => {
+            try {
+                f(file_name);
+            } catch (e) {
+                console.error(e);
+            }
+        };
     }
 
     private static readAllChunks(readableStream: ReadableStream, total_size: number, file_name: string): Response {
@@ -62,7 +74,7 @@ export class FileLoader {
                 }
                 controller.close();
                 reader.releaseLock();
-            }
+            },
         });
         return new Response(stream, {});
     }

@@ -5,6 +5,8 @@ import {mat3, mat4} from "gl-matrix";
 import {Texture2D} from "./Texture2D";
 import {PBRShader} from "./PBRShader";
 import {UniformBuffer} from "./UniformBuffer";
+import {Material} from "../materials/Material";
+import {RendererStats} from "./RendererStats";
 
 let temp:mat4 = mat4.create();
 
@@ -16,8 +18,9 @@ export class Renderer {
     gl: WebGL2RenderingContext;
     current_vertex_buffer: VertexBuffer | undefined;
     current_index_buffer: IndexBuffer | undefined;
+    current_material: Material | undefined;
     current_shader: Shader | undefined;
-
+    
     private static _EMPTY_TEXTURE:WebGLTexture;
     private static _PBRShader:PBRShader;
     private static _NormalOnlyShader:Shader;
@@ -25,9 +28,11 @@ export class Renderer {
     
     private uboGlobalBlock:UniformBuffer;
     private uboModelBlock:UniformBuffer;
+    private stats:RendererStats;
 
     constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
+        this.stats = new RendererStats();
 
         Renderer._EMPTY_TEXTURE = new Texture2D(gl,null).texture_id;
         
@@ -56,12 +61,14 @@ export class Renderer {
         this.uboGlobalBlock.set("projection", proj);
         this.uboGlobalBlock.set("view_projection", mat4.mul(temp,proj,view));
         this.uboGlobalBlock.update(this.gl);
+        
+        this.resetStats();
     }
 
     public setPerModelUniforms(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4):void{
         this.uboModelBlock.set("model_view", mat4.mul(modelview_matrix,view_matrix,model_matrix));
         
-        //NOTE: Does this buf if normalFromMat4 returns null?
+        //NOTE: Does this bug if normalFromMat4 returns null?
         this.uboModelBlock.set("normal_view", mat3.normalFromMat4(normalview_matrix,modelview_matrix)!);
         
         this.uboModelBlock.set("mvp", mat4.mul(mvp_matrix,proj_matrix,modelview_matrix));
@@ -74,21 +81,30 @@ export class Renderer {
         offset: number,
         index_buffer: IndexBuffer | undefined,
         vertex_buffer: VertexBuffer,
-        shader: Shader
+        mat: Material
     ): void {
-        if (shader != this.current_shader) {
-            this.current_shader = shader;
+        if (mat.shader != this.current_shader) {
+            this.current_shader = mat.shader;
             this.current_shader.use();
+            this.stats.shader_bind_count++;
+        }
+        
+        if (mat != this.current_material) {
+            this.current_material = mat;
+            this.current_material.activate(this.gl);
+            this.stats.material_bind_count++;
         }
 
         if (vertex_buffer != this.current_vertex_buffer) {
             this.current_vertex_buffer = vertex_buffer;
             this.current_vertex_buffer.bindBuffers(this.gl);
+            this.stats.vertex_buffer_bind_count++;
         }
 
         if (index_buffer && index_buffer != this.current_index_buffer) {
             this.current_index_buffer = index_buffer;
             this.current_index_buffer.bind(this.gl);
+            this.stats.index_buffer_bind_count++;
         }
 
         if (index_buffer) {
@@ -97,11 +113,20 @@ export class Renderer {
             else if (index_buffer.indices.BYTES_PER_ELEMENT === 4)
                 this.gl.drawElements(draw_mode, count, this.gl.UNSIGNED_INT, offset);
             else throw "Unknown index buffer type";
+            this.stats.index_draw_count += count;
         } else {
             this.gl.drawArrays(draw_mode, offset, count);
+            this.stats.vertex_draw_count += count;
         }
+        
+        this.stats.draw_calls++;
     }
 
+    public resetStats(): void{
+        //console.dir(this.stats);
+        this.stats.reset();
+    }
+    
     static get EMPTY_TEXTURE() :WebGLTexture{
         return this._EMPTY_TEXTURE;
     }
