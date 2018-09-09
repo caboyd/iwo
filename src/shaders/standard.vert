@@ -30,7 +30,7 @@ layout (std140) uniform ubo_per_model{
 //uniform mat3 u_normalview_matrix;
 //uniform mat4 u_mvp_matrix;
 
-
+out vec3 local_pos;
 out vec3 view_pos;
 out vec2 tex_coord;
 out vec3 view_normal;
@@ -38,6 +38,7 @@ out vec3 view_normal;
 void main() {
     gl_Position = mvp * vec4(a_vertex,1.0f);
     
+    local_pos = a_vertex;
     view_pos = (model_view * vec4(a_vertex,1.0f)).xyz ;
     view_normal =  normal_view * a_normal ;
         

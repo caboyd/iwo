@@ -11,10 +11,10 @@ export class PBRMaterial extends Material {
     ao: number;
     albedo_texture: Texture2D | undefined;
 
-    constructor(color: vec3, metallic: number, roughness: number, ambient_occlusion: number = 1.0) {
+    constructor(color: vec3 | number[], metallic: number, roughness: number, ambient_occlusion: number = 1.0) {
         super();
 
-        this.albedo = color;
+        this.albedo = vec3.clone(color);
         this.metallic = metallic;
         this.roughness = roughness;
         this.ao = ambient_occlusion;

@@ -12,6 +12,10 @@ import { PlaneGeometry } from "./geometry/PlaneGeometry";
 import { GridMaterial } from "./materials/GridMaterial";
 import {PBRMaterial} from "./materials/PBRMaterial";
 import {NormalOnlyMaterial} from "./materials/NormalOnlyMaterial";
+import {BasicMaterial} from "./materials/BasicMaterial";
+import {Texture} from "./materials/Texture";
+import {ImageLoader} from "./loader/ImageLoader";
+import {Texture2D} from "./graphics/Texture2D";
 
 let canvas: HTMLCanvasElement;
 
@@ -36,7 +40,7 @@ let keys: Array<boolean> = [];
 
 let box: MeshInstance;
 let light_boxes:MeshInstance[];
-let sphere: MeshInstance;
+let skybox:MeshInstance;
 let spheres: MeshInstance[];
 let sphere_mat:PBRMaterial;
 let grid: MeshInstance;
@@ -60,10 +64,8 @@ const moveCallback = (e: MouseEvent): void => {
 };
 
 (function loadWebGL(): void {
-    let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
-    let a = require("assets/container.jpg");
-    let b = require("assets/earth.jpg");
 
+    
     FileLoader.setOnProgress(onProgress);
     FileLoader.setOnFileComplete(onFileComplete);
 
@@ -73,31 +75,6 @@ const moveCallback = (e: MouseEvent): void => {
     gl = initGL();
     renderer = new Renderer(gl);
     camera = new Camera(cPos, cFront, cUp);
-
-    let sphere_geom = new SphereGeometry(0.7, 48, 48);
-    let box_geom = new BoxGeometry(1.0, 1.0, 1, 2, 1, 1, false);
-    let plane_geom = new PlaneGeometry(100, 100, 1, 1,true);
-
-    let sphere_mesh = new Mesh(gl, sphere_geom);
-    let box_mesh = new Mesh(gl, box_geom);
-    let plane_mesh = new Mesh(gl, plane_geom);
-
-    let mat = new PBRMaterial(vec3.fromValues(1000,1000,1000),0.0,1.0);
-   //mat.albedo_texture = TextureLoader.load(gl, a.src, global_root);
-    sphere_mat = new PBRMaterial(vec3.fromValues(1,0,0),0.0,0.0);
-    sphere_mat.albedo_texture = TextureLoader.load(gl, b.src, global_root);
-    let normal_mat = new NormalOnlyMaterial();
-    total_files = 0;
-
-    box = new MeshInstance(box_mesh, mat);
-    mat4.translate(box.model_matrix, box.model_matrix, vec3.fromValues(0, 3, 6));
-    sphere = new MeshInstance(sphere_mesh, sphere_mat);
-
-    let grid_mat = new GridMaterial(50 );
-    grid = new MeshInstance(plane_mesh, grid_mat);
-    mat4.translate(grid.model_matrix,grid.model_matrix,vec3.fromValues(0,0 ,0));
-
-
 
     gl.clearColor(0.2, 0.3, 0.3, 1.0);
 
@@ -111,7 +88,7 @@ const moveCallback = (e: MouseEvent): void => {
     loading_text.innerText = files_completed + "/" + total_files + " files completed.";
     
     Renderer.PBRShader.setUniform("u_lights[0].position", [ -10 ,15, 10, 0]);
-    Renderer.PBRShader.setUniform("u_lights[0].color", [1,1,1]);
+    Renderer.PBRShader.setUniform("u_lights[0].color", [4,4,4]);
 
     Renderer.PBRShader.setUniform("u_lights[1].position", light_positions[0]);
     Renderer.PBRShader.setUniform("u_lights[1].color", light_color);
@@ -145,16 +122,62 @@ function initGL(): WebGL2RenderingContext {
 }
 
 function initScene():void{
+    let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
+    let sky_tex =  new Texture2D(gl);
+    ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg").src, global_root).then((image) =>{
+       sky_tex.setImage(gl,image,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR);
+        ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg").src, global_root).then((image) =>{
+            sky_tex.setImage(gl,image,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR);
+        });
+    });
+    
+    let earth_tex = TextureLoader.load(gl, require("assets/earth.jpg").src, global_root);
+    total_files = 0;
+
+    let box_geom = new BoxGeometry(3.0, 3.0, 3.0, 1, 1, 1, false);
+    let sphere_geom = new SphereGeometry(0.7, 48, 48);
+    let plane_geom = new PlaneGeometry(100, 100, 1, 1,true);
+    
+    let sphere_mesh = new Mesh(gl, sphere_geom);
+    let plane_mesh = new Mesh(gl, plane_geom);
+    let box_mesh = new Mesh(gl, box_geom);
+
+    sphere_mat = new PBRMaterial(vec3.fromValues(1,0,0),0.0,0.0);
+    sphere_mat.albedo_texture = earth_tex;
+    let normal_mat = new NormalOnlyMaterial();
+ 
+    //GRID
+    let grid_mat = new GridMaterial(50 );
+    grid = new MeshInstance(plane_mesh, grid_mat);
+    mat4.translate(grid.model_matrix,grid.model_matrix,vec3.fromValues(0,0 ,0));
+
+    //SKYBOX
+    let sky_mat = new BasicMaterial([1,1,1]);
+    sky_mat.setAlbedoTexture(sky_tex);
+    skybox = new MeshInstance(sphere_mesh,sky_mat);
+    
+    //LIGHTS
+    let light_geom = new BoxGeometry(1.0, 1.0, 1.0);
+    let light_mesh = new Mesh(gl,light_geom);
+    let light_mat = new PBRMaterial(vec3.fromValues(1000,1000,1000),0.0,1.0);
     light_boxes = [];
     for(let pos of light_positions){
-        let lb = new MeshInstance(box.mesh,box.materials);
+        let lb = new MeshInstance(light_mesh,light_mat);
         let a = [...pos];
         a.pop();
         mat4.translate(lb.model_matrix,lb.model_matrix, a);
         light_boxes.push(lb);
     }
 
+    //BOX
+    let box_mat = new BasicMaterial(vec3.fromValues(1,1,1));
+    box_mat.setAlbedoTexture(sky_tex);
+    box_mat.albedo_texture!.equirectangular = true;
+    box = new MeshInstance(box_mesh,box_mat);
+    mat4.translate(box.model_matrix, box.model_matrix, vec3.fromValues(0, 3, 6));
     
+    //SPHERES
+
     spheres = [];
     let num_cols = 6;
     let num_rows = 6;
@@ -162,7 +185,7 @@ function initScene():void{
         for (let k = 0; k <= num_rows; k++) {
             let mat = new PBRMaterial(vec3.fromValues(1,0,0),k / num_rows, Math.min(1, Math.max(0.025, i/ num_cols)), 0);
             mat.albedo_texture = sphere_mat.albedo_texture;
-            let s = new MeshInstance(sphere.mesh, mat);
+            let s = new MeshInstance(sphere_mesh, mat);
             spheres.push(s);
             
             let model = s.model_matrix;
@@ -197,16 +220,24 @@ function drawScene(): void {
     camera.getViewMatrix(view_matrix);
     
     renderer.setPerFrameUniforms(view_matrix, proj_matrix);
-
-    mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
-    mat4.rotateZ(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.5));
-    //box.render(gl, renderer, view_matrix, proj_matrix);
+    
+    //skybox
+    gl.disable(gl.DEPTH_TEST);
+    mat4.identity(skybox.model_matrix)
+    mat4.translate(skybox.model_matrix,skybox.model_matrix,camera.position);
+    mat4.scale(skybox.model_matrix,skybox.model_matrix,[-1,1,1]);
+    skybox.render(renderer,view_matrix,proj_matrix);
+    gl.enable(gl.DEPTH_TEST);
+    
+    //mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
+    //mat4.rotateZ(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.5));
+    box.render(renderer, view_matrix, proj_matrix);
     
     for(let lb of light_boxes)
-        lb.render(gl,renderer,view_matrix,proj_matrix);
+        lb.render(renderer,view_matrix,proj_matrix);
 
     for(let sphere of spheres){
-        sphere.render(gl,renderer,view_matrix,proj_matrix);
+        sphere.render(renderer,view_matrix,proj_matrix);
     }
 
   
@@ -216,7 +247,7 @@ function drawScene(): void {
     
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
-    grid.render(gl, renderer, view_matrix, proj_matrix);
+    grid.render(renderer, view_matrix, proj_matrix);
 
     gl.disable(gl.BLEND);
 }

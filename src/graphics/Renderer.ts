@@ -22,6 +22,7 @@ export class Renderer {
     current_shader: Shader | undefined;
     
     private static _EMPTY_TEXTURE:WebGLTexture;
+    private static _BasicShader:PBRShader;
     private static _PBRShader:PBRShader;
     private static _NormalOnlyShader:Shader;
     private static _GridShader:Shader;
@@ -34,11 +35,13 @@ export class Renderer {
         this.gl = gl;
         this.stats = new RendererStats();
 
-        Renderer._EMPTY_TEXTURE = new Texture2D(gl,null).texture_id;
+        Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
         
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
-        
+
+        Renderer._BasicShader = new Shader(gl,
+            require("src/shaders/standard.vert"), require("src/shaders/basic.frag"));
         Renderer._PBRShader = new PBRShader(gl);
         Renderer._GridShader = new Shader(gl,
             require("src/shaders/grid.vert"), require("src/shaders/grid.frag"));
@@ -46,11 +49,13 @@ export class Renderer {
             require("src/shaders/standard.vert"), require("src/shaders/normals.frag"));
         
         this.uboGlobalBlock = new UniformBuffer(Renderer._PBRShader,"ubo_per_frame");
+        this.uboGlobalBlock.bindShader(Renderer._BasicShader,0);
         this.uboGlobalBlock.bindShader(Renderer._PBRShader,0);
         this.uboGlobalBlock.bindShader(Renderer._GridShader,0);
         this.uboGlobalBlock.bindShader(Renderer._NormalOnlyShader,0);
         
         this.uboModelBlock = new UniformBuffer(Renderer._PBRShader,"ubo_per_model");
+        this.uboModelBlock.bindShader(Renderer._BasicShader,1);
         this.uboModelBlock.bindShader(Renderer._PBRShader,1);
         this.uboModelBlock.bindShader(Renderer._GridShader,1);
         this.uboModelBlock.bindShader(Renderer._NormalOnlyShader,1);
@@ -141,5 +146,9 @@ export class Renderer {
     
     static get NormalOnlyShader():Shader{
         return this._NormalOnlyShader;
+    }
+
+    static get BasicShader():Shader{
+        return this._BasicShader;
     }
 }

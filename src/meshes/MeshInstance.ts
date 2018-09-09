@@ -17,7 +17,7 @@ export class MeshInstance {
         this.model_matrix = mat4.create();
     }
     
-    render(gl:WebGL2RenderingContext,renderer:Renderer, view_matrix:mat4, proj_matrix:mat4){
+    render(renderer:Renderer, view_matrix:mat4, proj_matrix:mat4){
         renderer.setPerModelUniforms(this.model_matrix,view_matrix,proj_matrix);
         
         if(Array.isArray(this.materials)){

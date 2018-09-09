@@ -4,10 +4,12 @@ export class Texture {
     
     texture:Texture2D;
     unit:number;
+    equirectangular:boolean;
 
     constructor(texture:Texture2D, unit:number){
         this.texture = texture;
         this.unit = unit;
+        this.equirectangular = false;
     }
     
     bind(gl:WebGL2RenderingContext):void{
