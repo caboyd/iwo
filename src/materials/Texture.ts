@@ -6,7 +6,7 @@ export class Texture {
     unit:number;
     equirectangular:boolean;
 
-    constructor(texture:Texture2D, unit:number){
+    constructor(texture:Texture2D, unit:number = 0){
         this.texture = texture;
         this.unit = unit;
         this.equirectangular = false;

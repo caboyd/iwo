@@ -28,9 +28,12 @@ export class SphereGeometry implements Geometry {
         this.isInterleaved = false;
         this.interleaved_attributes = new Float32Array(1);
 
-        let v_segments = Math.floor(vertical_segments);
+        let flip_u = horizontal_segments < 0;
+        let flip_v = vertical_segments < 0;
+        
+        let v_segments = Math.floor(Math.abs(vertical_segments));
         if (v_segments < 2) v_segments = 2;
-        let h_segments = Math.floor(horizontal_segments);
+        let h_segments = Math.floor(Math.abs(horizontal_segments));
         if (h_segments < 3) h_segments = 3;
 
         //180 theta should be full top to bottom
@@ -63,7 +66,7 @@ export class SphereGeometry implements Geometry {
                 let sin_phi = Math.sin(phi);
                 let cos_phi = Math.cos(phi);
 
-                //sin_theta0 determins distance from center;
+                //cos_theta0 determines distance from center;
                 //top and bottom poles have x,z at 0.
                 let x0 = cos_phi * cos_theta0 * radius;
                 let z0 = sin_phi * cos_theta0 * radius;
@@ -71,20 +74,19 @@ export class SphereGeometry implements Geometry {
                 let x1 = cos_phi * cos_theta1 * radius;
                 let z1 = sin_phi * cos_theta1 * radius;
 
-                //Get the topleft vertex
+                //Get the top left vertex
                 verts.push(x0, y0, z0);
                
                 //get bottom left vertex
                 verts.push(x1, y1, z1);
                 
-                let u = phi / (2*Math.PI);
-                let v = (theta0/Math.PI) + 0.5;
-                tex_coords.push(u,v);
+                let u = phi / (2 * Math.PI);
+                let v = theta0 / Math.PI + 0.5;
+                tex_coords.push(flip_u ? 1.0 - u : u, flip_v ? 1.0 - v : v);
 
-                let q = Math.atan2(x1/radius, z1/radius);
-                u = phi / (2*Math.PI) ;
-                v =  (theta1/Math.PI) + 0.5;
-                tex_coords.push(u,v);
+                u = phi / (2 * Math.PI);
+                v = theta1 / Math.PI + 0.5;
+                tex_coords.push(flip_u ? 1.0 - u : u, flip_v ? 1.0 - v : v);
                 
             }
 

@@ -8,6 +8,6 @@ export class PBRShader extends Shader{
         this.use();
         
         this.setUniform("u_material.albedo_sampler", 0);
-        
+        this.setUniform("u_material.env_sampler", 1);
     }
 }

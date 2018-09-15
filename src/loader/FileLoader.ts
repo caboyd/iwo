@@ -3,8 +3,8 @@ export class FileLoader {
 
     protected static onFileComplete: (file_name: string) => void = () => {};
 
-    static async promiseAll(files: string[], base_url: string = ""): Promise<any[]> {
-        let promises: Promise<Blob>[] = [];
+    static async promiseAll(files: string[], base_url: string = ""): Promise<Response|any[]> {
+        let promises: Promise<Response|any>[] = [];
         for (let file of files) {
             let p = FileLoader.promise(file, base_url);
             promises.push(p);
@@ -15,7 +15,7 @@ export class FileLoader {
     static async promise(
         file_name: string,
         base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
-    ): Promise<any> {
+    ): Promise<Response|any> {
         if (!base_url.endsWith("/")) base_url += "/";
         return fetch(base_url + file_name)
             .then(response => {
@@ -26,12 +26,12 @@ export class FileLoader {
 
                 const total = parseInt(contentLength, 10);
                 if (response.body && ReadableStream)
-                    return FileLoader.readAllChunks(<any>response.body, total, file_name).blob();
-                else return response.blob();
+                    return FileLoader.readAllChunks(<any>response.body, total, file_name);
+                else return response;
             })
-            .then(data => {
+            .then(response => {
                 this.onFileComplete(file_name);
-                return data;
+                return response;
             });
     }
 

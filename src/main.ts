@@ -16,6 +16,7 @@ import {BasicMaterial} from "./materials/BasicMaterial";
 import {Texture} from "./materials/Texture";
 import {ImageLoader} from "./loader/ImageLoader";
 import {Texture2D} from "./graphics/Texture2D";
+import {HDRImageLoader} from "./loader/HDRImageLoader";
 
 let canvas: HTMLCanvasElement;
 
@@ -79,16 +80,21 @@ const moveCallback = (e: MouseEvent): void => {
     gl.clearColor(0.2, 0.3, 0.3, 1.0);
 
     gl.enable(gl.DEPTH_TEST);
-    // gl.enable(gl.CULL_FACE);
-    // gl.cullFace(gl.BACK);
+    gl.enable(gl.CULL_FACE);
+    gl.cullFace(gl.BACK);
 
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     mat4.perspective(proj_matrix, glMatrix.toRadian(90), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
 
     loading_text.innerText = files_completed + "/" + total_files + " files completed.";
-    
-    Renderer.PBRShader.setUniform("u_lights[0].position", [ -10 ,15, 10, 0]);
-    Renderer.PBRShader.setUniform("u_lights[0].color", [4,4,4]);
+
+    //0.5-u because we scaled x by -1 to invert sphere
+    //1-v because we flipped the image
+    let sun_dir = sphereUVtoVec3(vec3.create(),0.5+0.872,1.-0.456);
+    let sun_intensity = 24;
+    let sun_color = [sun_intensity*254/255,sun_intensity*238/255,sun_intensity*224/255];
+    Renderer.PBRShader.setUniform("u_lights[0].position", [ sun_dir[0],sun_dir[1],sun_dir[2], 0]);
+    Renderer.PBRShader.setUniform("u_lights[0].color", sun_color);
 
     Renderer.PBRShader.setUniform("u_lights[1].position", light_positions[0]);
     Renderer.PBRShader.setUniform("u_lights[1].color", light_color);
@@ -124,18 +130,24 @@ function initGL(): WebGL2RenderingContext {
 function initScene():void{
     let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
     let sky_tex =  new Texture2D(gl);
+    let env_tex = new Texture2D(gl);
     ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg").src, global_root).then((image) =>{
-       sky_tex.setImage(gl,image,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR);
+        sky_tex.setImage(gl,image,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR);
         ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg").src, global_root).then((image) =>{
             sky_tex.setImage(gl,image,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR);
+          //  env_tex = TextureCubeMap.fromEquirectangularImage(renderer, image, 1024);
         });
     });
     
+    HDRImageLoader.promise("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr").then( data =>{
+        env_tex.setImageByBuffer  (gl,data.data,data.width,data.height,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.NEAREST,gl.NEAREST,gl.RGB32F,gl.RGB,gl.FLOAT,true);
+    });
+
     let earth_tex = TextureLoader.load(gl, require("assets/earth.jpg").src, global_root);
     total_files = 0;
 
     let box_geom = new BoxGeometry(3.0, 3.0, 3.0, 1, 1, 1, false);
-    let sphere_geom = new SphereGeometry(0.7, 48, 48);
+    let sphere_geom = new SphereGeometry(0.7, 24, 24);
     let plane_geom = new PlaneGeometry(100, 100, 1, 1,true);
     
     let sphere_mesh = new Mesh(gl, sphere_geom);
@@ -144,7 +156,6 @@ function initScene():void{
 
     sphere_mat = new PBRMaterial(vec3.fromValues(1,0,0),0.0,0.0);
     sphere_mat.albedo_texture = earth_tex;
-    let normal_mat = new NormalOnlyMaterial();
  
     //GRID
     let grid_mat = new GridMaterial(50 );
@@ -152,9 +163,11 @@ function initScene():void{
     mat4.translate(grid.model_matrix,grid.model_matrix,vec3.fromValues(0,0 ,0));
 
     //SKYBOX
+    let sky_geom = new SphereGeometry(1, 48, 48);
+    let sky_mesh = new Mesh(gl,sky_geom);
     let sky_mat = new BasicMaterial([1,1,1]);
     sky_mat.setAlbedoTexture(sky_tex);
-    skybox = new MeshInstance(sphere_mesh,sky_mat);
+    skybox = new MeshInstance(sky_mesh,sky_mat);
     
     //LIGHTS
     let light_geom = new BoxGeometry(1.0, 1.0, 1.0);
@@ -171,7 +184,7 @@ function initScene():void{
 
     //BOX
     let box_mat = new BasicMaterial(vec3.fromValues(1,1,1));
-    box_mat.setAlbedoTexture(sky_tex);
+    box_mat.setAlbedoTexture(env_tex);
     box_mat.albedo_texture!.equirectangular = true;
     box = new MeshInstance(box_mesh,box_mat);
     mat4.translate(box.model_matrix, box.model_matrix, vec3.fromValues(0, 3, 6));
@@ -184,15 +197,16 @@ function initScene():void{
     for (let i = 0; i <= num_cols; i++) {
         for (let k = 0; k <= num_rows; k++) {
             let mat = new PBRMaterial(vec3.fromValues(1,0,0),k / num_rows, Math.min(1, Math.max(0.025, i/ num_cols)), 0);
-            mat.albedo_texture = sphere_mat.albedo_texture;
+            //mat.albedo_texture = sphere_mat.albedo_texture;
+            mat.env_texture = env_tex;
             let s = new MeshInstance(sphere_mesh, mat);
             spheres.push(s);
             
             let model = s.model_matrix;
             mat4.identity(model);
             mat4.translate(model, model, vec3.fromValues((i - 3) * 2, k * 2, 0));
-            mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
-            mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
+          //  mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
+         //   mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
         }
     }
     
@@ -223,10 +237,13 @@ function drawScene(): void {
     
     //skybox
     gl.disable(gl.DEPTH_TEST);
-    mat4.identity(skybox.model_matrix)
+    gl.disable(gl.CULL_FACE);
+    mat4.identity(skybox.model_matrix);
     mat4.translate(skybox.model_matrix,skybox.model_matrix,camera.position);
-    mat4.scale(skybox.model_matrix,skybox.model_matrix,[-1,1,1]);
+    mat4.scale(skybox.model_matrix,skybox.model_matrix,[-1,1,-1]);
+
     skybox.render(renderer,view_matrix,proj_matrix);
+    gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
     
     //mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
@@ -282,3 +299,19 @@ window.onkeydown = function(e) {
 window.onkeyup = function(e) {
     keys[e.keyCode] = false;
 };
+
+/*
+    Converts UV coords of equirectangular image to the vector direction,
+    as if it was projected onto the sphere 
+ */
+function sphereUVtoVec3(out:vec3, u:number,v:number):vec3{
+    let theta = (v - 0.5) * Math.PI;
+    let phi = u * 2 * Math.PI;
+    
+    let x = Math.cos(phi) * Math.cos(theta);
+    let y = Math.sin(theta);
+    let z = Math.sin(phi) * Math.cos(theta);
+    
+    vec3.set(out,x,y,z);
+    return out;
+}

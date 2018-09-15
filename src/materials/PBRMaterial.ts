@@ -10,6 +10,7 @@ export class PBRMaterial extends Material {
     roughness: number;
     ao: number;
     albedo_texture: Texture2D | undefined;
+    env_texture:Texture2D| undefined;
 
     constructor(color: vec3 | number[], metallic: number, roughness: number, ambient_occlusion: number = 1.0) {
         super();
@@ -22,14 +23,19 @@ export class PBRMaterial extends Material {
 
     public activate(gl: WebGL2RenderingContext): void {
         let shader = this.shader;
+        let active_textures = [false,false];
         shader.use();
         if (this.albedo_texture) {
             this.albedo_texture.bind(gl, 0);
-            shader.setUniform("u_material.active_textures[0]", true);
-        } else {
-            shader.setUniform("u_material.active_textures[0]", false);
-        }
+            active_textures[0] = true;
+        } 
 
+        if (this.env_texture) {
+            this.env_texture.bind(gl, 1);
+            active_textures[1] = true;
+        } 
+        
+        shader.setUniform("u_material.active_textures[0]", active_textures);
         shader.setUniform("u_material.albedo", this.albedo);
         shader.setUniform("u_material.roughness", this.roughness);
         shader.setUniform("u_material.metallic", this.metallic);

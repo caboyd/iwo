@@ -1,3 +1,4 @@
+//TODO: Allow for multiple image data types
 type TexImageSource = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | ImageBitmap | ImageData;
 
 export class Texture2D {
@@ -5,29 +6,37 @@ export class Texture2D {
 
     constructor(
         gl: WebGL2RenderingContext,
-        image: HTMLImageElement | undefined = undefined,
+        source: ArrayBufferView | TexImageSource | undefined = undefined,
+        width: number = 0,
+        height: number = 0,
         wrap_S: number = gl.REPEAT,
         wrap_T: number = gl.REPEAT,
         mag_filter: number = gl.LINEAR,
         min_filter: number = gl.LINEAR_MIPMAP_LINEAR,
+        internal_format: number = gl.RGBA,
         format: number = gl.RGBA,
         type: number = gl.UNSIGNED_BYTE,
-        flip: boolean = true
+        flip: boolean = true,
     ) {
         this.texture_id = gl.createTexture()!;
         gl.bindTexture(gl.TEXTURE_2D, this.texture_id);
-        if (image && image.complete && image.src) {
-            Texture2D.load(gl, image, wrap_S, wrap_T, mag_filter, min_filter, format, type, flip);
-        } else {
-            if (image)
+        if (source instanceof HTMLImageElement && source) {
+            if(source.complete && source.src)
+                Texture2D.load(gl, source, wrap_S, wrap_T, mag_filter, min_filter, internal_format,format, type, flip);
+            else{
                 //prettier-ignore
-                image.addEventListener("load",() => {
-                        Texture2D.load(gl, image, wrap_S, wrap_T, mag_filter, min_filter, format, type,flip);
-                    },{ once: true });
-
+                source.addEventListener("load", () => {
+                    Texture2D.load(gl, source, wrap_S, wrap_T, mag_filter, min_filter, internal_format, format, type, flip);
+                }, {once: true});
+            }
+        } else if (source && isArrayBufferView(source)) {
+            Texture2D.loadBuffer(gl, source as ArrayBufferView,width,height, wrap_S, wrap_T, mag_filter, min_filter,internal_format, format, type, flip);
+        } else if(source){
+            Texture2D.load(gl, source as TexImageSource, wrap_S, wrap_T, mag_filter, min_filter,internal_format, format, type, flip);
+        }else{
             // Fill the texture with a 16x16 pink/black checkerboard to denote missing texture.
             //prettier-ignore
-            gl.texImage2D( gl.TEXTURE_2D, 0, gl.RGBA, 16, 16,
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 16, 16,
                 0, gl.RGBA, gl.UNSIGNED_BYTE, pink_black_checkerboard
             );
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
@@ -44,39 +53,85 @@ export class Texture2D {
 
     public setImage(
         gl: WebGL2RenderingContext,
-        image: HTMLImageElement,
+        image: TexImageSource,
         wrap_S: number = gl.REPEAT,
         wrap_T: number = gl.REPEAT,
         mag_filter: number = gl.LINEAR,
         min_filter: number = gl.LINEAR_MIPMAP_LINEAR,
+        internal_format:number = gl.RGBA,
         format: number = gl.RGBA,
         type: number = gl.UNSIGNED_BYTE,
         flip: boolean = true
     ): void {
         gl.bindTexture(gl.TEXTURE_2D, this.texture_id);
-        if (flip) Texture2D.load(gl, image, wrap_S, wrap_T, mag_filter, min_filter, format, type, flip);
+        Texture2D.load(gl, image, wrap_S, wrap_T, mag_filter, min_filter, internal_format,format, type, flip);
+    }
+
+    public setImageByBuffer(
+        gl: WebGL2RenderingContext,
+        buffer: ArrayBufferView,
+        width:number,
+        height:number,
+        wrap_S: number = gl.REPEAT,
+        wrap_T: number = gl.REPEAT,
+        mag_filter: number = gl.LINEAR,
+        min_filter: number = gl.LINEAR_MIPMAP_LINEAR,
+        internal_format:number = gl.RGBA,
+        format: number = gl.RGBA,
+        type: number = gl.UNSIGNED_BYTE,
+        flip: boolean = true
+    ): void {
+        gl.bindTexture(gl.TEXTURE_2D, this.texture_id);
+        Texture2D.loadBuffer(gl, buffer,width,height, wrap_S, wrap_T, mag_filter, min_filter, internal_format,format, type, flip);
     }
 
     private static load(
         gl: WebGL2RenderingContext,
-        image: HTMLImageElement,
+        image: TexImageSource,
         wrap_S: number,
         wrap_T: number,
         mag_filter: number,
         min_filter: number,
+        internal_format:number,
         format: number,
         type: number,
         flip: boolean
     ): void {
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
-        gl.texImage2D(gl.TEXTURE_2D, 0, format, format, type, image);
-
-        gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internal_format, format, type, image);
+        if (min_filter == gl.LINEAR_MIPMAP_LINEAR) gl.generateMipmap(gl.TEXTURE_2D);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap_S);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap_T);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, mag_filter);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, min_filter);
     }
+
+    private static loadBuffer(
+        gl: WebGL2RenderingContext,
+        buffer: ArrayBufferView,
+        width: number,
+        height: number,
+        wrap_S: number,
+        wrap_T: number,
+        mag_filter: number,
+        min_filter: number,
+        internal_format:number,
+        format: number,
+        type: number,
+        flip: boolean,
+    ) {
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
+        gl.texImage2D(gl.TEXTURE_2D, 0, internal_format,width,height,0,format,type,buffer);
+        if (min_filter == gl.LINEAR_MIPMAP_LINEAR) gl.generateMipmap(gl.TEXTURE_2D);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap_S);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, wrap_T);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, mag_filter);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, min_filter);
+    }
+}
+
+function isArrayBufferView(value: any):boolean {
+    return value && value.buffer instanceof ArrayBuffer && value.byteLength !== undefined;
 }
 
 //prettier-ignore

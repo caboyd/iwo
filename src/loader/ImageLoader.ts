@@ -6,10 +6,12 @@ export class ImageLoader extends FileLoader {
         base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
     ): Promise<HTMLImageElement> {
         return new Promise<HTMLImageElement>(resolve => {
-            super.promise(file_name, base_url).then(data => {
-                let img = new Image();
-                img.src = URL.createObjectURL(data);
-                img.onload = () => resolve(img);
+            super.promise(file_name, base_url).then((response:Response) => {
+                response.blob().then((data:Blob) => {
+                    let img = new Image();
+                    img.src = URL.createObjectURL(data);
+                    img.onload = () => resolve(img);
+                });
             });
         });
     }
@@ -21,18 +23,18 @@ export class ImageLoader extends FileLoader {
         let imgs = Array.from({ length: files.length }, u => new Image());
         let promises: Promise<HTMLImageElement>[] = [];
 
-        return super.promiseAll(files, base_url).then((data: Blob[]) => {
-            for (let i = 0; i < data.length; i++) {
+        return super.promiseAll(files, base_url).then((responses: Response[]|any) => {
+            for (let i = 0; i < responses.length; i++) {
                 let img = imgs[i];
                 let promise = new Promise<HTMLImageElement>(function(resolve) {
-                    img.src = URL.createObjectURL(data[i]);
-                    img.onload = () => resolve(img);
+                    responses[i].blob().then((data:Blob) => {
+                        img.src = URL.createObjectURL(data);
+                        img.onload = () => resolve(img);
+                    });
                 });
                 promises.push(promise);
             }
-            return Promise.all(promises).then(images => {
-                return images;
-            });
+            return Promise.all(promises);
         });
     }
 
