@@ -1,4 +1,4 @@
-import { mat3, mat4, vec3, vec4 } from "gl-matrix";
+import { mat3, mat4 } from "gl-matrix";
 import { Uniform } from "./Uniform";
 
 let modelview_matrix: mat4 = mat4.create();
@@ -14,8 +14,8 @@ export class Shader {
     constructor(gl: WebGL2RenderingContext, vertexSourceCode: string, fragmentSourceCode: string) {
         this.gl = gl;
 
-        let vertexShader: WebGLShader = this.getShader(gl, vertexSourceCode, gl.VERTEX_SHADER);
-        let fragmentShader: WebGLShader = this.getShader(gl, fragmentSourceCode, gl.FRAGMENT_SHADER);
+        let vertexShader: WebGLShader = Shader.getShader(gl, vertexSourceCode, gl.VERTEX_SHADER);
+        let fragmentShader: WebGLShader = Shader.getShader(gl, fragmentSourceCode, gl.FRAGMENT_SHADER);
 
         this.ID = gl.createProgram()!;
         gl.attachShader(this.ID, vertexShader);
@@ -86,21 +86,18 @@ export class Shader {
     }
 
     public setAttributes(attr: string[]): void {
-        this.use();
-
         for (let a of attr) {
             this.attributes.set(a, this.gl.getAttribLocation(this.ID, a));
         }
     }
 
     public setUniforms(uniforms: Map<string, any>): void {
-        this.use();
         for (let [name, value] of uniforms) {
             if (value) this.setUniform(name, value);
         }
     }
 
-    private getShader(gl: WebGL2RenderingContext, sourceCode: string, type: number): WebGLShader {
+    private static getShader(gl: WebGL2RenderingContext, sourceCode: string, type: number): WebGLShader {
         let shader: WebGLShader;
         shader = gl.createShader(type)!;
 

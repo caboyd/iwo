@@ -2,7 +2,7 @@ import { Material } from "./Material";
 import { Shader } from "../graphics/Shader";
 import { Renderer } from "../graphics/Renderer";
 import { Texture2D } from "../graphics/Texture2D";
-import { vec3, vec4 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
 
 export class PBRMaterial extends Material {
     albedo: vec3;
@@ -24,7 +24,6 @@ export class PBRMaterial extends Material {
     public activate(gl: WebGL2RenderingContext): void {
         let shader = this.shader;
         let active_textures = [false,false];
-        shader.use();
         if (this.albedo_texture) {
             this.albedo_texture.bind(gl, 0);
             active_textures[0] = true;

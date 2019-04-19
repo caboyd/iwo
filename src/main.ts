@@ -1,8 +1,7 @@
-import { glMatrix, mat3, mat4, vec3, vec4 } from "gl-matrix";
+import { glMatrix, mat4, vec3 } from "gl-matrix";
 import { BoxGeometry } from "src/geometry/BoxGeometry";
 import { Mesh } from "src/meshes/Mesh";
 import { MeshInstance } from "src/meshes/MeshInstance";
-import { Material } from "src/materials/Material";
 import { Renderer } from "src/graphics/Renderer";
 import { FileLoader } from "./loader/FileLoader";
 import { TextureLoader } from "./loader/TextureLoader";
@@ -11,9 +10,7 @@ import { Camera, Camera_Movement } from "./cameras/Camera";
 import { PlaneGeometry } from "./geometry/PlaneGeometry";
 import { GridMaterial } from "./materials/GridMaterial";
 import {PBRMaterial} from "./materials/PBRMaterial";
-import {NormalOnlyMaterial} from "./materials/NormalOnlyMaterial";
 import {BasicMaterial} from "./materials/BasicMaterial";
-import {Texture} from "./materials/Texture";
 import {ImageLoader} from "./loader/ImageLoader";
 import {Texture2D} from "./graphics/Texture2D";
 import {HDRImageLoader} from "./loader/HDRImageLoader";
@@ -163,7 +160,6 @@ function initScene():void{
     //GRID
     let grid_mat = new GridMaterial(50 );
     grid = new MeshInstance(plane_mesh, grid_mat);
-    mat4.translate(grid.model_matrix,grid.model_matrix,vec3.fromValues(0,0 ,0));
 
     //SKYBOX
     let sky_geom = new SphereGeometry(1, 48, 48);
@@ -267,6 +263,7 @@ function drawScene(): void {
     
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.BACK);
+    
     grid.render(renderer, view_matrix, proj_matrix);
 
     gl.disable(gl.BLEND);

@@ -37,12 +37,10 @@ export class Renderer {
 
         Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
         
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
-
         Renderer._BasicShader = new Shader(gl,
             require("src/shaders/standard.vert").default, require("src/shaders/basic.frag").default);
         Renderer._PBRShader = new PBRShader(gl);
+
         Renderer._GridShader = new Shader(gl,
             require("src/shaders/grid.vert").default, require("src/shaders/grid.frag").default);
         Renderer._NormalOnlyShader = new Shader(gl,

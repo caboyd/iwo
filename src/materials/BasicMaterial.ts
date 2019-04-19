@@ -2,7 +2,7 @@ import { Material } from "./Material";
 import { Shader } from "../graphics/Shader";
 import { Renderer } from "../graphics/Renderer";
 import { Texture2D } from "../graphics/Texture2D";
-import { vec3, vec4 } from "gl-matrix";
+import { vec3 } from "gl-matrix";
 import {Texture} from "./Texture";
 
 export class BasicMaterial extends Material {
@@ -17,9 +17,7 @@ export class BasicMaterial extends Material {
 
     public activate(gl: WebGL2RenderingContext): void {
         let shader = this.shader;
-        shader.use();
         this.bindAlbedo(gl,shader);
-
         shader.setUniform("u_material.albedo", this.albedo);
     }
 
