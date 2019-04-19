@@ -72,15 +72,12 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0){
 }
 
 void main() {
-   vec3 env = vec3(1.); 
    vec3 albedo;
-    if(u_material.active_textures[1]){
-        env = texture( u_material.env_sampler,tex_coord).rgb;
-    }
+    if(u_material.active_textures[0])
+        albedo = texture( u_material.albedo_sampler,tex_coord).rgb;
     else 
         albedo = u_material.albedo.rgb;
         
-    albedo =  env.rgb;
         
     //Normal
     vec3 N = normalize(view_normal);

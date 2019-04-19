@@ -41,12 +41,12 @@ export class Renderer {
         gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
 
         Renderer._BasicShader = new Shader(gl,
-            require("src/shaders/standard.vert"), require("src/shaders/basic.frag"));
+            require("src/shaders/standard.vert").default, require("src/shaders/basic.frag").default);
         Renderer._PBRShader = new PBRShader(gl);
         Renderer._GridShader = new Shader(gl,
-            require("src/shaders/grid.vert"), require("src/shaders/grid.frag"));
+            require("src/shaders/grid.vert").default, require("src/shaders/grid.frag").default);
         Renderer._NormalOnlyShader = new Shader(gl,
-            require("src/shaders/standard.vert"), require("src/shaders/normals.frag"));
+            require("src/shaders/standard.vert").default, require("src/shaders/normals.frag").default);
         
         this.uboGlobalBlock = new UniformBuffer(Renderer._PBRShader,"ubo_per_frame");
         this.uboGlobalBlock.bindShader(Renderer._BasicShader,0);
@@ -67,6 +67,7 @@ export class Renderer {
         this.uboGlobalBlock.set("view_projection", mat4.mul(temp,proj,view));
         this.uboGlobalBlock.update(this.gl);
         
+        //console.dir(this.stats);
         this.resetStats();
     }
 
@@ -130,6 +131,7 @@ export class Renderer {
     public resetStats(): void{
         //console.dir(this.stats);
         this.stats.reset();
+        this.current_material = undefined;
     }
     
     static get EMPTY_TEXTURE() :WebGLTexture{

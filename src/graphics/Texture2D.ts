@@ -97,7 +97,7 @@ export class Texture2D {
         type: number,
         flip: boolean
     ): void {
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip ? 1:0);
         gl.texImage2D(gl.TEXTURE_2D, 0, internal_format, format, type, image);
         if (min_filter == gl.LINEAR_MIPMAP_LINEAR) gl.generateMipmap(gl.TEXTURE_2D);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap_S);
@@ -120,7 +120,7 @@ export class Texture2D {
         type: number,
         flip: boolean,
     ) {
-        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip ? 1:0);
         gl.texImage2D(gl.TEXTURE_2D, 0, internal_format,width,height,0,format,type,buffer);
         if (min_filter == gl.LINEAR_MIPMAP_LINEAR) gl.generateMipmap(gl.TEXTURE_2D);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, wrap_S);

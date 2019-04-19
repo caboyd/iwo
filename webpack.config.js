@@ -60,13 +60,19 @@ module.exports = (env, argv) => {
 					loader: 'raw-loader'
 				},
 				{
-					test: /\.(gif|jpeg|jpg|png|svg)$/,
+					test: /\.(gif|jpeg|jpg|png|svg|hdr)$/,
 					use: [
 						{
 							loader: 'file-loader',
-							options: {
-								name: '[path][name].[ext]'
+							options:{
+								name(file) {
+									if (!is_production) {
+										return '[path][name].[ext]';
+									}
+									return '[hash].[ext]';
+								},
 							},
+							
 						},
 					],
 

@@ -27,7 +27,7 @@ let proj_matrix: mat4 = mat4.create();
 
 let cPos: vec3 = vec3.fromValues(0.5, 8, 7.0);
 let cUp: vec3 = vec3.fromValues(0, 1, 0);
-let cFront: vec3 = vec3.fromValues(0, 0, 1);
+let cFront: vec3 = vec3.fromValues(0, 0, -1);
 
 let light_color: vec3 = vec3.fromValues(12.47, 12.31, 12.79);
 let light_positions: [number,number,number,number][] = [
@@ -139,7 +139,7 @@ function initScene():void{
         });
     });
     
-    HDRImageLoader.promise("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr").then( data =>{
+    HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr"),global_root).then( data =>{
         if(gl.getExtension("OES_texture_float_linear"))
             env_tex.setImageByBuffer  (gl,data.data,data.width,data.height,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR,gl.RGB32F,gl.RGB,gl.FLOAT,true);
         else
