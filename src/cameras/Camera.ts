@@ -136,10 +136,13 @@ export class Camera {
 
     private calculateOrientation() {
         let pitch_quat = quat.setAxisAngle(quat.create(), this.worldRight, this.pitch);
-        let heading_qat = quat.setAxisAngle(quat.create(), this.worldUp, this.heading);
+        let heading_quat = quat.setAxisAngle(quat.create(), this.worldUp, this.heading);
 
         quat.identity(this.orientation);
         quat.mul(this.orientation, this.orientation, pitch_quat);
-        quat.mul(this.orientation, this.orientation, heading_qat);
+        quat.mul(this.orientation, this.orientation, heading_quat);
+        
+     //   console.log(this.orientation);
+     //   console.log(this.getRight(vec3.create()));
     }
 }

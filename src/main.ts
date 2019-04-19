@@ -27,7 +27,7 @@ let proj_matrix: mat4 = mat4.create();
 
 let cPos: vec3 = vec3.fromValues(0.5, 8, 7.0);
 let cUp: vec3 = vec3.fromValues(0, 1, 0);
-let cFront: vec3 = vec3.fromValues(0, 0, -1);
+let cFront: vec3 = vec3.fromValues(0, 0, 1);
 
 let light_color: vec3 = vec3.fromValues(12.47, 12.31, 12.79);
 let light_positions: [number,number,number,number][] = [
@@ -131,19 +131,22 @@ function initScene():void{
     let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
     let sky_tex =  new Texture2D(gl);
     let env_tex = new Texture2D(gl);
-    ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg").src, global_root).then((image) =>{
+    ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then((image) =>{
         sky_tex.setImage(gl,image,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR);
-        ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg").src, global_root).then((image) =>{
+        ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then((image) =>{
             sky_tex.setImage(gl,image,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR);
           //  env_tex = TextureCubeMap.fromEquirectangularImage(renderer, image, 1024);
         });
     });
     
     HDRImageLoader.promise("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr").then( data =>{
-        env_tex.setImageByBuffer  (gl,data.data,data.width,data.height,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.NEAREST,gl.NEAREST,gl.RGB32F,gl.RGB,gl.FLOAT,true);
+        if(gl.getExtension("OES_texture_float_linear"))
+            env_tex.setImageByBuffer  (gl,data.data,data.width,data.height,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.LINEAR,gl.LINEAR,gl.RGB32F,gl.RGB,gl.FLOAT,true);
+        else
+            env_tex.setImageByBuffer  (gl,data.data,data.width,data.height,gl.CLAMP_TO_EDGE,gl.CLAMP_TO_EDGE,gl.NEAREST,gl.NEAREST,gl.RGB32F,gl.RGB,gl.FLOAT,true);
     });
 
-    let earth_tex = TextureLoader.load(gl, require("assets/earth.jpg").src, global_root);
+    let earth_tex = TextureLoader.load(gl, require("assets/earth.jpg"), global_root);
     total_files = 0;
 
     let box_geom = new BoxGeometry(3.0, 3.0, 3.0, 1, 1, 1, false);

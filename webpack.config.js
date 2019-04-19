@@ -61,11 +61,16 @@ module.exports = (env, argv) => {
 				},
 				{
 					test: /\.(gif|jpeg|jpg|png|svg)$/,
-					loader: 'image-size-loader',
-					options: {
-						name: '[path][name].[ext]'
-					},
-				
+					use: [
+						{
+							loader: 'file-loader',
+							options: {
+								name: '[path][name].[ext]'
+							},
+						},
+					],
+
+
 				}
 			]
 		},
