@@ -2,7 +2,7 @@ import { Mesh } from "./Mesh";
 import { Material } from "src/materials/Material";
 import {mat3, mat4} from "gl-matrix";
 import {Renderer} from "../graphics/Renderer";
-import {Shader} from "../graphics/Shader";
+import {Shader} from "../graphics/shader/Shader";
 
 export class MeshInstance {
     mesh: Mesh;

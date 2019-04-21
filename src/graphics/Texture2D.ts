@@ -127,6 +127,10 @@ export class Texture2D {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, mag_filter);
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, min_filter);
     }
+    
+    public destroy(gl:WebGL2RenderingContext): void{
+        gl.deleteTexture(this.texture_id);
+    }
 }
 
 function isArrayBufferView(value: any): boolean {

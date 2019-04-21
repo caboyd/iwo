@@ -1,15 +1,17 @@
-import { Material } from "./Material";
-import { Shader } from "../graphics/Shader";
-import { Renderer } from "../graphics/Renderer";
-import { Texture2D } from "../graphics/Texture2D";
-import { vec3 } from "gl-matrix";
-import {Texture} from "./Texture";
+import {Material} from "./Material";
+import {Shader} from "../graphics/shader/Shader";
+import {Renderer} from "../graphics/Renderer";
+import {Texture2D} from "../graphics/Texture2D";
+import {vec3} from "gl-matrix";
+import {TextureCubeMap} from "../graphics/TextureCubeMap";
 
 export class BasicMaterial extends Material {
+    private equirectangular_albedo: boolean = false;
     albedo: vec3;
-    albedo_texture: Texture | undefined;
+    albedo_texture: Texture2D | undefined;
+    albedo_cube_texture: TextureCubeMap | undefined;
 
-    constructor(color:  vec3 | number[]) {
+    constructor(color: vec3 | number[]) {
         super();
 
         this.albedo = vec3.clone(color);
@@ -17,27 +19,39 @@ export class BasicMaterial extends Material {
 
     public activate(gl: WebGL2RenderingContext): void {
         let shader = this.shader;
-        this.bindAlbedo(gl,shader);
+        let active_textures = [false,false];
+
+        if (this.albedo_texture) {
+            this.albedo_texture.bind(gl,0);
+            active_textures[0] = true;
+            if (this.equirectangular_albedo)
+                shader.setUniform("u_material.equirectangular_texture", true);
+        }
+
+        if (this.albedo_cube_texture) {
+            this.albedo_cube_texture.bind(gl , 1);
+            active_textures[1] = true;
+        }
+
+        shader.setUniform("u_material.active_textures[0]", active_textures);
         shader.setUniform("u_material.albedo", this.albedo);
+
     }
 
-    private bindAlbedo(gl:WebGL2RenderingContext, shader:Shader):void{
-        shader.setUniform("u_material.equirectangular_textures[0]", false);
-        shader.setUniform("u_material.active_textures[0]", false);
-        
-        if (this.albedo_texture) {
-            this.albedo_texture.bind(gl);
-            shader.setUniform("u_material.active_textures[0]", true);
-            if (this.albedo_texture.equirectangular)
-                shader.setUniform("u_material.equirectangular_textures[0]", true);
-        }
+    public setAlbedoTexture(tex: Texture2D, equirectangular:boolean = false): void {
+        this.equirectangular_albedo = equirectangular;
+        this.albedo_texture = tex;
     }
     
-    public setAlbedoTexture(tex:Texture2D):void{
-        this.albedo_texture = new Texture(tex,0);
+    public setAlbedoCubeTexture(tex: TextureCubeMap): void {
+        this.albedo_cube_texture = tex;
+    }
+
+    public  get shader(): Shader{
+        return Renderer.GetShader("BasicShader")!;
     }
     
-    public get shader(): Shader {
-        return Renderer.BasicShader;
+    public static get Shader(): Shader{
+        return Renderer.GetShader("BasicShader")!;
     }
 }

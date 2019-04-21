@@ -23,13 +23,6 @@ layout (std140) uniform ubo_per_model{
     mat4 mvp;             // 64               // 112
 };
 
-
-//uniform mat4 u_model_matrix;
-//uniform mat4 u_modelview_matrix;
-//uniform mat3 u_normal_matrix;
-//uniform mat3 u_normalview_matrix;
-//uniform mat4 u_mvp_matrix;
-
 out vec3 local_pos;
 out vec3 view_pos;
 out vec2 tex_coord;

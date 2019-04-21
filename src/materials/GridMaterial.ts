@@ -1,5 +1,5 @@
 import {Material} from "./Material";
-import {Shader} from "../graphics/Shader";
+import {Shader} from "../graphics/shader/Shader";
 import {Renderer} from "../graphics/Renderer";
 
 export class GridMaterial extends Material{
@@ -19,7 +19,10 @@ export class GridMaterial extends Material{
         shader.setUniform("frequency", this.frequency);
     }
 
-    public get shader():Shader{
-        return Renderer.GridShader;
+    public  get shader(): Shader{
+        return Renderer.GetShader("GridShader")!;
+    }
+    public static get Shader():Shader{
+        return Renderer.GetShader("GridShader")!;
     }
 }

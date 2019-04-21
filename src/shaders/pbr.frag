@@ -9,7 +9,7 @@ in vec3 view_pos;
 in vec2 tex_coord;
 in vec3 view_normal;
 
-layout (std140) uniform ubo_global{
+layout (std140) uniform ubo_per_frame{
                           // base alignment   // aligned offset
     mat4 view;            // 64               // 0
     mat4 projection;      // 64               // 64

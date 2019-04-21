@@ -8,20 +8,21 @@ in vec3 view_pos;
 in vec2 tex_coord;
 in vec3 view_normal;
 
-layout (std140) uniform ubo_global{
-                          // base alignment   // aligned offset
-    mat4 view;            // 64               // 0
-    mat4 projection;      // 64               // 64
-    mat4 view_projection; // 64               // 128
- 
+layout (std140) uniform ubo_per_frame{
+// base alignment   // aligned offset
+    mat4 view;// 64               // 0
+    mat4 projection;// 64               // 64
+    mat4 view_projection;// 64               // 128
+
 };
 
 struct Material {
     vec3 albedo;
-    
+
     sampler2D albedo_sampler;
-    bool equirectangular_textures[1];
-    bool active_textures[1];
+    samplerCube albedo_cube_sampler;
+    bool equirectangular_texture;
+    bool active_textures[2];
 };
 
 uniform Material u_material;
@@ -37,15 +38,21 @@ vec2 sampleSphericalMap(vec3 v)
 
 void main()
 {
-   vec3 color;
-    if(u_material.active_textures[0]){
-        vec2 uv = tex_coord;
-        if(u_material.equirectangular_textures[0])
-            uv = sampleSphericalMap(normalize(local_pos)); // make sure to normalize localPos
-        color =  texture( u_material.albedo_sampler,uv).rgb;
+    vec3 color;
+    vec2 uv = tex_coord;
+    if (u_material.active_textures[0]){
+        if (u_material.equirectangular_texture)
+        uv = sampleSphericalMap(normalize(local_pos));// make sure to normalize localPos
+        color =  texture(u_material.albedo_sampler, uv).rgb;
     }
-    else 
-        color = u_material.albedo.rgb;
-        
-    frag_color = vec4(color,1.0);
+    else
+    color = u_material.albedo.rgb;
+
+    if (u_material.active_textures[1]){
+        vec3 cube_color = texture(u_material.albedo_cube_sampler, local_pos).rgb;
+        cube_color = cube_color / (cube_color + vec3(1.0));
+        color = pow(cube_color, vec3(1.0/2.2));
+    }
+   // color = vec3(uv, 1);
+    frag_color = vec4(color, 1.0);
 }

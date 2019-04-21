@@ -30,7 +30,7 @@ export class SubMesh {
     }
 
     destroy(): void {
-        this.vertex_buffer.references.increment();
+        this.vertex_buffer.references.decrement();
         if (this.index_buffer) this.index_buffer.references.decrement();
     }
 }

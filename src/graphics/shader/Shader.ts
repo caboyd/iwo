@@ -1,5 +1,5 @@
 import { mat3, mat4 } from "gl-matrix";
-import { Uniform } from "./Uniform";
+import { Uniform } from "../Uniform";
 
 let modelview_matrix: mat4 = mat4.create();
 let normalview_matrix: mat3 = mat3.create();
@@ -14,8 +14,8 @@ export class Shader {
     constructor(gl: WebGL2RenderingContext, vertexSourceCode: string, fragmentSourceCode: string) {
         this.gl = gl;
 
-        let vertexShader: WebGLShader = Shader.getShader(gl, vertexSourceCode, gl.VERTEX_SHADER);
-        let fragmentShader: WebGLShader = Shader.getShader(gl, fragmentSourceCode, gl.FRAGMENT_SHADER);
+        let vertexShader: WebGLShader = Shader.getCompiledShader(gl, vertexSourceCode, gl.VERTEX_SHADER);
+        let fragmentShader: WebGLShader = Shader.getCompiledShader(gl, fragmentSourceCode, gl.FRAGMENT_SHADER);
 
         this.ID = gl.createProgram()!;
         gl.attachShader(this.ID, vertexShader);
@@ -97,7 +97,7 @@ export class Shader {
         }
     }
 
-    private static getShader(gl: WebGL2RenderingContext, sourceCode: string, type: number): WebGLShader {
+    private static getCompiledShader(gl: WebGL2RenderingContext, sourceCode: string, type: number): WebGLShader {
         let shader: WebGLShader;
         shader = gl.createShader(type)!;
 

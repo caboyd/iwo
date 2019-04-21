@@ -1,5 +1,5 @@
 import { Material } from "./Material";
-import { Shader } from "../graphics/Shader";
+import { Shader } from "../graphics/shader/Shader";
 import { Renderer } from "../graphics/Renderer";
 import { Texture2D } from "../graphics/Texture2D";
 import { vec3 } from "gl-matrix";
@@ -40,8 +40,12 @@ export class PBRMaterial extends Material {
         shader.setUniform("u_material.metallic", this.metallic);
         shader.setUniform("u_material.ao", this.ao);
     }
-
+    
     public get shader(): Shader {
-        return Renderer.PBRShader;
+        return Renderer.GetShader("PBRShader")!;
+    }
+    
+    public static get Shader(): Shader {
+        return Renderer.GetShader("PBRShader")!;
     }
 }

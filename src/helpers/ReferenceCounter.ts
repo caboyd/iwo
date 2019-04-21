@@ -11,7 +11,7 @@ export class ReferenceCounter {
 
     decrement(): void {
         this._count--;
-        if (this._count < 0) throw "Reference Counter is negative";
+        if (this._count < 0) throw new Error("Reference Counter is negative");
     }
 
     get count(): number {

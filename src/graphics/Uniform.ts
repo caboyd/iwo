@@ -132,7 +132,7 @@ export class UniformBlock {
         const uniform_info = uniform_info_map[type as UniformType];
         let total_count = uniform_info.default_rows * count;
 
-        if (!uniform_info.Type) throw "Samplers not allowed in Uniform Buffers";
+        if (!uniform_info.Type) throw new Error("Samplers not allowed in Uniform Buffers");
 
         //Buffer view as a Typed Array (float/int)
         this._buffer_view = new uniform_info.Type(buffer, offset, size);
