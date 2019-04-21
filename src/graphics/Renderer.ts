@@ -86,6 +86,8 @@ export class Renderer {
         this.resetStats();
     }
 
+    //Note: Setting Uniform blocks per draw call is not the best way.
+    //A single uniform block for all objects to be drawn should be used and set once per frame.
     public setPerModelUniforms(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4): void {
         this.uboModelBlock.set("model_view", mat4.mul(modelview_matrix, view_matrix, model_matrix));
 
@@ -155,6 +157,7 @@ export class Renderer {
     public resetStats(): void {
         //console.dir(this.stats);
         this.stats.reset();
+        this.current_shader = undefined;
         this.current_material = undefined;
     }
 

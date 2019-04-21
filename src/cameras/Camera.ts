@@ -14,6 +14,7 @@ export enum Camera_Movement {
 let forward = vec3.create();
 let right = vec3.create();
 let temp_quat = quat.create();
+let temp = vec3.create();
 
 let FORWARD = vec3.fromValues(0,0,-1);
 
@@ -83,7 +84,7 @@ export class Camera {
 
     public getViewMatrix(out: mat4): mat4 {
         mat4.fromQuat(out, this.orientation);
-        mat4.translate(out, out, vec3.negate(vec3.create(), this.position));
+        mat4.translate(out, out, vec3.negate(temp, this.position));
         return out;
     }
 

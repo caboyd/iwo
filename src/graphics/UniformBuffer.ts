@@ -1,5 +1,5 @@
-import { Shader } from "./shader/Shader";
-import { UniformBlock } from "./Uniform";
+import {Shader} from "./shader/Shader";
+import {UniformBlock} from "./Uniform";
 import TypedArray = NodeJS.TypedArray;
 
 const BAD_VALUE = 4294967295;
@@ -66,7 +66,7 @@ export class UniformBuffer {
 
     public update(gl: WebGL2RenderingContext): void {
         gl.bindBuffer(gl.UNIFORM_BUFFER, this.id);
-        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.data);
+        gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.view);
     }
 
     public set(uniform_name: string, data: TypedArray | number[] | number): void {

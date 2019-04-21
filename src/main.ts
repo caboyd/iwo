@@ -13,7 +13,7 @@ import {PBRMaterial} from "./materials/PBRMaterial";
 import {BasicMaterial} from "./materials/BasicMaterial";
 import {ImageLoader} from "./loader/ImageLoader";
 import {Texture2D} from "./graphics/Texture2D";
-import {HDRBuffer, HDRImageLoader} from "./loader/HDRImageLoader";
+import {HDRImageLoader} from "./loader/HDRImageLoader";
 import {TextureCubeMap} from "./graphics/TextureCubeMap";
 
 let canvas: HTMLCanvasElement;
