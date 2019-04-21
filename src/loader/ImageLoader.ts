@@ -5,12 +5,14 @@ export class ImageLoader extends FileLoader {
         file_name: string,
         base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
     ): Promise<HTMLImageElement> {
-        return new Promise<HTMLImageElement>((resolve) => {
+        return new Promise<HTMLImageElement>((resolve, reject) => {
             super.promise(file_name, base_url).then((response: Response) => {
                 response.blob().then((data: Blob) => {
                     let img = new Image();
+                    const clear = () => img.onload = img.onerror = null;
                     img.src = URL.createObjectURL(data);
-                    img.onload = () => resolve(img);
+                    img.onload = () => {clear(); resolve(img)};
+                    img.onerror = e => {clear(); reject(e)};
                 });
             });
         });
@@ -26,10 +28,12 @@ export class ImageLoader extends FileLoader {
         return super.promiseAll(files, base_url).then((responses: Response[] | any) => {
             for (let i = 0; i < responses.length; i++) {
                 let img = imgs[i];
-                let promise = new Promise<HTMLImageElement>(function (resolve) {
+                const clear = () => img.onload = img.onerror = null;
+                let promise = new Promise<HTMLImageElement>((resolve, reject) => {
                     responses[i].blob().then((data: Blob) => {
                         img.src = URL.createObjectURL(data);
-                        img.onload = () => resolve(img);
+                        img.onload = () => {clear(); resolve(img)};
+                        img.onerror = e => {clear(); reject(e)};
                     });
                 });
                 promises.push(promise);
