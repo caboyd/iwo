@@ -3,6 +3,7 @@ import { Shader } from "../graphics/shader/Shader";
 import { Renderer } from "../graphics/Renderer";
 import { Texture2D } from "../graphics/Texture2D";
 import { vec3 } from "gl-matrix";
+import {TextureCubeMap} from "../graphics/TextureCubeMap";
 
 export class PBRMaterial extends Material {
     albedo: vec3;
@@ -10,7 +11,7 @@ export class PBRMaterial extends Material {
     roughness: number;
     ao: number;
     albedo_texture: Texture2D | undefined;
-    env_texture:Texture2D| undefined;
+    irradiance_texture:TextureCubeMap| undefined;
 
     constructor(color: vec3 | number[], metallic: number, roughness: number, ambient_occlusion: number = 1.0) {
         super();
@@ -29,8 +30,8 @@ export class PBRMaterial extends Material {
             active_textures[0] = true;
         } 
 
-        if (this.env_texture) {
-            this.env_texture.bind(gl, 1);
+        if (this.irradiance_texture) {
+            this.irradiance_texture.bind(gl, 1);
             active_textures[1] = true;
         } 
         

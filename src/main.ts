@@ -132,7 +132,7 @@ function initGL(): WebGL2RenderingContext {
 function initScene(): void {
     let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
     let sky_tex = new Texture2D(gl);
-    let env_tex = new Texture2D(gl);
+    let env_tex = new TextureCubeMap(gl);
     let cube_tex = new TextureCubeMap(gl);
 
     ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then((image) => {
@@ -144,11 +144,8 @@ function initScene(): void {
     });
 
     HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr"), global_root).then(data => {
-        if (gl.getExtension("OES_texture_float_linear"))
-            env_tex.setImageByBuffer(gl, data.data, data.width, data.height, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, gl.RGB32F, gl.RGB, gl.FLOAT, true);
-        else
-            env_tex.setImageByBuffer(gl, data.data, data.width, data.height, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.NEAREST, gl.NEAREST, gl.RGB32F, gl.RGB, gl.FLOAT, true);
         cube_tex.setEquirectangularHDRBuffer(renderer, data);
+        env_tex = TextureCubeMap.irradianceFromCubemap(env_tex,renderer,cube_tex);
     });
 
     let earth_tex = TextureLoader.load(gl, require("assets/earth.jpg"), global_root);
@@ -203,9 +200,9 @@ function initScene(): void {
     let num_rows = 6;
     for (let i = 0; i <= num_cols; i++) {
         for (let k = 0; k <= num_rows; k++) {
-            let mat = new PBRMaterial(vec3.fromValues(1, 0, 0), k / num_rows, Math.min(1, Math.max(0.025, i / num_cols)), 0);
+            let mat = new PBRMaterial(vec3.fromValues(1, 0, 0), k / num_rows, Math.min(1, Math.max(0.025, i / num_cols)), 1);
             //mat.albedo_texture = sphere_mat.albedo_texture;
-            mat.env_texture = env_tex;
+            mat.irradiance_texture = env_tex;
             let s = new MeshInstance(sphere_mesh, mat);
             spheres.push(s);
 

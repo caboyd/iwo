@@ -9,6 +9,8 @@ import {Material} from "../materials/Material";
 import {RendererStats} from "./RendererStats";
 import {TextureCubeMap} from "./TextureCubeMap";
 import {BasicShader} from "./shader/BasicShader";
+import {ShaderSource, ShaderSources} from "./shader/ShaderSources";
+
 
 let temp: mat4 = mat4.create();
 
@@ -37,7 +39,7 @@ export class Renderer {
     private readonly PerFrameBinding = 0;
     private readonly ModelBinding = 1;
     private uboPerFrameBlock: UniformBuffer;
-    private uboModelBlock: UniformBuffer;
+    private uboPerModelBlock: UniformBuffer;
 
     private stats: RendererStats;
 
@@ -51,28 +53,22 @@ export class Renderer {
         Renderer._EMPTY_CUBE_TEXTURE = new TextureCubeMap(gl).texture_id;
 
         Renderer._Shaders = new Map<string, Shader>();
-        Renderer._Shaders.set("BasicShader", new BasicShader(gl));
-        Renderer._Shaders.set("PBRShader", new PBRShader(gl));
+        
+        for (let shader_source of ShaderSources){
+            if(shader_source.subclass !== undefined){
+                Renderer._Shaders.set(shader_source.name, new shader_source.subclass(gl, shader_source.vert,shader_source.frag));
+            }else{
+                Renderer._Shaders.set(shader_source.name, new Shader(gl,shader_source.vert,shader_source.frag));
+            }
+        }
 
-        Renderer._Shaders.set("GridShader", new Shader(gl,
-            require("src/shaders/grid.vert").default, require("src/shaders/grid.frag").default));
-
-        Renderer._Shaders.set("NormalOnlyShader", new Shader(gl,
-            require("src/shaders/standard.vert").default, require("src/shaders/normals.frag").default));
-
-        Renderer._Shaders.set("EquiToCubemapShader", new Shader(gl,
-            require("src/shaders/standard.vert").default, require("src/shaders/equirectangularToCubemap.frag").default));
-
-        let equi = Renderer.GetShader("EquiToCubemapShader")!;
-        equi.use();
-        equi.setUniform("equirectangular_map", 0);
-
-        let shader = Renderer.GetShader("PBRShader")!;
+        let shader = Renderer.GetShader(ShaderSource.PBR.name)!;
+        //Requires shader that has these uniform buffers present
         this.uboPerFrameBlock = new UniformBuffer(shader, "ubo_per_frame");
-        this.uboModelBlock = new UniformBuffer(shader, "ubo_per_model");
+        this.uboPerModelBlock = new UniformBuffer(shader, "ubo_per_model");
         for (let shader of Renderer._Shaders.values()) {
             this.uboPerFrameBlock.bindShader(shader, this.PerFrameBinding);
-            this.uboModelBlock.bindShader(shader, this.ModelBinding);
+            this.uboPerModelBlock.bindShader(shader, this.ModelBinding);
         }
     }
 
@@ -89,17 +85,17 @@ export class Renderer {
     //Note: Setting Uniform blocks per draw call is not the best way.
     //A single uniform block for all objects to be drawn should be used and set once per frame.
     public setPerModelUniforms(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4): void {
-        this.uboModelBlock.set("model_view", mat4.mul(modelview_matrix, view_matrix, model_matrix));
+        this.uboPerModelBlock.set("model_view", mat4.mul(modelview_matrix, view_matrix, model_matrix));
 
         //NOTE: Does this bug if normalFromMat4 returns null?
         normalview_matrix = mat3.normalFromMat4(normalview_matrix!, modelview_matrix);
         if (!normalview_matrix)
             throw new Error("Determinant could not be calculated for normalview_matrix");
 
-        this.uboModelBlock.set("normal_view", mat3.normalFromMat4(normalview_matrix, modelview_matrix)!);
+        this.uboPerModelBlock.set("normal_view", mat3.normalFromMat4(normalview_matrix, modelview_matrix)!);
 
-        this.uboModelBlock.set("mvp", mat4.mul(mvp_matrix, proj_matrix, modelview_matrix));
-        this.uboModelBlock.update(this.gl);
+        this.uboPerModelBlock.set("mvp", mat4.mul(mvp_matrix, proj_matrix, modelview_matrix));
+        this.uboPerModelBlock.update(this.gl);
     }
 
     public setViewport(x: number, y: number, width: number, height: number) {
@@ -172,5 +168,6 @@ export class Renderer {
     static GetShader(name: string): Shader | undefined {
         return this._Shaders.get(name);
     }
+
 }
 
