@@ -3,12 +3,10 @@ import {VertexBuffer} from "./VertexBuffer";
 import {Shader} from "./shader/Shader";
 import {mat3, mat4} from "gl-matrix";
 import {Texture2D} from "./Texture2D";
-import {PBRShader} from "./shader/PBRShader";
 import {UniformBuffer} from "./UniformBuffer";
 import {Material} from "../materials/Material";
 import {RendererStats} from "./RendererStats";
 import {TextureCubeMap} from "./TextureCubeMap";
-import {BasicShader} from "./shader/BasicShader";
 import {ShaderSource, ShaderSources} from "./shader/ShaderSources";
 
 
@@ -34,6 +32,7 @@ export class Renderer {
 
     private static _EMPTY_TEXTURE: WebGLTexture;
     private static _EMPTY_CUBE_TEXTURE: WebGLTexture;
+    private static _BRDF_LUT_TEXTURE: WebGLTexture | undefined;
     private static _Shaders: Map<string, Shader>;
 
     private readonly PerFrameBinding = 0;
@@ -49,16 +48,17 @@ export class Renderer {
         this.gl = gl;
         this.stats = new RendererStats();
 
+
         Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
         Renderer._EMPTY_CUBE_TEXTURE = new TextureCubeMap(gl).texture_id;
 
         Renderer._Shaders = new Map<string, Shader>();
-        
-        for (let shader_source of ShaderSources){
-            if(shader_source.subclass !== undefined){
-                Renderer._Shaders.set(shader_source.name, new shader_source.subclass(gl, shader_source.vert,shader_source.frag));
-            }else{
-                Renderer._Shaders.set(shader_source.name, new Shader(gl,shader_source.vert,shader_source.frag));
+
+        for (let shader_source of ShaderSources) {
+            if (shader_source.subclass !== undefined) {
+                Renderer._Shaders.set(shader_source.name, new shader_source.subclass(gl, shader_source.vert, shader_source.frag));
+            } else {
+                Renderer._Shaders.set(shader_source.name, new Shader(gl, shader_source.vert, shader_source.frag));
             }
         }
 
@@ -74,6 +74,7 @@ export class Renderer {
 
     public setPerFrameUniforms(view: mat4, proj: mat4): void {
         this.uboPerFrameBlock.set("view", view);
+        this.uboPerFrameBlock.set("view_inverse", mat4.invert(temp,view)!);
         this.uboPerFrameBlock.set("projection", proj);
         this.uboPerFrameBlock.set("view_projection", mat4.mul(temp, proj, view));
         this.uboPerFrameBlock.update(this.gl);
@@ -163,6 +164,14 @@ export class Renderer {
 
     static get EMPTY_CUBE_TEXTURE(): WebGLTexture {
         return this._EMPTY_CUBE_TEXTURE;
+    }
+
+    static get BRDF_LUT_TEXTURE(): WebGLTexture | undefined {
+            return this._BRDF_LUT_TEXTURE;
+    }
+    
+    static set BRDF_LUT_TEXTURE(tex:WebGLTexture | undefined){
+        this._BRDF_LUT_TEXTURE = tex;
     }
 
     static GetShader(name: string): Shader | undefined {

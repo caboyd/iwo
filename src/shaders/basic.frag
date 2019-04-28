@@ -10,9 +10,10 @@ in vec3 view_normal;
 
 layout (std140) uniform ubo_per_frame{
 // base alignment   // aligned offset
-    mat4 view;// 64               // 0
-    mat4 projection;// 64               // 64
-    mat4 view_projection;// 64               // 128
+    mat4 view;            // 64               // 0
+    mat4 view_inverse;    // 64               // 64
+    mat4 projection;      // 64               // 128
+    mat4 view_projection; // 64               // 192
 
 };
 
@@ -44,15 +45,19 @@ void main()
         if (u_material.equirectangular_texture)
         uv = sampleSphericalMap(normalize(local_pos));// make sure to normalize localPos
         color =  texture(u_material.albedo_sampler, uv).rgb;
+        //color = pow(color, vec3(1.0/2.2));
     }
     else
     color = u_material.albedo.rgb;
 
     if (u_material.active_textures[1]){
         vec3 cube_color = texture(u_material.albedo_cube_sampler, local_pos).rgb;
-        cube_color = cube_color / (cube_color + vec3(1.0));
-        color = pow(cube_color, vec3(1.0/2.2));
+       // cube_color = cube_color / (cube_color + vec3(1.0));
+       // color = pow(cube_color, vec3(1.0/2.2));
     }
-   // color = vec3(uv, 1);
+
+//    color = max(vec3(0.0), color - 0.004);
+//    color = (color * (6.2*color + 0.5)) / (color *(6.2*color + 1.7)+0.06);
+    
     frag_color = vec4(color, 1.0);
 }

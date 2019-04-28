@@ -2,10 +2,10 @@ import {Shader} from "./Shader";
 import {Renderer} from "../Renderer";
 import {ShaderSource} from "./ShaderSources";
 
-export class CubemapToIrradianceShader extends Shader {
+export class CubemapSpecularPrefilterShader extends Shader {
     constructor(gl: WebGL2RenderingContext,
-                vertexSourceCode: string = ShaderSource.CubemapToIrradiance.vert,
-                fragmentSourceCode: string = ShaderSource.CubemapToIrradiance.frag) {
+                vertexSourceCode: string = ShaderSource.CubemapSpecularPrefilter.vert,
+                fragmentSourceCode: string = ShaderSource.CubemapSpecularPrefilter.frag) {
         super(gl, vertexSourceCode, fragmentSourceCode);
         this.use();
         this.setUniform("equirectangular_map", 0);

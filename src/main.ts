@@ -4,7 +4,6 @@ import {Mesh} from "src/meshes/Mesh";
 import {MeshInstance} from "src/meshes/MeshInstance";
 import {Renderer} from "src/graphics/Renderer";
 import {FileLoader} from "./loader/FileLoader";
-import {TextureLoader} from "./loader/TextureLoader";
 import {SphereGeometry} from "./geometry/SphereGeometry";
 import {Camera, Camera_Movement} from "./cameras/Camera";
 import {PlaneGeometry} from "./geometry/PlaneGeometry";
@@ -15,6 +14,7 @@ import {ImageLoader} from "./loader/ImageLoader";
 import {Texture2D} from "./graphics/Texture2D";
 import {HDRImageLoader} from "./loader/HDRImageLoader";
 import {TextureCubeMap} from "./graphics/TextureCubeMap";
+import {TextureLoader} from "./loader/TextureLoader";
 
 let canvas: HTMLCanvasElement;
 
@@ -132,35 +132,42 @@ function initGL(): WebGL2RenderingContext {
 function initScene(): void {
     let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
     let sky_tex = new Texture2D(gl);
+    let irr_tex = new TextureCubeMap(gl);
     let env_tex = new TextureCubeMap(gl);
     let cube_tex = new TextureCubeMap(gl);
 
     ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then((image) => {
         sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
         ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then((image) => {
-            sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
-            //  env_tex = TextureCubeMap.fromEquirectangularImage(renderer, image, 1024);
+           sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
+
         });
     });
 
     HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr"), global_root).then(data => {
         cube_tex.setEquirectangularHDRBuffer(renderer, data);
-        env_tex = TextureCubeMap.irradianceFromCubemap(env_tex,renderer,cube_tex);
+        irr_tex = TextureCubeMap.irradianceFromCubemap(irr_tex, renderer, cube_tex);
+        env_tex = TextureCubeMap.specularFromCubemap(env_tex, renderer, cube_tex);
+        HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_2k.hdr"), global_root).then(data => {
+            cube_tex.setEquirectangularHDRBuffer(renderer, data);
+            env_tex = TextureCubeMap.specularFromCubemap(env_tex, renderer, cube_tex, data.width);
+            cube_tex.destroy(gl);
+        });
     });
 
     let earth_tex = TextureLoader.load(gl, require("assets/earth.jpg"), global_root);
     total_files = 0;
 
     let box_geom = new BoxGeometry(3.0, 3.0, 3.0, 1, 1, 1, false);
-    let sphere_geom = new SphereGeometry(0.7, 24, 24);
+    let sphere_geom = new SphereGeometry(0.7, 16, 16);
     let plane_geom = new PlaneGeometry(100, 100, 1, 1, true);
 
     let sphere_mesh = new Mesh(gl, sphere_geom);
     let plane_mesh = new Mesh(gl, plane_geom);
     let box_mesh = new Mesh(gl, box_geom);
 
-    sphere_mat = new PBRMaterial(vec3.fromValues(1, 0, 0), 0.0, 0.0);
-    sphere_mat.albedo_texture = earth_tex;
+     sphere_mat = new PBRMaterial(vec3.fromValues(1, 0, 0), 0.0, 0.0);
+     sphere_mat.albedo_texture = earth_tex;
 
     //GRID
     let grid_mat = new GridMaterial(50);
@@ -200,9 +207,11 @@ function initScene(): void {
     let num_rows = 6;
     for (let i = 0; i <= num_cols; i++) {
         for (let k = 0; k <= num_rows; k++) {
-            let mat = new PBRMaterial(vec3.fromValues(1, 0, 0), k / num_rows, Math.min(1, Math.max(0.025, i / num_cols)), 1);
-            //mat.albedo_texture = sphere_mat.albedo_texture;
-            mat.irradiance_texture = env_tex;
+            let mat = new PBRMaterial(vec3.fromValues(0.2, 0.2,.3), k / num_rows,
+                Math.min(1, Math.max(0.025, i / num_cols)), 1);
+          //  mat.albedo_texture = sphere_mat.albedo_texture;
+            mat.irradiance_texture = irr_tex;
+            mat.specular_env = env_tex;
             let s = new MeshInstance(sphere_mesh, mat);
             spheres.push(s);
 
@@ -253,7 +262,7 @@ function drawScene(): void {
     //mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
     //mat4.rotateZ(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.5));
 
-    box.render(renderer, view_matrix, proj_matrix);
+  //  box.render(renderer, view_matrix, proj_matrix);
 
     for (let lb of light_boxes)
         lb.render(renderer, view_matrix, proj_matrix);

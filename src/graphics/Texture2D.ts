@@ -33,9 +33,12 @@ export class Texture2D {
             Texture2D.loadBuffer(gl, source as ArrayBufferView, width, height, wrap_S, wrap_T, mag_filter, min_filter, internal_format, format, type, flip);
         } else if (source) {
             Texture2D.load(gl, source as TexImageSource, wrap_S, wrap_T, mag_filter, min_filter, internal_format, format, type, flip);
-        } else {
+        } else if (width !== 0 && height !== 0){
+            Texture2D.loadBuffer(gl, source, width, height, wrap_S, wrap_T, mag_filter, min_filter, internal_format, format, type, flip);
+        } 
+        else {
             // Fill the texture with a 16x16 pink/black checkerboard to denote missing texture.
-            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 16, 16,
+            gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 8, 8,
                 0, gl.RGBA, gl.UNSIGNED_BYTE, pink_black_checkerboard
             );
             gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
@@ -107,7 +110,7 @@ export class Texture2D {
 
     private static loadBuffer(
         gl: WebGL2RenderingContext,
-        buffer: ArrayBufferView,
+        buffer: ArrayBufferView | null | undefined,
         width: number,
         height: number,
         wrap_S: number,
@@ -128,7 +131,8 @@ export class Texture2D {
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, min_filter);
     }
     
-    public destroy(gl:WebGL2RenderingContext): void{
+
+    public destroy(gl: WebGL2RenderingContext): void {
         gl.deleteTexture(this.texture_id);
     }
 }
@@ -138,31 +142,18 @@ function isArrayBufferView(value: any): boolean {
 }
 
 let arr = [];
-for (let i = 0; i < 16; i++) {
-    for (let j = 0; j < 8; j++) {
+for (let i = 0; i < 8; i++) {
+    for (let j = 0; j < 4; j++) {
         if (i & 1)
             arr.push(
-                0,
-                0,
-                0,
-                255, // black
-                255,
-                0,
-                255,
-                255 //pink
+                0, 0, 0, 255, // black
+                255, 0, 255, 255 //pink
             );
-        else {
+        else
             arr.push(
-                255,
-                0,
-                255,
-                255, //pink
-                0,
-                0,
-                0,
-                255 // black
+                255, 0, 255, 255, //pink
+                0, 0, 0, 255 // black
             );
-        }
     }
 }
-let pink_black_checkerboard = new Uint8Array(arr);
+export let pink_black_checkerboard = new Uint8Array(arr);

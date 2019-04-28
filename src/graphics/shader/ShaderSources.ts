@@ -8,6 +8,7 @@ import {Shader} from "./Shader";
 import {PBRShader} from "./PBRShader";
 import {EquiToCubemapShader} from "./EquiToCubemapShader";
 import {CubemapToIrradianceShader} from "./CubemapToIrradianceShader";
+import {CubemapSpecularPrefilterShader} from "./CubemapSpecularPrefilterShader";
 
 //Shaders may have a subclass defined for custom shader setup
 interface ShaderSource {
@@ -24,9 +25,16 @@ let pbrFrag: string = require("src/shaders/pbr.frag").default;
 let normalOnlyFrag: string = require("src/shaders/normals.frag").default;
 let equiToCubemapFrag: string = require("src/shaders/equirectangularToCubemap.frag").default;
 let cubemapToIrradianceFrag: string = require("src/shaders/irradiance.frag").default;
+let cubemapSpecularPrefilterFrag: string = require("src/shaders/specularPrefilter.frag").default;
+
 
 let gridVert: string = require("src/shaders/grid.vert").default;
 let gridFrag: string = require("src/shaders/grid.frag").default;
+
+let brdfVert: string = require("src/shaders/brdf.vert").default;
+let brdfFrag: string = require("src/shaders/brdf.frag").default;
+
+
 
 export namespace ShaderSource {
     export let Basic: ShaderSource = {
@@ -57,11 +65,18 @@ export namespace ShaderSource {
         subclass: EquiToCubemapShader,
     };
 
-    export let CubeToIrradiance: ShaderSource = {
-        name: "CubeToIrradianceShader",
+    export let CubemapToIrradiance: ShaderSource = {
+        name: "CubemapToIrradianceShader",
         vert: standardVert,
         frag: cubemapToIrradianceFrag,
         subclass: CubemapToIrradianceShader,
+    };
+
+    export let CubemapSpecularPrefilter: ShaderSource = {
+        name: "CubemapSpecularPrefilter",
+        vert: standardVert,
+        frag: cubemapSpecularPrefilterFrag,
+        subclass: CubemapSpecularPrefilterShader,
     };
 
     export let Grid: ShaderSource = {
@@ -70,6 +85,13 @@ export namespace ShaderSource {
         frag: gridFrag,
         subclass: undefined,
     };
+    
+    export let BRDF: ShaderSource = {
+        name: "BRDFShader",
+        vert: brdfVert,
+        frag: brdfFrag,
+        subclass: undefined
+    }
 }
 
 
