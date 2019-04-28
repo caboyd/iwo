@@ -30,7 +30,7 @@ out vec3 world_pos;
 out vec2 tex_coord;
 out vec3 view_normal;
 out vec3 world_normal;
-
+out vec3 camera_pos;
 
 vec3 inverseTransformDirection(in vec3 normal, in mat4 matrix) {
     return normalize( (vec4(normal,0.0) * matrix).xyz );
@@ -39,10 +39,11 @@ vec3 inverseTransformDirection(in vec3 normal, in mat4 matrix) {
 void main() {
     gl_Position = mvp * vec4(a_vertex,1.0f);
     
+    camera_pos = inverse(view)[3].xyz;
     local_pos = a_vertex;
     view_pos = (model_view * vec4(a_vertex,1.0f)).xyz ;
     view_normal =  normal_view * a_normal ;
-    world_pos = (view_inverse * vec4(view_pos, 0.0)).xyz;
+    world_pos = (view_inverse * vec4(view_pos, 1.0)).xyz;
     world_normal = normalize(inverseTransformDirection( view_normal, view ));
         
     tex_coord = a_tex_coord;
