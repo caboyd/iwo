@@ -64,6 +64,20 @@ const moveCallback = (e: MouseEvent): void => {
 
 (function loadWebGL(): void {
 
+    (function () {
+        let script = document.createElement('script');
+        script.onload = function () {
+            // @ts-ignore
+            var stats = new Stats();
+            document.body.appendChild(stats.dom);
+            requestAnimationFrame(function loop() {
+                stats.update();
+                requestAnimationFrame(loop)
+            });
+        };
+        script.src = '//rawgit.com/mrdoob/stats.js/master/build/stats.min.js';
+        document.head.appendChild(script);
+    })();
 
     FileLoader.setOnProgress(onProgress);
     FileLoader.setOnFileComplete(onFileComplete);
@@ -82,7 +96,7 @@ const moveCallback = (e: MouseEvent): void => {
     gl.cullFace(gl.FRONT);
 
     renderer.setViewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
-    mat4.perspective(proj_matrix, glMatrix.toRadian(90), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 100.0);
+    mat4.perspective(proj_matrix, glMatrix.toRadian(90), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 1000.0);
 
     loading_text.innerText = files_completed + "/" + total_files + " files completed.";
 
@@ -139,7 +153,7 @@ function initScene(): void {
     ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then((image) => {
         sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
         ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then((image) => {
-           sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
+            sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
 
         });
     });
@@ -159,15 +173,15 @@ function initScene(): void {
     total_files = 0;
 
     let box_geom = new BoxGeometry(3.0, 3.0, 3.0, 1, 1, 1, false);
-    let sphere_geom = new SphereGeometry(0.7, 16, 16);
+    let sphere_geom = new SphereGeometry(0.75, 16, 16);
     let plane_geom = new PlaneGeometry(100, 100, 1, 1, true);
 
     let sphere_mesh = new Mesh(gl, sphere_geom);
     let plane_mesh = new Mesh(gl, plane_geom);
     let box_mesh = new Mesh(gl, box_geom);
 
-     sphere_mat = new PBRMaterial(vec3.fromValues(1, 0, 0), 0.0, 0.0);
-     sphere_mat.albedo_texture = earth_tex;
+    sphere_mat = new PBRMaterial(vec3.fromValues(1, 0, 0), 0.0, 0.0);
+    sphere_mat.albedo_texture = earth_tex;
 
     //GRID
     let grid_mat = new GridMaterial(50);
@@ -203,13 +217,13 @@ function initScene(): void {
     //SPHERES
 
     spheres = [];
-    let num_cols = 6;
-    let num_rows = 6;
+    let num_cols = 10;
+    let num_rows = 10;
     for (let i = 0; i <= num_cols; i++) {
         for (let k = 0; k <= num_rows; k++) {
-            let mat = new PBRMaterial(vec3.fromValues(0.2, 0.2,.3), k / num_rows,
+            let mat = new PBRMaterial(vec3.fromValues(0.2, 0.2, .3), k / num_rows,
                 Math.min(1, Math.max(0.025, i / num_cols)), 1);
-          //  mat.albedo_texture = sphere_mat.albedo_texture;
+            //  mat.albedo_texture = sphere_mat.albedo_texture;
             mat.irradiance_texture = irr_tex;
             mat.specular_env = env_tex;
             let s = new MeshInstance(sphere_mesh, mat);
@@ -217,7 +231,7 @@ function initScene(): void {
 
             let model = s.model_matrix;
             mat4.identity(model);
-            mat4.translate(model, model, vec3.fromValues((i - 3) * 2, k * 2, 0));
+            mat4.translate(model, model, vec3.fromValues((i - num_cols/2) * 2, k * 2, 0));
             //  mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
             //   mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
         }
@@ -262,7 +276,7 @@ function drawScene(): void {
     //mat4.rotateY(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.7));
     //mat4.rotateZ(box.model_matrix, box.model_matrix, glMatrix.toRadian(0.5));
 
-  //  box.render(renderer, view_matrix, proj_matrix);
+    //  box.render(renderer, view_matrix, proj_matrix);
 
     for (let lb of light_boxes)
         lb.render(renderer, view_matrix, proj_matrix);
