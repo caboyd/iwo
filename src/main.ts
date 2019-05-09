@@ -86,14 +86,27 @@ const moveCallback = (e: MouseEvent): void => {
     document.addEventListener("mousemove", moveCallback, false);
 
     gl = initGL();
+
     renderer = new Renderer(gl);
+
+    window.addEventListener('resize', resizeCanvas, false);
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        renderer.setViewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
+        mat4.perspective(proj_matrix, glMatrix.toRadian(90), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1,
+            1000.0);
+    }
+
+    resizeCanvas();
+
     camera = new Camera(cPos, cFront, cUp);
 
     gl.clearColor(0.2, 0.3, 0.3, 1.0);
-
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
-    gl.cullFace(gl.FRONT);
+    gl.cullFace(gl.BACK);
 
     renderer.setViewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     mat4.perspective(proj_matrix, glMatrix.toRadian(90), gl.drawingBufferWidth / gl.drawingBufferHeight, 0.1, 1000.0);
@@ -150,24 +163,28 @@ function initScene(): void {
     let env_tex = new TextureCubeMap(gl);
     let cube_tex = new TextureCubeMap(gl);
 
-    ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then((image) => {
-        sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
-        ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then((image) => {
+    ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then(
+        (image) => {
             sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
+            ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then(
+                (image) => {
+                    sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
 
+                });
         });
-    });
 
-    HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr"), global_root).then(data => {
-        cube_tex.setEquirectangularHDRBuffer(renderer, data);
-        irr_tex = TextureCubeMap.irradianceFromCubemap(irr_tex, renderer, cube_tex);
-        env_tex = TextureCubeMap.specularFromCubemap(env_tex, renderer, cube_tex);
-        HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_2k.hdr"), global_root).then(data => {
+    HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr"), global_root).then(
+        data => {
             cube_tex.setEquirectangularHDRBuffer(renderer, data);
-            env_tex = TextureCubeMap.specularFromCubemap(env_tex, renderer, cube_tex, data.width);
-            cube_tex.destroy(gl);
+            irr_tex = TextureCubeMap.irradianceFromCubemap(irr_tex, renderer, cube_tex);
+            env_tex = TextureCubeMap.specularFromCubemap(env_tex, renderer, cube_tex);
+            HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_2k.hdr"),
+                global_root).then(data => {
+                cube_tex.setEquirectangularHDRBuffer(renderer, data);
+                env_tex = TextureCubeMap.specularFromCubemap(env_tex, renderer, cube_tex, data.width);
+                cube_tex.destroy(gl);
+            });
         });
-    });
 
     let earth_tex = TextureLoader.load(gl, require("assets/earth.jpg"), global_root);
     total_files = 0;
@@ -221,9 +238,9 @@ function initScene(): void {
     let num_rows = 10;
     for (let i = 0; i <= num_cols; i++) {
         for (let k = 0; k <= num_rows; k++) {
-            let mat = new PBRMaterial(vec3.fromValues(0.2, 0.2, .3), k / num_rows,
+            let mat = new PBRMaterial(vec3.fromValues(1.0, 1, 1), k / num_rows,
                 Math.min(1, Math.max(0.025, i / num_cols)), 1);
-            //  mat.albedo_texture = sphere_mat.albedo_texture;
+           // mat.albedo_texture = sphere_mat.albedo_texture;
             mat.irradiance_texture = irr_tex;
             mat.specular_env = env_tex;
             let s = new MeshInstance(sphere_mesh, mat);
@@ -231,7 +248,7 @@ function initScene(): void {
 
             let model = s.model_matrix;
             mat4.identity(model);
-            mat4.translate(model, model, vec3.fromValues((i - num_cols/2) * 2, k * 2, 0));
+            mat4.translate(model, model, vec3.fromValues((i - num_cols / 2) * 2, k * 2, 0));
             //  mat4.rotateY(model, model, glMatrix.toRadian(Date.now() * -0.08));
             //   mat4.rotateZ(model, model, glMatrix.toRadian(Date.now() * 0.06));
         }
@@ -323,6 +340,7 @@ window.onkeydown = function (e) {
 window.onkeyup = function (e) {
     keys[e.keyCode] = false;
 };
+
 
 /*
     Converts UV coords of equirectangular image to the vector direction,

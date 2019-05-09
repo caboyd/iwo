@@ -160,8 +160,10 @@ void main() {
         // ambient lighting (we now use IBL as the ambient term)
         vec3 kS = F;
         vec3 kD = 1.0 - kS;
+        if(!u_material.active_textures[2])
+            kD = vec3(1.0);
         kD *= 1.0 - u_material.metallic;
-
+        
         irradiance = texture(u_material.irradiance_sampler, N).rgb;
         vec3 diffuse = irradiance * u_material.albedo;
 
@@ -177,10 +179,10 @@ void main() {
         vec2 brdf  = texture(u_material.brdf_LUT_sampler, vec2(max(dot(N, V), 0.0), u_material.roughness)).rg;
         vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-        ambient += specular * u_material.ao;
+        ambient = specular * u_material.ao;
     }
-
-    color = ambient + Lo;
+    
+    color = ambient + Lo ;
 
     //    //HDR correction
     //    color = color / (color + vec3(1.0));

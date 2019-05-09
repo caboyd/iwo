@@ -39,11 +39,12 @@ export class PBRMaterial extends Material {
 
         if (this.specular_env) {
             this.specular_env.bind(gl, 2);
-            if(Renderer.BRDF_LUT_TEXTURE){
-                gl.activeTexture(gl.TEXTURE3);
-                gl.bindTexture(gl.TEXTURE_2D, Renderer.BRDF_LUT_TEXTURE);
-            }
             active_textures[2] = true;
+        }
+
+        if(Renderer.BRDF_LUT_TEXTURE){
+            gl.activeTexture(gl.TEXTURE3);
+            gl.bindTexture(gl.TEXTURE_2D, Renderer.BRDF_LUT_TEXTURE);
         }
 
         shader.setUniform("u_material.active_textures[0]", active_textures);

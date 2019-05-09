@@ -29,6 +29,10 @@ export interface HDRBuffer {
     height: number;
 }
 
+export function instanceOfHDRBuffer(object:any):object is HDRBuffer {
+    return 'data' in object && 'width' in object && 'height' in object;
+}
+
 export class HDRImageLoader extends FileLoader {
     static promise(
         file_name: string,

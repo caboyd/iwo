@@ -36,7 +36,7 @@ export class Renderer {
     private static _Shaders: Map<string, Shader>;
 
     private readonly PerFrameBinding = 0;
-    private readonly ModelBinding = 1;
+    private readonly PerModelBinding = 1;
     private uboPerFrameBlock: UniformBuffer;
     private uboPerModelBlock: UniformBuffer;
 
@@ -56,7 +56,8 @@ export class Renderer {
 
         for (let shader_source of ShaderSources) {
             if (shader_source.subclass !== undefined) {
-                Renderer._Shaders.set(shader_source.name, new shader_source.subclass(gl, shader_source.vert, shader_source.frag));
+                Renderer._Shaders.set(shader_source.name,
+                    new shader_source.subclass(gl, shader_source.vert, shader_source.frag));
             } else {
                 Renderer._Shaders.set(shader_source.name, new Shader(gl, shader_source.vert, shader_source.frag));
             }
@@ -68,13 +69,13 @@ export class Renderer {
         this.uboPerModelBlock = new UniformBuffer(shader, "ubo_per_model");
         for (let shader of Renderer._Shaders.values()) {
             this.uboPerFrameBlock.bindShader(shader, this.PerFrameBinding);
-            this.uboPerModelBlock.bindShader(shader, this.ModelBinding);
+            this.uboPerModelBlock.bindShader(shader, this.PerModelBinding);
         }
     }
 
     public setPerFrameUniforms(view: mat4, proj: mat4): void {
         this.uboPerFrameBlock.set("view", view);
-        this.uboPerFrameBlock.set("view_inverse", mat4.invert(temp,view)!);
+        this.uboPerFrameBlock.set("view_inverse", mat4.invert(temp, view)!);
         this.uboPerFrameBlock.set("projection", proj);
         this.uboPerFrameBlock.set("view_projection", mat4.mul(temp, proj, view));
         this.uboPerFrameBlock.update(this.gl);
@@ -86,14 +87,15 @@ export class Renderer {
     //Note: Setting Uniform blocks per draw call is not the best way.
     //A single uniform block for all objects to be drawn should be used and set once per frame.
     public setPerModelUniforms(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4): void {
+        this.uboPerModelBlock.set("model", model_matrix);
         this.uboPerModelBlock.set("model_view", mat4.mul(modelview_matrix, view_matrix, model_matrix));
 
         //NOTE: Does this bug if normalFromMat4 returns null?
         normalview_matrix = mat3.normalFromMat4(normalview_matrix!, modelview_matrix);
-        if (!normalview_matrix)
+        if (normalview_matrix)
+            this.uboPerModelBlock.set("normal_view", normalview_matrix);
+        else
             throw new Error("Determinant could not be calculated for normalview_matrix");
-
-        this.uboPerModelBlock.set("normal_view", mat3.normalFromMat4(normalview_matrix, modelview_matrix)!);
 
         this.uboPerModelBlock.set("mvp", mat4.mul(mvp_matrix, proj_matrix, modelview_matrix));
         this.uboPerModelBlock.update(this.gl);
@@ -102,6 +104,10 @@ export class Renderer {
     public setViewport(x: number, y: number, width: number, height: number) {
         this.viewport = {x, y, width, height};
         this.gl.viewport(x, y, width, height);
+    }
+
+    public resetViewport(): void {
+        this.gl.viewport(this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height);
     }
 
     public draw(
@@ -167,10 +173,10 @@ export class Renderer {
     }
 
     static get BRDF_LUT_TEXTURE(): WebGLTexture | undefined {
-            return this._BRDF_LUT_TEXTURE;
+        return this._BRDF_LUT_TEXTURE;
     }
-    
-    static set BRDF_LUT_TEXTURE(tex:WebGLTexture | undefined){
+
+    static set BRDF_LUT_TEXTURE(tex: WebGLTexture | undefined) {
         this._BRDF_LUT_TEXTURE = tex;
     }
 
