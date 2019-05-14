@@ -3,7 +3,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
 const TerserPlugin = require('terser-webpack-plugin');
 
-let libraryName = 'Iwo';
 
 let examples = {
 	pbr_example: "PBR Example",
@@ -15,7 +14,6 @@ const buildConfig = (env, argv) => {
 	const is_production = argv.mode === 'production';
 	return {
 		entry: {
-			'iwo': './src/index.ts',
 			'iwo.min': './src/index.ts',
 		},
 		output: {
@@ -72,7 +70,8 @@ const buildExamplesConfig = (env, argv) => {
 		},
 		output: {
 			path: path.resolve(__dirname, 'dist'),
-			filename: '[name].js',
+			//Note: Webstorm debug breaks if filename is [name].js
+			filename: is_production ? '[name].js' : '[name].bundle.js',
 			//setting this breaks relative paths
 			//publicPath: '/',
 		},
@@ -80,6 +79,12 @@ const buildExamplesConfig = (env, argv) => {
 			minimize: false,
 			splitChunks: {
 				cacheGroups: {
+					vendor: {
+						test: /[\\/]node_modules[\\/](gl-matrix)[\\/]/,
+						name: 'gl-matrix',
+						chunks: 'initial',
+						minChunks: 1,
+					},
 					commons: {
 						name: 'iwo',
 						chunks: 'initial',
@@ -88,10 +93,9 @@ const buildExamplesConfig = (env, argv) => {
 				}
 			},
 		},
-
 		plugins: Object.keys(examples).map(function (id) {
 			return new HtmlWebpackPlugin({
-				chunks: ['iwo', `examples/${id}`],
+				chunks: ['iwo', 'gl-matrix', `examples/${id}`],
 				filename: `examples/${id}.html`,
 				template: 'examples/template.html',
 				title: `IWO Renderer - ${examples[id]}`,

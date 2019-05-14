@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "description": "Typescript Webgl2 Physically Based Renderer",
   "main": "./iwo.js",
-  "types": "./types/index.d.ts",
+  "types": "./types/src/index.d.ts",
   "scripts": {
     "watch": "webpack --progress --colors --watch --mode=production",
     "build": "webpack --progress --colors --mode=production",
@@ -38,7 +38,7 @@
     "raw-loader": "^2.0.0",
     "terser-webpack-plugin": "^1.2.3",
     "ts-loader": "^5.3.3",
-    "typescript": "^3.3.4000",
+    "typescript": "3.4.5",
     "webpack": "^4.25.1",
     "webpack-cli": "^3.1.2",
     "webpack-dev-server": "^3.1.10"

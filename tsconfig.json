@@ -7,13 +7,14 @@
     "declaration": true,
     "declarationDir": "dist/types",
     "baseUrl": ".",
+
     "paths":{
       "*":[
         "src/*",
+        "examples/*",
         "*"
       ]
     },
-
     "outDir": "dist",
     "strict": true,
     "noImplicitReturns": true,
@@ -26,8 +27,7 @@
     "property-declaration"
   ],
   "exclude": [
-    "node_modules",
-    "examples"
+    "node_modules"
   ]
 
 }
