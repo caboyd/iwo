@@ -1,17 +1,14 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
-const TerserPlugin = require('terser-webpack-plugin');
-
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 let examples = {
 	pbr_example: "PBR Example",
 	sphere_geometry_example: "Sphere Geometry Example"
 };
 
-
 const buildConfig = (env, argv) => {
-	const is_production = argv.mode === 'production';
 	return {
 		entry: {
 			'iwo.min': './src/index.ts',
@@ -23,11 +20,11 @@ const buildConfig = (env, argv) => {
 			publicPath: '/',
 		},
 		optimization: {
-			minimize: is_production,
-			minimizer: [new TerserPlugin({
-				test: /\.min\.js(\?.*)?$/i,
-			})],
+			minimize: true,
 		},
+		plugins: [
+			new CleanWebpackPlugin(),
+		],
 		resolve: {
 			modules: [
 				path.resolve(__dirname),
@@ -43,7 +40,10 @@ const buildConfig = (env, argv) => {
 				// all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
 				{
 					test: /\.tsx?$/,
-					loader: 'ts-loader'
+					loader: 'ts-loader',
+					options: {
+						configFile: 'tsconfig.types.json'
+					}
 				},
 				{
 					test: /\.(glsl|vs|fs|frag|vert)$/,
@@ -62,6 +62,7 @@ const buildConfig = (env, argv) => {
 
 const buildExamplesConfig = (env, argv) => {
 	const is_production = argv.mode === 'production';
+	const is_dev_server = (env && env.devServer);
 	return {
 		entry: {
 			//glob this
@@ -71,7 +72,7 @@ const buildExamplesConfig = (env, argv) => {
 		output: {
 			path: path.resolve(__dirname, 'dist'),
 			//Note: Webstorm debug breaks if filename is [name].js
-			filename: is_production ? '[name].js' : '[name].bundle.js',
+			filename: is_dev_server ? '[name].bundle.js' : '[name].js',
 			//setting this breaks relative paths
 			//publicPath: '/',
 		},
@@ -153,18 +154,12 @@ const buildExamplesConfig = (env, argv) => {
 						{
 							loader: 'file-loader',
 							options: {
-								name(file) {
-									if (!is_production) {
-										return '[path][name].[ext]';
-									}
-									return '[path][hash].[ext]';
-								},
+								name: is_production ?
+									'[path][hash].[ext]' :
+									'[path][name].[ext]',
 							},
-
 						},
 					],
-
-
 				}
 			]
 		},
@@ -172,5 +167,5 @@ const buildExamplesConfig = (env, argv) => {
 	};
 }
 
-module.exports = [buildConfig, buildExamplesConfig];
+module.exports = [buildExamplesConfig, buildConfig];
 
