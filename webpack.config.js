@@ -168,5 +168,5 @@ const buildExamplesConfig = (env, argv) => {
 	};
 }
 
-module.exports = [buildConfig];
+module.exports = [buildConfig, buildExamplesConfig];
 
