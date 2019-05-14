@@ -93,7 +93,7 @@ const buildExamplesConfig = (env, argv) => {
 			return new HtmlWebpackPlugin({
 				chunks: ['iwo', `examples/${id}`],
 				filename: `examples/${id}.html`,
-				template: 'index.html',
+				template: 'examples/template.html',
 				title: `IWO Renderer - ${examples[id]}`,
 				minify: {
 					collapseWhitespace: false,
@@ -115,7 +115,7 @@ const buildExamplesConfig = (env, argv) => {
 			new HtmlWebpackPlugin({
 				chunks: [''],
 				filename: 'index.html',
-				template: 'examples.html',
+				template: 'examples/index.html',
 			})
 		)
 		,

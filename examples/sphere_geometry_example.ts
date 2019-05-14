@@ -144,10 +144,10 @@ function initScene(): void {
     
     let sky_tex = new Texture2D(gl);
 
-    ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then(
+    ImageLoader.promise(require("examples/assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then(
         (image) => {
             sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
-            ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then(
+            ImageLoader.promise(require("examples/assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then(
                 (image) => {
                     sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
 

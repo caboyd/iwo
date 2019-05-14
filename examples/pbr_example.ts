@@ -167,22 +167,22 @@ function initScene(): void {
     let env_tex = new TextureCubeMap(gl);
     let cube_tex = new TextureCubeMap(gl);
 
-    ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then(
+    ImageLoader.promise(require("examples/assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then(
         (image) => {
             sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
-            ImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then(
+            ImageLoader.promise(require("examples/assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then(
                 (image) => {
                     sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
 
                 });
         });
 
-    HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr"), global_root).then(
+    HDRImageLoader.promise(require("examples/assets/cubemap/monvalley/MonValley_A_LookoutPoint_Env.hdr"), global_root).then(
         data => {
             cube_tex.setEquirectangularHDRBuffer(renderer, data);
             irr_tex = TextureCubeMap.irradianceFromCubemap(irr_tex, renderer, cube_tex);
             env_tex = TextureCubeMap.specularFromCubemap(env_tex, renderer, cube_tex);
-            HDRImageLoader.promise(require("assets/cubemap/monvalley/MonValley_A_LookoutPoint_2k.hdr"),
+            HDRImageLoader.promise(require("examples/assets/cubemap/monvalley/MonValley_A_LookoutPoint_2k.hdr"),
                 global_root).then(data => {
                 cube_tex.setEquirectangularHDRBuffer(renderer, data);
                 env_tex = TextureCubeMap.specularFromCubemap(env_tex, renderer, cube_tex, data.width);
@@ -190,7 +190,7 @@ function initScene(): void {
             });
         });
 
-    let earth_tex = TextureLoader.load(gl, require("assets/earth.jpg"), global_root);
+    let earth_tex = TextureLoader.load(gl, require("examples/assets/earth.jpg"), global_root);
     total_files = 0;
 
     let box_geom = new BoxGeometry(3.0, 3.0, 3.0, 1, 1, 1, false);
