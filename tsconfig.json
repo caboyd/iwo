@@ -4,6 +4,8 @@
     "moduleResolution": "node",
     "module": "es6",
     "sourceMap": true,
+    "declaration": true,
+    "declarationDir": "dist/types",
     "baseUrl": ".",
     "paths":{
       "*":[
@@ -11,6 +13,8 @@
         "*"
       ]
     },
+
+    "outDir": "dist",
     "strict": true,
     "noImplicitReturns": true,
     "strictNullChecks": true,
@@ -22,7 +26,8 @@
     "property-declaration"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "examples"
   ]
 
 }

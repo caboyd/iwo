@@ -1,20 +1,21 @@
 import {glMatrix, mat4, vec3} from "gl-matrix";
-import {BoxGeometry} from "src/geometry/BoxGeometry";
-import {Mesh} from "src/meshes/Mesh";
-import {MeshInstance} from "src/meshes/MeshInstance";
-import {Renderer} from "src/graphics/Renderer";
-import {FileLoader} from "./loader/FileLoader";
-import {SphereGeometry} from "./geometry/SphereGeometry";
-import {Camera, Camera_Movement} from "./cameras/Camera";
-import {PlaneGeometry} from "./geometry/PlaneGeometry";
-import {GridMaterial} from "./materials/GridMaterial";
-import {PBRMaterial} from "./materials/PBRMaterial";
-import {BasicMaterial} from "./materials/BasicMaterial";
-import {ImageLoader} from "./loader/ImageLoader";
-import {Texture2D} from "./graphics/Texture2D";
-import {HDRImageLoader} from "./loader/HDRImageLoader";
-import {TextureCubeMap} from "./graphics/TextureCubeMap";
-import {TextureLoader} from "./loader/TextureLoader";
+import {Camera, Camera_Movement} from "index";
+import {BoxGeometry} from "index";
+import {Mesh} from "index";
+import {MeshInstance} from "index";
+import {Renderer} from "index";
+import {FileLoader} from "index";
+import {SphereGeometry} from "index";
+import {PlaneGeometry} from "index";
+import {GridMaterial} from "index";
+import {PBRMaterial} from "index";
+import {BasicMaterial} from "index";
+import {ImageLoader} from "index";
+import {Texture2D} from "index";
+import {HDRImageLoader} from "index";
+import {TextureCubeMap} from "index";
+import {TextureLoader} from "index";
+
 
 let canvas: HTMLCanvasElement;
 
@@ -158,6 +159,9 @@ function initGL(): WebGL2RenderingContext {
 
 function initScene(): void {
     let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
+    //Removes /examples subfolder off end of url so images are found in correct folder
+    global_root = global_root.replace(/examples/,"");
+            
     let sky_tex = new Texture2D(gl);
     let irr_tex = new TextureCubeMap(gl);
     let env_tex = new TextureCubeMap(gl);
@@ -240,7 +244,7 @@ function initScene(): void {
         for (let k = 0; k <= num_rows; k++) {
             let mat = new PBRMaterial(vec3.fromValues(1.0, 1, 1), k / num_rows,
                 Math.min(1, Math.max(0.025, i / num_cols)), 1);
-           // mat.albedo_texture = sphere_mat.albedo_texture;
+            // mat.albedo_texture = sphere_mat.albedo_texture;
             mat.irradiance_texture = irr_tex;
             mat.specular_env = env_tex;
             let s = new MeshInstance(sphere_mesh, mat);
