@@ -39,7 +39,7 @@ export namespace TextureHelper {
             throw new Error(`texture type ${texture_type} not supported.`);
         }
 
-        texParamHelperEnd(gl, texture_type, wrap_S, wrap_T, wrap_R, mag_filter, min_filter, true);
+        texParamHelperEnd(gl, texture_type, wrap_S, wrap_T, wrap_R, mag_filter, min_filter);
     }
 
     export function texParameterImage(gl: WebGL2RenderingContext,
@@ -67,7 +67,7 @@ export namespace TextureHelper {
             throw new Error(`texture type ${texture_type} not supported.`);
         }
 
-        texParamHelperEnd(gl, texture_type, wrap_S, wrap_T, wrap_R, mag_filter, min_filter, true);
+        texParamHelperEnd(gl, texture_type, wrap_S, wrap_T, wrap_R, mag_filter, min_filter);
 
     }
 
@@ -90,17 +90,16 @@ export namespace TextureHelper {
                                wrap_T: number,
                                wrap_R: number | undefined,
                                mag_filter: number,
-                               min_filter: number,
-                               mipmap: boolean) {
+                               min_filter: number) {
         gl.texParameteri(texture_type, gl.TEXTURE_WRAP_S, wrap_S);
         gl.texParameteri(texture_type, gl.TEXTURE_WRAP_T, wrap_T);
         if (wrap_R) gl.texParameteri(texture_type, gl.TEXTURE_WRAP_R, wrap_R);
         gl.texParameteri(texture_type, gl.TEXTURE_MAG_FILTER, mag_filter);
         gl.texParameteri(texture_type, gl.TEXTURE_MIN_FILTER, min_filter);
-        if (mipmap && (min_filter == gl.LINEAR_MIPMAP_LINEAR ||
+        if (min_filter == gl.LINEAR_MIPMAP_LINEAR ||
             min_filter == gl.LINEAR_MIPMAP_NEAREST ||
             min_filter == gl.NEAREST_MIPMAP_LINEAR ||
-            min_filter == gl.NEAREST_MIPMAP_NEAREST))
+            min_filter == gl.NEAREST_MIPMAP_NEAREST)
             gl.generateMipmap(texture_type);
     }
 

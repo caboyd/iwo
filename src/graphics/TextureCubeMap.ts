@@ -225,17 +225,17 @@ export class TextureCubeMap {
 
 
     public setEquirectangularHDRBuffer(renderer: Renderer, buffer: HDRBuffer,
-                                       resolution: number = buffer.width || 512): void {
+                                       resolution: number = buffer.height): void {
         this.setEquirectangular(renderer, buffer, resolution);
     }
 
     public setEquirectangularImage(renderer: Renderer, image: TexImageSource,
-                                   resolution: number = image.width || 512): void {
+                                   resolution: number = image.height): void {
         this.setEquirectangular(renderer, image, resolution);
     }
 
     private setEquirectangular(renderer: Renderer, image_source: TexImageSource | HDRBuffer,
-                               resolution: number = image_source.width || 512): void {
+                               resolution: number): void {
         let gl = renderer.gl;
 
         let ext = gl.getExtension("EXT_color_buffer_float");
@@ -268,7 +268,7 @@ export class TextureCubeMap {
 
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture_id);
         TextureHelper.texParameterBuffer(gl, gl.TEXTURE_CUBE_MAP, null, res, res,
-            gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, gl.RGBA16F,
+            gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR_MIPMAP_LINEAR, gl.RGBA16F,
             gl.RGBA, gl.HALF_FLOAT, false);
 
         let cam = new CubeCamera();
