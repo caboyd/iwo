@@ -1,7 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
-const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 let examples = {
 	pbr_example: "PBR Example",
@@ -22,9 +21,7 @@ const buildConfig = (env, argv) => {
 		optimization: {
 			minimize: true,
 		},
-		plugins: [
-			new CleanWebpackPlugin(),
-		],
+
 		resolve: {
 			modules: [
 				path.resolve(__dirname),
