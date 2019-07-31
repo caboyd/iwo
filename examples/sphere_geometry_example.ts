@@ -1,17 +1,5 @@
 import {glMatrix, mat4, vec3} from "gl-matrix";
-import {Camera, Camera_Movement} from "index";
-import {BoxGeometry} from "index";
-import {Mesh} from "index";
-import {MeshInstance} from "index";
-import {Renderer} from "index";
-import {FileLoader} from "index";
-import {SphereGeometry} from "index";
-import {PlaneGeometry} from "index";
-import {GridMaterial} from "index";
-import {PBRMaterial} from "index";
-import {BasicMaterial} from "index";
-import {ImageLoader} from "index";
-import {Texture2D} from "index";
+import * as IWO from 'iwo';
 
 let canvas: HTMLCanvasElement;
 let gl: WebGL2RenderingContext;
@@ -23,17 +11,17 @@ let cPos: vec3 = vec3.fromValues(0.5, 8, 9.0);
 let cUp: vec3 = vec3.fromValues(0, 1, 0);
 let cFront: vec3 = vec3.fromValues(0, 0, -1);
 
-let camera: Camera;
+let camera: IWO.Camera;
 
 let mouse_x_total = 0;
 let mouse_y_total = 0;
 let keys: Array<boolean> = [];
 
-let skybox: MeshInstance;
-let spheres: MeshInstance[];
-let sphere_mat: PBRMaterial;
-let grid: MeshInstance;
-let renderer: Renderer;
+let skybox: IWO.MeshInstance;
+let spheres: IWO.MeshInstance[];
+let sphere_mat: IWO.PBRMaterial;
+let grid: IWO.MeshInstance;
+let renderer: IWO.Renderer;
 
 let loading_text = document.getElementById("loading-text")!;
 let loading_subtext = document.getElementById("loading-subtext")!;
@@ -69,15 +57,15 @@ const moveCallback = (e: MouseEvent): void => {
         document.head.appendChild(script);
     })();
 
-    FileLoader.setOnProgress(onProgress);
-    FileLoader.setOnFileComplete(onFileComplete);
+    IWO.FileLoader.setOnProgress(onProgress);
+    IWO.FileLoader.setOnFileComplete(onFileComplete);
 
     canvas = <HTMLCanvasElement>document.getElementById("canvas");
     document.addEventListener("mousemove", moveCallback, false);
 
     gl = initGL();
 
-    renderer = new Renderer(gl);
+    renderer = new IWO.Renderer(gl);
 
     window.addEventListener('resize', resizeCanvas, false);
 
@@ -91,7 +79,7 @@ const moveCallback = (e: MouseEvent): void => {
 
     resizeCanvas();
 
-    camera = new Camera(cPos, cFront, cUp);
+    camera = new IWO.Camera(cPos, cFront, cUp);
 
     gl.clearColor(0.2, 0.3, 0.3, 1.0);
     gl.enable(gl.DEPTH_TEST);
@@ -109,7 +97,7 @@ const moveCallback = (e: MouseEvent): void => {
     let sun_intensity = 24;
     let sun_color = [sun_intensity * 254 / 255, sun_intensity * 238 / 255, sun_intensity * 224 / 255];
 
-    let pbrShader = PBRMaterial.Shader;
+    let pbrShader = IWO.PBRMaterial.Shader;
     pbrShader.use();
     pbrShader.setUniform("u_lights[0].position", [sun_dir[0], sun_dir[1], sun_dir[2], 0]);
     pbrShader.setUniform("u_lights[0].color", sun_color);
@@ -141,65 +129,48 @@ function initScene(): void {
     let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
     //Removes /examples subfolder off end of url so images are found in correct folder
     global_root = global_root.replace(/examples/,"");
-    
-    let sky_tex = new Texture2D(gl);
 
-    ImageLoader.promise(require("examples/assets/cubemap/monvalley/MonValley_A_LookoutPoint_preview.jpg"), global_root).then(
-        (image) => {
-            sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
-            ImageLoader.promise(require("examples/assets/cubemap/monvalley/MonValley_A_LookoutPoint_8k.jpg"), global_root).then(
-                (image) => {
-                    sky_tex.setImage(gl, image, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR);
+    let plane_geom = new IWO.PlaneGeometry(100, 100, 1, 1, true);
+    let plane_mesh = new IWO.Mesh(gl, plane_geom);
 
-                });
-        });
-
-
-    let plane_geom = new PlaneGeometry(100, 100, 1, 1, true);
-
-
-    let plane_mesh = new Mesh(gl, plane_geom);
-
-    sphere_mat = new PBRMaterial(vec3.fromValues(1, 0, 0), 0.0, 0.0);
+    sphere_mat = new IWO.PBRMaterial(vec3.fromValues(1, 1, 1), 0.0, 0.0);
 
     //GRID
-    let grid_mat = new GridMaterial(50);
-    grid = new MeshInstance(plane_mesh, grid_mat);
+    let grid_mat = new IWO.GridMaterial(50);
+    grid = new IWO.MeshInstance(plane_mesh, grid_mat);
 
     //SKYBOX
-    let sky_geom = new SphereGeometry(1, 48, 48);
-    let sky_mesh = new Mesh(gl, sky_geom);
-    let sky_mat = new BasicMaterial([1, 1, 1]);
-    sky_mat.setAlbedoTexture(sky_tex);
-    skybox = new MeshInstance(sky_mesh, sky_mat);
-    
+    let sky_geom = new IWO.SphereGeometry(1, 48, 48);
+    let sky_mesh = new IWO.Mesh(gl, sky_geom);
+    let sky_mat = new IWO.BasicMaterial([173/255, 196/255, 221/255]);
+
+    skybox = new IWO.MeshInstance(sky_mesh, sky_mat);
+
     //SPHERES
     spheres = [];
     let num_cols = 10;
-    let num_rows = 10;
+    let num_rows = 8;
     for (let i = 0; i <= num_cols; i++) {
         for (let k = 0; k <= num_rows; k++) {
-            let sphere_geom = new SphereGeometry(0.75, 3+i*2, 2+k*2);
-            let sphere_mesh = new Mesh(gl, sphere_geom);
-            let mat = new PBRMaterial(vec3.fromValues(1.0, 1, 1), k / num_rows,
-                Math.min(1, Math.max(0.025, i / num_cols)), 1);
-            let s = new MeshInstance(sphere_mesh, mat);
+            let sphere_geom = new IWO.SphereGeometry(0.75, 3+i*2, 2+k*2);
+            let sphere_mesh = new IWO.Mesh(gl, sphere_geom);
+            let s = new IWO.MeshInstance(sphere_mesh, sphere_mat);
             spheres.push(s);
             let model = s.model_matrix;
             mat4.identity(model);
-            mat4.translate(model, model, vec3.fromValues((i - num_cols / 2) * 2, k * 2, 0));
+            mat4.translate(model, model, vec3.fromValues((i - num_cols / 2) * 2, 2 * num_rows - k * 2, 0));
         }
     }
 
 }
 
 function update(): void {
-    if (keys[87]) camera.processKeyboard(Camera_Movement.FORWARD, 0.001);
-    else if (keys[83]) camera.processKeyboard(Camera_Movement.BACKWARD, 0.001);
-    if (keys[65]) camera.processKeyboard(Camera_Movement.LEFT, 0.001);
-    else if (keys[68]) camera.processKeyboard(Camera_Movement.RIGHT, 0.001);
+    if (keys[87]) camera.processKeyboard(IWO.Camera_Movement.FORWARD, 0.001);
+    else if (keys[83]) camera.processKeyboard(IWO.Camera_Movement.BACKWARD, 0.001);
+    if (keys[65]) camera.processKeyboard(IWO.Camera_Movement.LEFT, 0.001);
+    else if (keys[68]) camera.processKeyboard(IWO.Camera_Movement.RIGHT, 0.001);
     if (keys[82]) camera.lookAt(vec3.fromValues(0, 0, 0));
-    if (keys[32]) camera.processKeyboard(Camera_Movement.UP, 0.001);
+    if (keys[32]) camera.processKeyboard(IWO.Camera_Movement.UP, 0.001);
 
     camera.processMouseMovement(-mouse_x_total, -mouse_y_total, true);
     mouse_x_total = 0;
@@ -272,7 +243,7 @@ window.onkeyup = function (e) {
 
 /*
     Converts UV coords of equirectangular image to the vector direction,
-    as if it was projected onto the sphere 
+    as if it was projected onto the sphere
  */
 function sphereUVtoVec3(out: vec3, u: number, v: number): vec3 {
     let theta = (v - 0.5) * Math.PI;

@@ -1,21 +1,20 @@
 import {glMatrix, mat4, vec3} from "gl-matrix";
-import {Camera, Camera_Movement} from "index";
-import {BoxGeometry} from "index";
-import {Mesh} from "index";
-import {MeshInstance} from "index";
-import {Renderer} from "index";
-import {FileLoader} from "index";
-import {SphereGeometry} from "index";
-import {PlaneGeometry} from "index";
-import {GridMaterial} from "index";
-import {PBRMaterial} from "index";
-import {BasicMaterial} from "index";
-import {ImageLoader} from "index";
-import {Texture2D} from "index";
-import {HDRImageLoader} from "index";
-import {TextureCubeMap} from "index";
-import {TextureLoader} from "index";
-
+import {Camera, Camera_Movement} from 'iwo'
+import {BoxGeometry} from "iwo";
+import {Mesh} from "iwo";
+import {MeshInstance} from "iwo";
+import {Renderer} from "iwo";
+import {FileLoader} from "iwo";
+import {SphereGeometry} from "iwo";
+import {PlaneGeometry} from "iwo";
+import {GridMaterial} from "iwo";
+import {PBRMaterial} from "iwo";
+import {BasicMaterial} from "iwo";
+import {ImageLoader} from "iwo";
+import {Texture2D} from "iwo";
+import {HDRImageLoader} from "iwo";
+import {TextureCubeMap} from "iwo";
+import {TextureLoader} from "iwo";
 
 let canvas: HTMLCanvasElement;
 
@@ -161,7 +160,7 @@ function initScene(): void {
     let global_root = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
     //Removes /examples subfolder off end of url so images are found in correct folder
     global_root = global_root.replace(/examples/,"");
-            
+
     let sky_tex = new Texture2D(gl);
     let irr_tex = new TextureCubeMap(gl);
     let env_tex = new TextureCubeMap(gl);
@@ -348,7 +347,7 @@ window.onkeyup = function (e) {
 
 /*
     Converts UV coords of equirectangular image to the vector direction,
-    as if it was projected onto the sphere 
+    as if it was projected onto the sphere
  */
 function sphereUVtoVec3(out: vec3, u: number, v: number): vec3 {
     let theta = (v - 0.5) * Math.PI;

@@ -1,6 +1,8 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
+const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 let examples = {
 	pbr_example: "PBR Example",
@@ -10,7 +12,8 @@ let examples = {
 const buildConfig = (env, argv) => {
 	return {
 		entry: {
-			'iwo.min': './src/index.ts',
+			'iwo.min': './src/iwo.ts',
+			'iwo': './src/iwo.ts',
 		},
 		output: {
 			path: path.resolve(__dirname, 'dist'),
@@ -18,10 +21,24 @@ const buildConfig = (env, argv) => {
 			//setting this breaks relative paths
 			publicPath: '/',
 		},
-		optimization: {
+		optimization:{
 			minimize: true,
+			minimizer: [new TerserPlugin({
+				test: /\.min\.js$/
+			})]
 		},
+		plugins: [
+			new HtmlWebpackExternalsPlugin({
+				externals: [
+					{
+						module: 'gl-matrix',
+						entry: 'gl-matrix-min.js',
+						global: 'glMatrix',
+					}
+				],
 
+			}),
+		],
 		resolve: {
 			modules: [
 				path.resolve(__dirname),
@@ -51,8 +68,7 @@ const buildConfig = (env, argv) => {
 					loader: 'raw-loader'
 				},
 			]
-		},
-		devtool: "source-map",
+		}
 	};
 }
 
@@ -66,40 +82,21 @@ const buildExamplesConfig = (env, argv) => {
 			'examples/pbr_example': 'examples/pbr_example.ts',
 			'examples/sphere_geometry_example': 'examples/sphere_geometry_example.ts'
 		},
-		output: {
-			path: path.resolve(__dirname, 'dist'),
-			//Note: Webstorm debug breaks if filename is [name].js
-			filename: is_dev_server ? '[name].bundle.js' : '[name].js',
-			//setting this breaks relative paths
-			//publicPath: '/',
+		externals: {
+			'gl-matrix':'glMatrix',
 		},
 		optimization: {
 			minimize: false,
-			splitChunks: {
-				cacheGroups: {
-					vendor: {
-						test: /[\\/]node_modules[\\/](gl-matrix)[\\/]/,
-						name: 'gl-matrix',
-						chunks: 'initial',
-						minChunks: 1,
-					},
-					commons: {
-						name: 'iwo',
-						chunks: 'initial',
-						minChunks: 2,
-					}
-				}
-			},
 		},
 		plugins: Object.keys(examples).map(function (id) {
 			return new HtmlWebpackPlugin({
-				chunks: ['iwo', 'gl-matrix', `examples/${id}`],
+				chunks: ['iwo', `examples/${id}`],
 				filename: `examples/${id}.html`,
 				template: 'examples/template.html',
 				title: `IWO Renderer - ${examples[id]}`,
 				minify: {
 					collapseWhitespace: false,
-					minifyCSS: is_production
+					minifyCSS: false
 				}
 			});
 		}).concat(
@@ -159,8 +156,7 @@ const buildExamplesConfig = (env, argv) => {
 					],
 				}
 			]
-		},
-		devtool: "source-map",
+		}
 	};
 }
 
