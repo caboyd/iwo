@@ -20,8 +20,10 @@ const buildConfig = (env, argv) => {
 			filename: '[name].js',
 			//setting this breaks relative paths
 			publicPath: '/',
+			//name of chunked out file
+			library: 'iwo'
 		},
-		optimization:{
+		optimization: {
 			minimize: true,
 			minimizer: [new TerserPlugin({
 				test: /\.min\.js$/
@@ -54,10 +56,7 @@ const buildConfig = (env, argv) => {
 				// all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
 				{
 					test: /\.tsx?$/,
-					loader: 'ts-loader',
-					options: {
-						configFile: 'tsconfig.types.json'
-					}
+					loader: 'ts-loader'
 				},
 				{
 					test: /\.(glsl|vs|fs|frag|vert)$/,
@@ -74,19 +73,33 @@ const buildConfig = (env, argv) => {
 
 
 const buildExamplesConfig = (env, argv) => {
-	const is_production = argv.mode === 'production';
-	const is_dev_server = (env && env.devServer);
+	const dev_server = env.devServer;
+	const build_extenerals = {
+		'gl-matrix': 'glMatrix',
+		'iwo':'iwo'
+	};
+	const dev_externals = {
+		'gl-matrix': 'glMatrix',
+	};
+
 	return {
 		entry: {
 			//glob this
 			'examples/pbr_example': 'examples/pbr_example.ts',
 			'examples/sphere_geometry_example': 'examples/sphere_geometry_example.ts'
 		},
-		externals: {
-			'gl-matrix':'glMatrix',
-		},
+		externals: dev_server ? dev_externals : build_extenerals,
 		optimization: {
 			minimize: false,
+			splitChunks: {
+				cacheGroups: {
+					commons: {
+						name: 'iwo',
+						chunks: 'initial',
+						minChunks: 2,
+					}
+				}
+			},
 		},
 		plugins: Object.keys(examples).map(function (id) {
 			return new HtmlWebpackPlugin({
@@ -101,7 +114,6 @@ const buildExamplesConfig = (env, argv) => {
 			});
 		}).concat(
 			new ImageminPlugin({
-				disable: !is_production,
 				test: /\.(jpe?g|png|gif|svg)$/i,
 				jpegtran: {
 					progressive: true
@@ -148,9 +160,7 @@ const buildExamplesConfig = (env, argv) => {
 						{
 							loader: 'file-loader',
 							options: {
-								name: is_production ?
-									'[path][hash].[ext]' :
-									'[path][name].[ext]',
+								name: '[path][name].[ext]',
 							},
 						},
 					],

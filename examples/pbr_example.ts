@@ -237,8 +237,8 @@ function initScene(): void {
     //SPHERES
 
     spheres = [];
-    let num_cols = 10;
-    let num_rows = 10;
+    let num_cols = 8;
+    let num_rows = 8;
     for (let i = 0; i <= num_cols; i++) {
         for (let k = 0; k <= num_rows; k++) {
             let mat = new PBRMaterial(vec3.fromValues(1.0, 1, 1), k / num_rows,

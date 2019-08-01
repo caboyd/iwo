@@ -4,13 +4,12 @@
   "version": "0.2.0",
   "description": "Typescript Webgl2 Physically Based Renderer",
   "main": "dist/iwo.js",
-  "types": "./types/src/iwo.d.ts",
   "scripts": {
     "watch": "webpack --progress --colors --watch --mode=production",
     "build": "webpack --progress --colors --mode=production",
     "builddev": "webpack --progress --colors --mode=development",
     "dev": "webpack-dev-server --content-base ./ --colors --hot --inline --mode=development --env.devServer",
-    "gh-publish": "npm run builddev&&cd dist&&git add --all&&git commit -m \"Deploy to gh-pages\"&&git push origin gh-pages&&cd.."
+    "gh-publish": "npm run build&&cd dist&&git add --all&&git commit -m \"Deploy to gh-pages\"&&git push origin gh-pages&&cd.."
   },
   "author": "Chris Boyd",
   "license": "MIT",
