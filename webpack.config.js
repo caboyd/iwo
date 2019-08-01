@@ -73,8 +73,8 @@ const buildConfig = (env, argv) => {
 
 
 const buildExamplesConfig = (env, argv) => {
-	const dev_server = env.devServer;
-	const build_extenerals = {
+	const is_dev_server = (env && env.devServer);
+	const build_externals = {
 		'gl-matrix': 'glMatrix',
 		'iwo':'iwo'
 	};
@@ -88,7 +88,7 @@ const buildExamplesConfig = (env, argv) => {
 			'examples/pbr_example': 'examples/pbr_example.ts',
 			'examples/sphere_geometry_example': 'examples/sphere_geometry_example.ts'
 		},
-		externals: dev_server ? dev_externals : build_extenerals,
+		externals: is_dev_server ? dev_externals : build_externals,
 		optimization: {
 			minimize: false,
 			splitChunks: {
