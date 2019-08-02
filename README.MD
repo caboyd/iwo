@@ -3,23 +3,23 @@
 Physically Based Renderer written in Typescript. This project was created to learn how to create a forward rendering engine from scratch.
 
 ### Demo 
-[https://iwanttoeatyo.github.io/ts-pbr-renderer/index.html](https://iwanttoeatyo.github.io/ts-pbr-renderer/index.html)
+[https://caboyd.github.io/ts-pbr-renderer/index.html](https://caboyd.github.io/ts-pbr-renderer/index.html)
 
-[<img src="https://i.imgur.com/5aFTrlk.png" alt="Typescript PBR Renderer Demoimage">](https://iwanttoeatyo.github.io/ts-pbr-renderer/index.html)
+[<img src="https://i.imgur.com/5aFTrlk.png" alt="Typescript PBR Renderer Demoimage">](https://caboyd.github.io/ts-pbr-renderer/index.html)
 
 ## Features
 This is a list of features to reference for ideas. Checkmarked features have been implemented.  
 
 ### File Loading / Importing
-- [x] [Asynchronous File Loading](https://github.com/iwanttoeatyo/ts-pbr-renderer/blob/master/src/loader/FileLoader.ts)
-- [x] [HDR Image Loader](https://github.com/iwanttoeatyo/ts-pbr-renderer/blob/master/src/loader/HDRImageLoader.ts)
+- [x] [Asynchronous File Loading](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/loader/FileLoader.ts)
+- [x] [HDR Image Loader](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/loader/HDRImageLoader.ts)
 - [ ] GLTF Importer
 - [ ] OBJ Importer
 
 ### Geometry Generation
-- [x] [Plane](https://github.com/iwanttoeatyo/ts-pbr-renderer/blob/master/src/geometry/PlaneGeometry.ts)
-- [x] [Box](https://github.com/iwanttoeatyo/ts-pbr-renderer/blob/master/src/geometry/BoxGeometry.ts)
-- [x] [Sphere](https://github.com/iwanttoeatyo/ts-pbr-renderer/blob/master/src/geometry/SphereGeometry.ts)
+- [x] [Plane](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/geometry/PlaneGeometry.ts)
+- [x] [Box](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/geometry/BoxGeometry.ts)
+- [x] [Sphere](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/geometry/SphereGeometry.ts)
 - [ ] Cylinder
 - [ ] Toroid
 - [ ] Pyramid
@@ -27,7 +27,7 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 - [ ] Splines
 
 ### Rendering
-- [x] [Physically Based Shader](https://github.com/iwanttoeatyo/ts-pbr-renderer/blob/master/src/shaders/pbr.frag)
+- [x] [Physically Based Shader](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/shaders/pbr.frag)
 - [x] Image Based Diffuse Lighting
 - [x] Image Based Specular Lighting
 - [ ] Normal Mapping
@@ -54,7 +54,7 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 - [ ] Cascaded Shadow Mapping
 
 ### Cameras
-- [x] [First Person Camera](https://github.com/iwanttoeatyo/ts-pbr-renderer/blob/master/src/cameras/Camera.ts)
+- [x] [First Person Camera](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/cameras/Camera.ts)
 - [ ] Third Person (Arcball) Camera
 - [ ] Cubemap Camera
 
