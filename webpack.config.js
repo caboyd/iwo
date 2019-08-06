@@ -3,6 +3,8 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
+const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
+const smp = new SpeedMeasurePlugin();
 
 let examples = {
 	pbr_example: "PBR Example",
@@ -21,7 +23,9 @@ const buildConfig = (env, argv) => {
 			//setting this breaks relative paths
 			publicPath: '/',
 			//name of chunked out file
-			library: 'iwo'
+			library: 'iwo',
+			libraryTarget: 'umd',
+			globalObject: 'this',
 		},
 		optimization: {
 			minimize: true,
@@ -41,42 +45,17 @@ const buildConfig = (env, argv) => {
 
 			}),
 		],
-		resolve: {
-			modules: [
-				path.resolve(__dirname),
-				'src',
-				'node_modules'
-			],
-			// Add `.ts` and `.tsx` as a resolvable extension.
-			extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js', '.vert', '.frag'],
-
-		},
-		module: {
-			rules: [
-				// all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
-				{
-					test: /\.tsx?$/,
-					loader: 'ts-loader'
-				},
-				{
-					test: /\.(glsl|vs|fs|frag|vert)$/,
-					loader: 'raw-loader'
-				},
-				{
-					test: /\.(txt|obj|mtl)$/,
-					loader: 'raw-loader'
-				},
-			]
-		}
+		resolve: resolve_rules,
+		module: module_rules,
 	};
-}
+};
 
 
 const buildExamplesConfig = (env, argv) => {
 	const is_dev_server = (env && env.devServer);
 	const build_externals = {
 		'gl-matrix': 'glMatrix',
-		'iwo':'iwo'
+		'iwo': 'iwo'
 	};
 	const dev_externals = {
 		'gl-matrix': 'glMatrix',
@@ -130,45 +109,63 @@ const buildExamplesConfig = (env, argv) => {
 			})
 		)
 		,
-		resolve: {
-			modules: [
-				path.resolve(__dirname),
-				'src',
-				'node_modules'
-			],
-			// Add `.ts` and `.tsx` as a resolvable extension.
-			extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js', '.vert', '.frag'],
-		},
-		module: {
-			rules: [
-				// all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
-				{
-					test: /\.tsx?$/,
-					loader: 'ts-loader'
-				},
-				{
-					test: /\.(glsl|vs|fs|frag|vert)$/,
-					loader: 'raw-loader'
-				},
-				{
-					test: /\.(txt|obj|mtl)$/,
-					loader: 'raw-loader'
-				},
-				{
-					test: /\.(gif|jpeg|jpg|png|svg|hdr)$/,
-					use: [
-						{
-							loader: 'file-loader',
-							options: {
-								name: '[path][name].[ext]',
-							},
-						},
-					],
-				}
-			]
-		}
+		resolve: resolve_rules,
+		module: module_rules,
 	};
-}
+};
 
-module.exports = [buildExamplesConfig, buildConfig];
+const resolve_rules = {
+	modules: [
+		path.resolve(__dirname),
+		'src',
+		'node_modules'
+	],
+	// Add `.ts` and `.tsx` as a resolvable extension.
+	extensions: ['.webpack.js', '.web.js', '.ts', '.tsx', '.js', '.vert', '.frag'],
+};
+
+const module_rules = {
+	rules: [
+		// all files with a `.ts` or `.tsx` extension will be handled by `ts-loader`
+		{
+			test: /\.tsx?$/,
+			loader: 'ts-loader'
+		},
+		{
+			test: /\.(glsl|vs|fs|frag|vert)$/,
+			loader: 'raw-loader',
+		},
+		{
+			test: /\.(glsl|vs|fs|frag|vert)$/,
+			loader: 'string-replace-loader',
+			options: {
+				multiple: [
+
+					{search: '\\r', replace: '', flags: 'g'},
+					{search: '[ \\t]*\\/\\/.*\\n', replace: '', flags: 'g'}, // remove //
+					{search: '[ \\t]*\\/\\*[\\s\\S]*?\\*\\/', replace: '', flags: 'g'}, // remove /* */
+					{search: '\\n{2,}', replace: '\n', flags: 'g'}, // # \n+ to \n
+					{search: '\\s\\s+', replace: ' ', flags: 'g'}, // reduce multi spaces to singles
+				]
+			}
+		},
+		{
+			test: /\.(txt|obj|mtl)$/,
+			loader: 'raw-loader'
+		},
+		{
+			test: /\.(gif|jpeg|jpg|png|svg|hdr)$/,
+			use: [
+				{
+					loader: 'file-loader',
+					options: {
+						name: '[path][name].[ext]',
+					},
+				},
+			],
+		}
+	]
+};
+
+module.exports = [smp.wrap(buildExamplesConfig), smp.wrap(buildConfig)];
 
