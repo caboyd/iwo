@@ -45,6 +45,7 @@ const buildConfig = (env, argv) => {
 		],
 		resolve: resolve_rules,
 		module: module_rules,
+		devtool: "source-map",
 	};
 };
 
@@ -109,6 +110,7 @@ const buildExamplesConfig = (env, argv) => {
 		,
 		resolve: resolve_rules,
 		module: module_rules,
+		devtool: "source-map",
 	};
 };
 

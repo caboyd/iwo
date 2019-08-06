@@ -1,12 +1,13 @@
 import {Renderer} from "./Renderer";
 import {mat4} from "gl-matrix";
 import {Texture2D} from "./Texture2D";
-import {HDRBuffer, instanceOfHDRBuffer} from "../loader/HDRImageLoader";
-import {BoxGeometry} from "../geometry/BoxGeometry";
-import {Mesh} from "../meshes/Mesh";
+import {HDRBuffer, instanceOfHDRBuffer} from "loader/HDRImageLoader";
+import {BoxGeometry} from "geometry/BoxGeometry";
+import {Mesh} from "meshes/Mesh";
 import {ShaderSource} from "./shader/ShaderSources";
-import {CubeCamera} from "../cameras/CubeCamera";
+import {CubeCamera} from "cameras/CubeCamera";
 import {TextureHelper} from "./TextureHelper";
+import {AttributeType, Geometry} from "geometry/Geometry";
 
 export class TextureCubeMap {
     public texture_id: WebGLTexture;
@@ -210,6 +211,7 @@ export class TextureCubeMap {
             renderer.draw(box_mesh.draw_mode, box_mesh.count, 0, box_mesh.index_buffer, box_mesh.vertex_buffer);
         }
 
+
         this.genBRDFLut(gl, captureFBO, captureRBO, renderer, box_mesh);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -322,6 +324,21 @@ export class TextureCubeMap {
                               box_mesh: Mesh) {
         if (Renderer.BRDF_LUT_TEXTURE === undefined) {
             //Generate brdf LUT if it doesnt exist as its required for IBL
+            let quad_geom = {
+                attribute_flags: AttributeType.Vertex | AttributeType.Tex_Coords,
+                isInterleaved: true,
+                interleaved_attributes: new Float32Array([
+                    // positions        // texture Coords
+                    -1.0, 1.0, 0.0,     0.0, 1.0,
+                    -1.0, -1.0, 0.0,    0.0, 0.0,
+                    1.0, 1.0, 0.0,      1.0, 1.0,
+                    1.0, -1.0, 0.0,     1.0, 0.0,
+                ]),
+                groups: [{count:4,offset:0,material_index:0}],
+            } as Geometry;
+            let quad_mesh = new Mesh(gl, quad_geom);
+            quad_mesh.draw_mode = gl.TRIANGLE_STRIP;
+
             //prettier-ignore
             let lut_tex = new Texture2D(gl, undefined, 512, 512, gl.CLAMP_TO_EDGE, gl.CLAMP_TO_EDGE,
                 gl.LINEAR, gl.LINEAR, gl.RG16F, gl.RG, gl.HALF_FLOAT, true);
@@ -333,8 +350,9 @@ export class TextureCubeMap {
             let shader = Renderer.GetShader(ShaderSource.BRDF.name)!;
             shader.use();
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            renderer.draw(box_mesh.draw_mode, box_mesh.count, 0, box_mesh.index_buffer, box_mesh.vertex_buffer);
+            renderer.draw(quad_mesh.draw_mode, quad_mesh.count, 0, quad_mesh.index_buffer, quad_mesh.vertex_buffer);
             Renderer.BRDF_LUT_TEXTURE = lut_tex.texture_id;
+            quad_mesh.destroy(gl);
         }
     }
 
