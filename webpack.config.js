@@ -3,8 +3,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ImageminPlugin = require('imagemin-webpack-plugin').default;
 const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
-const SpeedMeasurePlugin = require("speed-measure-webpack-plugin");
-const smp = new SpeedMeasurePlugin();
 
 let examples = {
 	pbr_example: "PBR Example",
@@ -167,5 +165,5 @@ const module_rules = {
 	]
 };
 
-module.exports = [smp.wrap(buildExamplesConfig), smp.wrap(buildConfig)];
+module.exports = [buildExamplesConfig, buildConfig];
 
