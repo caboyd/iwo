@@ -221,9 +221,7 @@ function initScene(): void {
     light_boxes = [];
     for (let pos of light_positions) {
         let lb = new MeshInstance(light_mesh, light_mat);
-        let a = [...pos];
-        a.pop();
-        mat4.translate(lb.model_matrix, lb.model_matrix, a);
+        mat4.translate(lb.model_matrix, lb.model_matrix, [pos[0],pos[1],pos[2]]);
         light_boxes.push(lb);
     }
 
@@ -336,11 +334,11 @@ function onFileComplete(file_name: string) {
     }
 }
 
-window.onkeydown = function (e) {
+window.onkeydown = function (e:KeyboardEvent) {
     keys[e.keyCode] = true;
 };
 
-window.onkeyup = function (e) {
+window.onkeyup = function (e:KeyboardEvent) {
     keys[e.keyCode] = false;
 };
 

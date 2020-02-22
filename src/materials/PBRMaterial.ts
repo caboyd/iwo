@@ -14,7 +14,7 @@ export class PBRMaterial extends Material {
     irradiance_texture:TextureCubeMap| undefined;
     specular_env:TextureCubeMap |undefined;
 
-    constructor(color: vec3 | number[], metallic: number, roughness: number, ambient_occlusion: number = 1.0) {
+    constructor(color: vec3, metallic: number, roughness: number, ambient_occlusion: number = 1.0) {
         super();
 
         this.albedo = vec3.clone(color);

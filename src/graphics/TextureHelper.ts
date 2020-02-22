@@ -59,10 +59,10 @@ export namespace TextureHelper {
         if (texture_type == gl.TEXTURE_CUBE_MAP) {
             for (let i = 0; i < 6; i++) {
                 // note that we store each face with 16 bit floating point values
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, format, type, image);
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, format, type, image as ImageData);
             }
         } else if (texture_type == gl.TEXTURE_2D) {
-            gl.texImage2D(texture_type, 0, internal_format, format, type, image);
+            gl.texImage2D(texture_type, 0, internal_format, format, type, image as ImageData);
         } else {
             throw new Error(`texture type ${texture_type} not supported.`);
         }

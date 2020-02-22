@@ -11,7 +11,7 @@ export class BasicMaterial extends Material {
     albedo_texture: Texture2D | undefined;
     albedo_cube_texture: TextureCubeMap | undefined;
 
-    constructor(color: vec3 | number[]) {
+    constructor(color: vec3) {
         super();
 
         this.albedo = vec3.clone(color);

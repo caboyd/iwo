@@ -160,6 +160,7 @@ const module_rules = {
 					loader: 'file-loader',
 					options: {
 						name: '[path][name].[ext]',
+						esModule:false,
 					},
 				},
 			],
