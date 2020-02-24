@@ -1,15 +1,16 @@
-import { Geometry } from "../geometry/Geometry";
+import { Geometry } from "src/geometry/Geometry";
 import { ReferenceCounter } from "src/helpers/ReferenceCounter";
 import { WebGL } from "./WebglHelper";
 
 export class IndexBuffer {
     public readonly EBO: WebGLBuffer;
     public readonly indices: Uint16Array | Uint32Array;
-    readonly references: ReferenceCounter;
+    public readonly references: ReferenceCounter;
 
-    constructor(gl: WebGL2RenderingContext, geometry: Geometry) {
-        this.EBO = WebGL.buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, geometry.indices!);
-        this.indices = geometry.indices!;
+    public constructor(gl: WebGL2RenderingContext, geometry: Geometry) {
+        if (geometry.indices === undefined) throw new Error("Geometry has no indices.");
+        this.EBO = WebGL.buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, geometry.indices);
+        this.indices = geometry.indices;
         this.references = new ReferenceCounter();
     }
 

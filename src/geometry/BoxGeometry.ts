@@ -3,23 +3,23 @@ import { AttributeType, Geometry, Group } from "./Geometry";
 enum Order {
     x = 0,
     y = 1,
-    z = 2
+    z = 2,
 }
 
 export class BoxGeometry implements Geometry {
-    indices: Uint16Array | Uint32Array | undefined;
-    attribute_flags: number;
-    attributes: Map<AttributeType, ArrayBufferView>;
-    groups: Group[];
+    public indices: Uint16Array | Uint32Array | undefined;
+    public attribute_flags: number;
+    public attributes: Map<AttributeType, ArrayBufferView>;
+    public groups: Group[];
 
-    isInterleaved: boolean;
-    interleaved_attributes: Float32Array;
+    public isInterleaved: boolean;
+    public interleaved_attributes: Float32Array;
 
     //Bounding Sphere
 
     //Bounding Box (AABB)
 
-    constructor(
+    public constructor(
         width: number = 1,
         height: number = 1,
         depth: number = 1,
@@ -30,43 +30,42 @@ export class BoxGeometry implements Geometry {
     ) {
         this.attributes = new Map<AttributeType, ArrayBufferView>();
 
-        let width_segs = Math.floor(width_segments) || 1;
-        let height_segs = Math.floor(height_segments) || 1;
-        let depth_segs = Math.floor(depth_segments) || 1;
+        const width_segs = Math.floor(width_segments) || 1;
+        const height_segs = Math.floor(height_segments) || 1;
+        const depth_segs = Math.floor(depth_segments) || 1;
 
-        let front_back = (width > 0 && height > 0) ? 2 * (width_segs + 1) * (height_segs + 1) : 0;
-        let left_right = (depth > 0 && height > 0) ? 2 * (height_segs + 1) * (depth_segs + 1) : 0;
-        let top_bottom = (depth > 0 && width > 0) ? 2 * (depth_segs + 1) * (width_segs + 1) : 0;
+        let front_back = width > 0 && height > 0 ? 2 * (width_segs + 1) * (height_segs + 1) : 0;
+        let left_right = depth > 0 && height > 0 ? 2 * (height_segs + 1) * (depth_segs + 1) : 0;
+        let top_bottom = depth > 0 && width > 0 ? 2 * (depth_segs + 1) * (width_segs + 1) : 0;
 
-        let total_verts = front_back + left_right + top_bottom;
+        const total_verts = front_back + left_right + top_bottom;
 
         front_back = width_segs * height_segs;
         left_right = height_segs * depth_segs;
         top_bottom = depth_segs * width_segs;
 
-        let total_indices = 6 * 2 * (front_back + left_right + top_bottom);
+        const total_indices = 6 * 2 * (front_back + left_right + top_bottom);
 
         let index_size = 2;
         if (total_verts >= 65536) {
             this.indices = new Uint32Array(total_indices);
             index_size = 4;
-        }
-        else this.indices = new Uint16Array(total_indices);
+        } else this.indices = new Uint16Array(total_indices);
 
-        let indices = this.indices;
+        const indices = this.indices;
 
-        let verts = new Float32Array(total_verts * 3);
-        let normals = new Float32Array(total_verts * 3);
-        let tex_coords = new Float32Array(total_verts * 2);
-        let tangents = new Float32Array(total_verts * 3);
-        let bitangents = new Float32Array(total_verts * 3);
+        const verts = new Float32Array(total_verts * 3);
+        const normals = new Float32Array(total_verts * 3);
+        const tex_coords = new Float32Array(total_verts * 2);
+        const tangents = new Float32Array(total_verts * 3);
+        const bitangents = new Float32Array(total_verts * 3);
 
-        let interleaved = new Float32Array(total_verts * 14);
-        let groups: Group[] = [];
+        const interleaved = new Float32Array(total_verts * 14);
+        const groups: Group[] = [];
 
-        let half_width = width / 2;
-        let half_height = height / 2;
-        let half_depth = depth / 2;
+        const half_width = width / 2;
+        const half_height = height / 2;
+        const half_depth = depth / 2;
 
         let ptr = 0;
         let tex_ptr = 0;
@@ -150,29 +149,29 @@ export class BoxGeometry implements Geometry {
             mat_index: number = 0
         ): void {
             //Construct Vertices For this Side
-            let half_horizontal = horizontal_size / 2;
-            let half_vertical = vertical_size / 2;
+            const half_horizontal = horizontal_size / 2;
+            const half_vertical = vertical_size / 2;
 
-            let horizontal_step = horizontal_size / horizontal_steps;
-            let vertical_step = vertical_size / vertical_steps;
+            const horizontal_step = horizontal_size / horizontal_steps;
+            const vertical_step = vertical_size / vertical_steps;
 
             //The start_vertex is the first vertex the indices array will use
-            let start_vertex = vertex_count;
+            const start_vertex = vertex_count;
 
             for (let x = -half_horizontal, i = 0; i <= horizontal_steps; x += horizontal_step, i++) {
                 for (let y = -half_vertical, j = 0; j <= vertical_steps; y += vertical_step, j++) {
                     //The X,Y,Z Coords are different based on the side
-                    let px = ptr + x_order;
-                    let py = ptr + y_order;
-                    let pz = ptr + z_order;
+                    const px = ptr + x_order;
+                    const py = ptr + y_order;
+                    const pz = ptr + z_order;
 
-                    let ipx = interleaved_ptr + x_order;
-                    let ipy = interleaved_ptr + y_order;
-                    let ipz = interleaved_ptr + z_order;
+                    const ipx = interleaved_ptr + x_order;
+                    const ipy = interleaved_ptr + y_order;
+                    const ipz = interleaved_ptr + z_order;
 
                     //The X coords may go from left to right or right to left
                     interleaved[ipx] = verts[px] = x * x_dir;
-                    
+
                     //The Y coords may go from bottom to top or top to bottom
                     interleaved[ipy] = verts[py] = y * y_dir;
                     //The Z coordinate is the same for a side
@@ -214,10 +213,10 @@ export class BoxGeometry implements Geometry {
             for (let i = 0; i < horizontal_steps; i++) {
                 for (let j = 0; j < vertical_steps; j++) {
                     //The Vertex indices of the 4 corners we need for this quad
-                    let lower_left = start_vertex + (vertical_steps + 1) * i + j;
-                    let lower_right = start_vertex + (vertical_steps + 1) * (i + 1) + j;
-                    let upper_left = lower_left + 1;
-                    let upper_right = lower_right + 1;
+                    const lower_left = start_vertex + (vertical_steps + 1) * i + j;
+                    const lower_right = start_vertex + (vertical_steps + 1) * (i + 1) + j;
+                    const upper_left = lower_left + 1;
+                    const upper_right = lower_right + 1;
 
                     //Counter Clockwise Triangles
                     //Triangle 1
@@ -237,8 +236,11 @@ export class BoxGeometry implements Geometry {
                 }
             }
             //Each side is a seperate group so they can be rendered with different materials
-            groups.push({ count: index_count, offset: (i_ptr - index_count)*index_size, material_index: mat_index } as Group);
-
+            groups.push({
+                count: index_count,
+                offset: (i_ptr - index_count) * index_size,
+                material_index: mat_index,
+            } as Group);
         }
     }
 }

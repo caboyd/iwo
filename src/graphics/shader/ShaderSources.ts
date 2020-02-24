@@ -3,97 +3,92 @@
  *
  * Shader Source Files
  */
-import {BasicShader} from "./BasicShader";
-import {Shader} from "./Shader";
-import {PBRShader} from "./PBRShader";
-import {EquiToCubemapShader} from "./EquiToCubemapShader";
-import {CubemapToIrradianceShader} from "./CubemapToIrradianceShader";
-import {CubemapSpecularPrefilterShader} from "./CubemapSpecularPrefilterShader";
+import { BasicShader } from "./BasicShader";
+import { Shader } from "./Shader";
+import { PBRShader } from "./PBRShader";
+import { EquiToCubemapShader } from "./EquiToCubemapShader";
+import { CubemapToIrradianceShader } from "./CubemapToIrradianceShader";
+import { CubemapSpecularPrefilterShader } from "./CubemapSpecularPrefilterShader";
 
 //Shaders may have a subclass defined for custom shader setup
 interface ShaderSource {
-    name: string,
-    vert: string,
-    frag: string,
+    name: string;
+    vert: string;
+    frag: string;
     subclass: typeof Shader | undefined;
 }
 
-let standardVert: string = require("src/shaders/standard.vert").default;
+const standardVert: string = require("src/shaders/standard.vert").default;
 
-let basicFrag: string = require("src/shaders/basic.frag").default;
-let pbrFrag: string = require("src/shaders/pbr.frag").default;
-let normalOnlyFrag: string = require("src/shaders/normals.frag").default;
-let equiToCubemapFrag: string = require("src/shaders/equirectangularToCubemap.frag").default;
-let cubemapToIrradianceFrag: string = require("src/shaders/irradiance.frag").default;
-let cubemapSpecularPrefilterFrag: string = require("src/shaders/specularPrefilter.frag").default;
+const basicFrag: string = require("src/shaders/basic.frag").default;
+const pbrFrag: string = require("src/shaders/pbr.frag").default;
+const normalOnlyFrag: string = require("src/shaders/normals.frag").default;
+const equiToCubemapFrag: string = require("src/shaders/equirectangularToCubemap.frag").default;
+const cubemapToIrradianceFrag: string = require("src/shaders/irradiance.frag").default;
+const cubemapSpecularPrefilterFrag: string = require("src/shaders/specularPrefilter.frag").default;
 
+const gridVert: string = require("src/shaders/grid.vert").default;
+const gridFrag: string = require("src/shaders/grid.frag").default;
 
-let gridVert: string = require("src/shaders/grid.vert").default;
-let gridFrag: string = require("src/shaders/grid.frag").default;
-
-let brdfVert: string = require("src/shaders/brdf.vert").default;
-let brdfFrag: string = require("src/shaders/brdf.frag").default;
-
-
+const brdfVert: string = require("src/shaders/brdf.vert").default;
+const brdfFrag: string = require("src/shaders/brdf.frag").default;
 
 export namespace ShaderSource {
-    export let Basic: ShaderSource = {
+    export const Basic: ShaderSource = {
         name: "BasicShader",
         vert: standardVert,
         frag: basicFrag,
-        subclass: BasicShader
+        subclass: BasicShader,
     };
 
-    export let PBR: ShaderSource = {
+    export const PBR: ShaderSource = {
         name: "PBRShader",
         vert: standardVert,
         frag: pbrFrag,
         subclass: PBRShader,
     };
 
-    export let NormalOnly: ShaderSource = {
+    export const NormalOnly: ShaderSource = {
         name: "NormalOnlyShader",
         vert: standardVert,
         frag: normalOnlyFrag,
         subclass: undefined,
     };
 
-    export let EquiToCubemap: ShaderSource = {
+    export const EquiToCubemap: ShaderSource = {
         name: "EquiToCubemapShader",
         vert: standardVert,
         frag: equiToCubemapFrag,
         subclass: EquiToCubemapShader,
     };
 
-    export let CubemapToIrradiance: ShaderSource = {
+    export const CubemapToIrradiance: ShaderSource = {
         name: "CubemapToIrradianceShader",
         vert: standardVert,
         frag: cubemapToIrradianceFrag,
         subclass: CubemapToIrradianceShader,
     };
 
-    export let CubemapSpecularPrefilter: ShaderSource = {
+    export const CubemapSpecularPrefilter: ShaderSource = {
         name: "CubemapSpecularPrefilter",
         vert: standardVert,
         frag: cubemapSpecularPrefilterFrag,
         subclass: CubemapSpecularPrefilterShader,
     };
 
-    export let Grid: ShaderSource = {
+    export const Grid: ShaderSource = {
         name: "GridShader",
         vert: gridVert,
         frag: gridFrag,
         subclass: undefined,
     };
-    
-    export let BRDF: ShaderSource = {
+
+    export const BRDF: ShaderSource = {
         name: "BRDFShader",
         vert: brdfVert,
         frag: brdfFrag,
-        subclass: undefined
-    }
+        subclass: undefined,
+    };
 }
 
-
-export let ShaderSources: ShaderSource[] = Object.values(ShaderSource);
-
+export const ShaderSources: ShaderSource[] = Object.values(ShaderSource);

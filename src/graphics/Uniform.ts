@@ -1,10 +1,10 @@
 /*
  * Rewritten and modified by Chris Boyd
- * Copyright (c) 2018 Chris Boyd 
- * 
+ * Copyright (c) 2018 Chris Boyd
+ *
  * Original code from:
  * https://github.com/greggman/twgl.js/blob/933df9634c64766f72d92f4f73edfdda138296e1/src/programs.js
- * 
+ *
  * Copyright 2015, Gregg Tavares.
  * All rights reserved.
  *
@@ -112,12 +112,13 @@ export interface UniformInfo {
 export class Uniform {
     public readonly set: Function;
 
-    constructor(gl: WebGL2RenderingContext, program: WebGLProgram, info: WebGLActiveInfo) {
+    public constructor(gl: WebGL2RenderingContext, program: WebGLProgram, info: WebGLActiveInfo) {
         const location = gl.getUniformLocation(program, info.name)!;
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         const uniform_info = uniform_info_map[info.type as UniformType];
         const is_array = info.size > 1 && info.name.substr(-3) === "[0]";
-        if (is_array) {
-            this.set = uniform_info.set_array!(gl, location);
+        if (is_array && uniform_info.set_array !== undefined) {
+            this.set = uniform_info.set_array(gl, location);
         } else {
             this.set = uniform_info.set(gl, location);
         }
@@ -128,9 +129,10 @@ export class UniformBlock {
     public readonly set: Function;
     private readonly _buffer_view: TypedArray;
 
-    constructor(buffer: ArrayBuffer, type: UniformType, offset: number, count: number, size: number) {
+    public constructor(buffer: ArrayBuffer, type: UniformType, offset: number, count: number, size: number) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         const uniform_info = uniform_info_map[type as UniformType];
-        let total_count = uniform_info.default_rows * count;
+        const total_count = uniform_info.default_rows * count;
 
         if (!uniform_info.Type) throw new Error("Samplers not allowed in Uniform Buffers");
 
@@ -147,7 +149,7 @@ export class UniformBlock {
 
 type UniformInfoMap = { [TKey in UniformType]: UniformInfo };
 
-
+//prettier-ignore
 const uniform_info_map:UniformInfoMap = {
     [UniformType.FLOAT]                         : { Type: Float32Array, size:  4, items_per_row: 1, default_rows: 1, set: setFloat,      set_array: setFloatArray, },
     [UniformType.FLOAT_VEC2]                    : { Type: Float32Array, size:  8, items_per_row: 2, default_rows: 1, set: setVec2Float,  },
@@ -194,7 +196,7 @@ const uniform_info_map:UniformInfoMap = {
 //std140 layout pads everything to be 16 bytes wide
 //so a float array will have 12 bytes padded per
 function setBlockPadded(buffer: TypedArray, items_per_row: number, array_count: number) {
-    return function(value: TypedArray | number[]) {
+    return function(value: TypedArray | number[]): void {
         for (let i = 0; i < array_count; i++) {
             //std140 has 4 items per row
             for (let j = 0; j < items_per_row; j++) {
@@ -205,151 +207,151 @@ function setBlockPadded(buffer: TypedArray, items_per_row: number, array_count: 
 }
 
 function setBlock(buffer: TypedArray) {
-    return function(value: TypedArray | number[]) {
+    return function(value: TypedArray | number[]): void {
         buffer.set(value);
     };
 }
 
 function setFloat(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: number) {
+    return function(value: number): void {
         gl.uniform1f(location, value);
     };
 }
 
 function setFloatArray(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniform1fv(location, value);
     };
 }
 
 function setVec2Float(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniform2fv(location, value);
     };
 }
 
 function setVec3Float(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniform3fv(location, value);
     };
 }
 
 function setVec4Float(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniform4fv(location, value);
     };
 }
 
 function setInt(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: number) {
+    return function(value: number): void {
         gl.uniform1i(location, value);
     };
 }
 
 function setIntArray(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Int32Array | ArrayLike<number>) {
+    return function(value: Int32Array | ArrayLike<number>): void {
         gl.uniform1iv(location, value);
     };
 }
 
 function setVec2Int(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Int32Array | ArrayLike<number>) {
+    return function(value: Int32Array | ArrayLike<number>): void {
         gl.uniform2iv(location, value);
     };
 }
 
 function setVec3Int(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Int32Array | ArrayLike<number>) {
+    return function(value: Int32Array | ArrayLike<number>): void {
         gl.uniform3iv(location, value);
     };
 }
 
 function setVec4Int(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Int32Array | ArrayLike<number>) {
+    return function(value: Int32Array | ArrayLike<number>): void {
         gl.uniform4iv(location, value);
     };
 }
 
 function setUint(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: number) {
+    return function(value: number): void {
         gl.uniform1ui(location, value);
     };
 }
 
 function setUintArray(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Uint32Array | ArrayLike<number>) {
+    return function(value: Uint32Array | ArrayLike<number>): void {
         gl.uniform1uiv(location, value);
     };
 }
 
 function setVec2Uint(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Uint32Array | ArrayLike<number>) {
+    return function(value: Uint32Array | ArrayLike<number>): void {
         gl.uniform2uiv(location, value);
     };
 }
 
 function setVec3Uint(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Uint32Array | ArrayLike<number>) {
+    return function(value: Uint32Array | ArrayLike<number>): void {
         gl.uniform3uiv(location, value);
     };
 }
 
 function setVec4Uint(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Uint32Array | ArrayLike<number>) {
+    return function(value: Uint32Array | ArrayLike<number>): void {
         gl.uniform4uiv(location, value);
     };
 }
 
 function setMat2(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix2fv(location, false, value);
     };
 }
 
 function setMat3(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix3fv(location, false, value);
     };
 }
 
 function setMat4(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix4fv(location, false, value);
     };
 }
 
 function setMat2x3(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix2x3fv(location, false, value);
     };
 }
 
 function setMat3x2(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix3x2fv(location, false, value);
     };
 }
 
 function setMat2x4(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix2x4fv(location, false, value);
     };
 }
 
 function setMat4x2(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix4x2fv(location, false, value);
     };
 }
 
 function setMat3x4(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix3x4fv(location, false, value);
     };
 }
 
 function setMat4x3(gl: WebGL2RenderingContext, location: WebGLUniformLocation) {
-    return function(value: Float32Array | ArrayLike<number>) {
+    return function(value: Float32Array | ArrayLike<number>): void {
         gl.uniformMatrix4x3fv(location, false, value);
     };
 }

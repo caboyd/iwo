@@ -7,4 +7,3 @@ export const enum DrawMode {
     TRIANGLE_STRIP = 0x0005,
     TRIANGLE_FAN = 0x0006,
 }
-

@@ -3,7 +3,7 @@ import { TextureHelper } from "./TextureHelper";
 export class Texture2D {
     public texture_id: WebGLTexture;
 
-    constructor(
+    public constructor(
         gl: WebGL2RenderingContext,
         source: ArrayBufferView | TexImageSource | undefined = undefined,
         width: number = 0,

@@ -1,21 +1,21 @@
 import { mat3, mat4 } from "gl-matrix";
 import { Uniform } from "../Uniform";
 
-let modelview_matrix: mat4 = mat4.create();
-let normalview_matrix: mat3 = mat3.create();
-let mvp_matrix: mat4 = mat4.create();
+const modelview_matrix: mat4 = mat4.create();
+const normalview_matrix: mat3 = mat3.create();
+const mvp_matrix: mat4 = mat4.create();
 
 export class Shader {
-    public uniforms: Map<String, Uniform>;
-    public attributes: Map<String, GLint>;
+    public uniforms: Map<string, Uniform>;
+    public attributes: Map<string, GLint>;
     public readonly ID: WebGLProgram;
     public readonly gl: WebGL2RenderingContext;
 
-    constructor(gl: WebGL2RenderingContext, vertexSourceCode: string, fragmentSourceCode: string) {
+    public constructor(gl: WebGL2RenderingContext, vertexSourceCode: string, fragmentSourceCode: string) {
         this.gl = gl;
 
-        let vertexShader: WebGLShader = Shader.getCompiledShader(gl, vertexSourceCode, gl.VERTEX_SHADER);
-        let fragmentShader: WebGLShader = Shader.getCompiledShader(gl, fragmentSourceCode, gl.FRAGMENT_SHADER);
+        const vertexShader: WebGLShader = Shader.getCompiledShader(gl, vertexSourceCode, gl.VERTEX_SHADER);
+        const fragmentShader: WebGLShader = Shader.getCompiledShader(gl, fragmentSourceCode, gl.FRAGMENT_SHADER);
 
         this.ID = gl.createProgram()!;
         gl.attachShader(this.ID, vertexShader);
@@ -27,28 +27,25 @@ export class Shader {
         }
 
         //TODO: Copy what twgl does and get the uniform names from the shader, before the user does
-        this.uniforms = new Map<String, Uniform>();
-        this.attributes = new Map<String, GLint>();
+        this.uniforms = new Map<string, Uniform>();
+        this.attributes = new Map<string, GLint>();
         this.initUniforms();
-   
-
     }
 
     public initUniforms(): void {
-        let gl = this.gl;
-        let num_uniforms = gl.getProgramParameter(this.ID, gl.ACTIVE_UNIFORMS);
+        const gl = this.gl;
+        const num_uniforms = gl.getProgramParameter(this.ID, gl.ACTIVE_UNIFORMS);
         for (let i = 0; i < num_uniforms; i++) {
-            const info:WebGLActiveInfo = gl.getActiveUniform(this.ID, i)!;
-            this.uniforms.set(info.name,new Uniform(gl, this.ID,info))
+            const info: WebGLActiveInfo = gl.getActiveUniform(this.ID, i)!;
+            this.uniforms.set(info.name, new Uniform(gl, this.ID, info));
         }
     }
-    
-    public setUniform(name:string, value:any|any[]):void{
-        let uniform = this.uniforms.get(name);
-        if(uniform)
-            uniform.set(value);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    public setUniform(name: string, value: any | any[]): void {
+        const uniform = this.uniforms.get(name);
+        if (uniform) uniform.set(value);
     }
-    
 
     public setModelViewBlock(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4): void {
         //Model view matrix

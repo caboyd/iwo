@@ -1,12 +1,13 @@
-import {Shader} from "./Shader";
-import {Renderer} from "../Renderer";
-import {ShaderSource} from "./ShaderSources";
-
+import { Shader } from "./Shader";
+import { Renderer } from "../Renderer";
+import { ShaderSource } from "./ShaderSources";
 
 export class BasicShader extends Shader {
-    constructor(gl: WebGL2RenderingContext,
-                vertexSourceCode: string = ShaderSource.Basic.vert,
-                fragmentSourceCode: string = ShaderSource.Basic.frag) {
+    public constructor(
+        gl: WebGL2RenderingContext,
+        vertexSourceCode: string = ShaderSource.Basic.vert,
+        fragmentSourceCode: string = ShaderSource.Basic.frag
+    ) {
         super(gl, vertexSourceCode, fragmentSourceCode);
         this.use();
         this.setUniform("u_material.albedo_sampler", 0);
@@ -14,7 +15,7 @@ export class BasicShader extends Shader {
     }
 
     public use(): void {
-        let gl = this.gl;
+        const gl = this.gl;
         gl.useProgram(this.ID);
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);

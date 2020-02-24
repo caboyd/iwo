@@ -7,7 +7,7 @@ http://radsite.lbl.gov/radiance/refer/Notes/picture_format.html
 https://github.com/enkimute/hdrpng.js/blob/master/hdrpng.js
  */
 
-import {FileLoader} from "./FileLoader";
+import { FileLoader } from "./FileLoader";
 
 const COLRFMT = "32-bit_rle_rgbe";
 const FMT = "FORMAT";
@@ -29,58 +29,60 @@ export interface HDRBuffer {
     height: number;
 }
 
-export function instanceOfHDRBuffer(object:any):object is HDRBuffer {
-    return 'data' in object && 'width' in object && 'height' in object;
+//NOTE: Why is this necessary?  Why not instance of HDRBuffer?
+export function instanceOfHDRBuffer(object: any): object is HDRBuffer {
+    return "data" in object && "width" in object && "height" in object;
 }
 
 export class HDRImageLoader extends FileLoader {
-    static promise(
+    public static promise(
         file_name: string,
         base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
     ): Promise<HDRBuffer> {
         return new Promise<HDRBuffer>(resolve => {
             super.promise(file_name, base_url).then((response: Response) => {
                 response.arrayBuffer().then((data: ArrayBuffer) => {
-                    let image_data = HDRImageLoader.fromArrayBuffer(data);
+                    const image_data = HDRImageLoader.fromArrayBuffer(data);
 
                     resolve(image_data);
-                })
+                });
             });
         });
     }
 
-    static fromArrayBuffer(data: ArrayBuffer): HDRBuffer {
-        let buffer = new Uint8Array(data);
-        let header: Map<string, string | undefined> = getHeader(buffer);
+    public static fromArrayBuffer(data: ArrayBuffer): HDRBuffer {
+        const buffer = new Uint8Array(data);
+        const header: Map<string, string | undefined> = getHeader(buffer);
 
-        if (!header.has('#?RADIANCE') && !header.has('#?RGBE'))
-            throw new Error("Invalid HDR Image");
+        if (!header.has("#?RADIANCE") && !header.has("#?RGBE")) throw new Error("Invalid HDR Image");
 
-        let good_format = header.get(FMT) === COLRFMT;
-        if (!good_format)
-            throw new Error("Invalid HDR Image FORMAT");
+        const good_format = header.get(FMT) === COLRFMT;
+        if (!good_format) throw new Error("Invalid HDR Image FORMAT");
 
-        let exposure = header.get(EXPOSURE);
+        const exposure = header.get(EXPOSURE);
 
-        let max_y = parseInt(header.get("Y")!);
-        let max_x = parseInt(header.get("X")!);
+        const max_y = parseInt(header.get("Y")!);
+        const max_x = parseInt(header.get("X")!);
 
-        let image = new Uint8Array(max_x * max_y * 4);
+        const image = new Uint8Array(max_x * max_y * 4);
         let image_index = 0;
 
         let buffer_index = parseInt(header.get("HEADER_END")!);
 
         for (let j = 0; j < max_y; j++) {
-            let rgbe = buffer.slice(buffer_index, buffer_index += 4);
-            let scanline = [];
+            const rgbe = buffer.slice(buffer_index, (buffer_index += 4));
+            const scanline = [];
 
-            if ((rgbe[0] != 2) || (rgbe[1] != 2) || (rgbe[2] & 0x80)) throw ('HDR parse error ..');
-            if ((rgbe[2] << 8) + rgbe[3] != max_x) throw('HDR line mismatch ..');
+            if (rgbe[0] != 2 || rgbe[1] != 2 || rgbe[2] & 0x80) throw "HDR parse error ..";
+            if ((rgbe[2] << 8) + rgbe[3] != max_x) throw "HDR line mismatch ..";
 
             for (let i = 0; i < 4; i++) {
-                let ptr = i * max_x, ptr_end = (i + 1) * max_x, buf, count;
+                let ptr = i * max_x;
+                const ptr_end = (i + 1) * max_x;
+                let buf;
+                let count;
                 while (ptr < ptr_end) {
-                    buf = buffer.slice(buffer_index, buffer_index += 2);
+                    buf = buffer.slice(buffer_index, (buffer_index += 2));
                     if (buf[0] > 128) {
                         count = buf[0] - 128;
                         while (count-- > 0) scanline[ptr++] = buf[1];
@@ -98,11 +100,10 @@ export class HDRImageLoader extends FileLoader {
                 image[image_index++] = scanline[i + 3 * max_x];
             }
         }
-        let float_buffer = rgbeToFloat(image);
+        const float_buffer = rgbeToFloat(image);
 
-        return {data: float_buffer, height: max_y, width: max_x} as HDRBuffer;
+        return { data: float_buffer, height: max_y, width: max_x } as HDRBuffer;
     }
-
 
     // static promiseAll(
     //     files: string[],
@@ -136,12 +137,11 @@ export class HDRImageLoader extends FileLoader {
     // }
 }
 
-
 function rgbeToFloat(buffer: Uint8Array): ArrayBufferView {
-    let l = buffer.byteLength >> 2;
-    let result = new Float32Array(l * 3);
+    const l = buffer.byteLength >> 2;
+    const result = new Float32Array(l * 3);
     for (let i = 0; i < l; i++) {
-        let s = Math.pow(2, buffer[i * 4 + 3] - (128 + 8));
+        const s = Math.pow(2, buffer[i * 4 + 3] - (128 + 8));
         result[i * 3] = buffer[i * 4] * s;
         result[i * 3 + 1] = buffer[i * 4 + 1] * s;
         result[i * 3 + 2] = buffer[i * 4 + 2] * s;
@@ -151,29 +151,29 @@ function rgbeToFloat(buffer: Uint8Array): ArrayBufferView {
 
 //
 function getHeader(buffer: Uint8Array): Map<string, string | undefined> {
-    let header = new Map();
+    const header = new Map();
     //Grabs all lines until first empty line
-    let s = '';
+    let s = "";
     let index = 0;
 
     //Grabs text until the after the resolution line
     while (!s.match(/\n\n[^\n]+\n/g)) s += String.fromCharCode(buffer[index++]);
 
-    let lines = s.split(/\n/);
+    const lines = s.split(/\n/);
 
-    for (let line of lines) {
+    for (const line of lines) {
         if (!line) continue;
 
         // Grabs the Resolution line
         // This line is of the form "{+-}{XY} xyres {+-}{YX} yxres\n".
         if (line.match(/[+-][XY] \d+ [+-][YX] \d+/)) {
-            let res = getResolution(line);
-            header.set('X', res.x);
-            header.set('Y', res.y);
+            const res = getResolution(line);
+            header.set("X", res.x);
+            header.set("Y", res.y);
             continue;
         }
 
-        let key_value = line.split('=');
+        const key_value = line.split("=");
         header.set(key_value[0], key_value[1] ? key_value[1] : undefined);
     }
 
@@ -181,17 +181,16 @@ function getHeader(buffer: Uint8Array): Map<string, string | undefined> {
     return header;
 }
 
-
 function getResolution(line: string): Resolution {
-    let values = line.split(' ');
-    let y_index = line.indexOf('Y');
-    let x_index = line.indexOf('X');
+    const values = line.split(" ");
+    const y_index = line.indexOf("Y");
+    const x_index = line.indexOf("X");
 
-    let res: Resolution = {x: 0, y: 0, orientation: 0};
+    const res: Resolution = { x: 0, y: 0, orientation: 0 };
 
     if (x_index > y_index) res.orientation |= YMAJOR;
-    if (line[x_index - 1] == '-') res.orientation |= XDECR;
-    if (line[y_index - 1] == '-') res.orientation |= YDECR;
+    if (line[x_index - 1] == "-") res.orientation |= XDECR;
+    if (line[y_index - 1] == "-") res.orientation |= YDECR;
 
     if (x_index > y_index) {
         res.y = parseInt(values[1]);
@@ -201,13 +200,11 @@ function getResolution(line: string): Resolution {
         res.y = parseInt(values[3]);
     }
 
-    if (res.x <= 0 || res.y <= 0)
-        throw new Error("Invalid HDR Image Resolution in File");
+    if (res.x <= 0 || res.y <= 0) throw new Error("Invalid HDR Image Resolution in File");
 
     //Swap x and y if not Y major
     if (res.orientation & YMAJOR) {
-    } else
-        [res.x, res.y] = [res.y, res.x];
+    } else [res.x, res.y] = [res.y, res.x];
 
     return res;
 }

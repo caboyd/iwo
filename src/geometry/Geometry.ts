@@ -8,7 +8,7 @@ export enum AttributeType {
     Tex_Coords = 2,
     Normals = 4,
     Tangents = 8,
-    Bitangents = 16
+    Bitangents = 16,
 }
 
 export interface Group {

@@ -1,28 +1,27 @@
-import {Material} from "./Material";
-import {Shader} from "../graphics/shader/Shader";
-import {Renderer} from "../graphics/Renderer";
+import { Material } from "./Material";
+import { Shader } from "graphics/shader/Shader";
+import { Renderer } from "graphics/Renderer";
 
-export class GridMaterial extends Material{
-    
-    distance:number;
-    frequency:number;
-    
-    constructor(view_distance:number, frequency:number = 1){
-     super();   
-     this.distance = view_distance;
-     this.frequency = frequency;
+export class GridMaterial extends Material {
+    public distance: number;
+    public frequency: number;
+
+    public constructor(view_distance: number, frequency: number = 1) {
+        super();
+        this.distance = view_distance;
+        this.frequency = frequency;
     }
-    
-    activate(gl:WebGL2RenderingContext):void{
+
+    public activate(gl: WebGL2RenderingContext): void {
         let shader = this.shader;
         shader.setUniform("distance", this.distance);
         shader.setUniform("frequency", this.frequency);
     }
 
-    public  get shader(): Shader{
+    public get shader(): Shader {
         return Renderer.GetShader("GridShader")!;
     }
-    public static get Shader():Shader{
+    public static get Shader(): Shader {
         return Renderer.GetShader("GridShader")!;
     }
 }

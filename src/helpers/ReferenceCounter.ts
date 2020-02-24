@@ -1,20 +1,20 @@
 export class ReferenceCounter {
     private _count: number;
 
-    constructor() {
+    public constructor() {
         this._count = 0;
     }
 
-    increment(): void {
+    public increment(): void {
         this._count++;
     }
 
-    decrement(): void {
+    public decrement(): void {
         this._count--;
         if (this._count < 0) throw new Error("Reference Counter is negative");
     }
 
-    get count(): number {
+    public get count(): number {
         return this._count;
     }
 }

@@ -1,4 +1,4 @@
-import { glMatrix, mat3, mat4, quat, vec3 } from "gl-matrix";
+import { mat4, quat, vec3 } from "gl-matrix";
 
 const SPEED: number = 200.0;
 const SENSITIVITY: number = 0.005;
@@ -13,42 +13,42 @@ export enum Camera_Movement {
 
 let forward = vec3.create();
 let right = vec3.create();
-let temp_quat = quat.create();
-let temp = vec3.create();
+const temp_quat = quat.create();
+const temp = vec3.create();
 
-let FORWARD = vec3.fromValues(0,0,-1);
+const FORWARD = vec3.fromValues(0, 0, -1);
 
 export class Camera {
     public position: vec3;
     public front: vec3;
     public up: vec3;
 
-    private worldUp: vec3;
-    private worldRight: vec3;
-    
-    private movementSpeed: number;
-    private mouseSensitivity: number;
+    private readonly worldUp: vec3;
+    private readonly worldRight: vec3;
+
+    private readonly movementSpeed: number;
+    private readonly mouseSensitivity: number;
 
     private pitch: number;
     private heading: number;
 
-    private orientation: quat;
+    private readonly orientation: quat;
 
-    constructor(pos: vec3, forward: vec3 = FORWARD, up: vec3 = vec3.fromValues(0, 1, 0)) {
+    public constructor(pos: vec3, forward: vec3 = FORWARD, up: vec3 = vec3.fromValues(0, 1, 0)) {
         this.position = vec3.clone(pos);
         this.front = vec3.clone(forward);
-        vec3.normalize(this.front,this.front);
-        
+        vec3.normalize(this.front, this.front);
+
         this.worldUp = vec3.fromValues(0, 1, 0);
-        this.worldRight = vec3.fromValues(1,0,0);
-        
+        this.worldRight = vec3.fromValues(1, 0, 0);
+
         this.up = vec3.clone(up);
-        vec3.normalize(this.up,this.up);
-        
+        vec3.normalize(this.up, this.up);
+
         // console.log(this.front);
         // console.log(this.worldRight);
         // console.log(this.up);
-        
+
         this.movementSpeed = SPEED;
         this.mouseSensitivity = SENSITIVITY;
 
@@ -60,15 +60,15 @@ export class Camera {
     }
 
     public getRight(out: vec3): vec3 {
-        quat.conjugate(temp_quat,this.orientation);
-        vec3.set(out,1,0,0);
+        quat.conjugate(temp_quat, this.orientation);
+        vec3.set(out, 1, 0, 0);
         vec3.transformQuat(out, out, temp_quat);
         return out;
     }
-    
-    public getForward(out:vec3):vec3{
-        quat.conjugate(temp_quat,this.orientation);
-        vec3.set(out,0,0,-1);
+
+    public getForward(out: vec3): vec3 {
+        quat.conjugate(temp_quat, this.orientation);
+        vec3.set(out, 0, 0, -1);
         vec3.transformQuat(out, out, temp_quat);
         return out;
     }
@@ -95,21 +95,21 @@ export class Camera {
     }
 
     public processKeyboard(direction: Camera_Movement, deltaTime: number): void {
-        let velocity: number = this.movementSpeed * deltaTime;
+        const velocity: number = this.movementSpeed * deltaTime;
 
         forward = this.getForward(forward);
         right = this.getRight(right);
 
         if (direction == Camera_Movement.FORWARD) {
-            vec3.scaleAndAdd(this.position,this.position,forward,velocity);
+            vec3.scaleAndAdd(this.position, this.position, forward, velocity);
         } else if (direction == Camera_Movement.BACKWARD) {
-            vec3.scaleAndAdd(this.position,this.position,forward,-velocity);
+            vec3.scaleAndAdd(this.position, this.position, forward, -velocity);
         } else if (direction == Camera_Movement.LEFT) {
-            vec3.scaleAndAdd(this.position,this.position,right,-velocity);
+            vec3.scaleAndAdd(this.position, this.position, right, -velocity);
         } else if (direction == Camera_Movement.RIGHT) {
-            vec3.scaleAndAdd(this.position,this.position,right,velocity);
-        }else if(direction == Camera_Movement.UP){
-            vec3.scaleAndAdd(this.position,this.position,this.worldUp,velocity);
+            vec3.scaleAndAdd(this.position, this.position, right, velocity);
+        } else if (direction == Camera_Movement.UP) {
+            vec3.scaleAndAdd(this.position, this.position, this.worldUp, velocity);
         }
     }
 
@@ -131,19 +131,19 @@ export class Camera {
             if (this.pitch > Math.PI / 2) this.pitch = Math.PI / 2;
             if (this.pitch < -Math.PI / 2) this.pitch = -Math.PI / 2;
         }
-        
+
         this.calculateOrientation();
     }
 
-    private calculateOrientation() {
-        let pitch_quat = quat.setAxisAngle(quat.create(), this.worldRight, this.pitch);
-        let heading_quat = quat.setAxisAngle(quat.create(), this.worldUp, this.heading);
+    private calculateOrientation(): void {
+        const pitch_quat = quat.setAxisAngle(quat.create(), this.worldRight, this.pitch);
+        const heading_quat = quat.setAxisAngle(quat.create(), this.worldUp, this.heading);
 
         quat.identity(this.orientation);
         quat.mul(this.orientation, this.orientation, pitch_quat);
         quat.mul(this.orientation, this.orientation, heading_quat);
-        
-     //   console.log(this.orientation);
-     //   console.log(this.getRight(vec3.create()));
+
+        //   console.log(this.orientation);
+        //   console.log(this.getRight(vec3.create()));
     }
 }

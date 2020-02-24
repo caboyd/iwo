@@ -1,30 +1,29 @@
-import {IndexBuffer} from "./IndexBuffer";
-import {VertexBuffer} from "./VertexBuffer";
-import {Shader} from "./shader/Shader";
-import {mat3, mat4} from "gl-matrix";
-import {Texture2D} from "./Texture2D";
-import {UniformBuffer} from "./UniformBuffer";
-import {Material} from "../materials/Material";
-import {RendererStats} from "./RendererStats";
-import {TextureCubeMap} from "./TextureCubeMap";
-import {ShaderSource, ShaderSources} from "./shader/ShaderSources";
+import { IndexBuffer } from "./IndexBuffer";
+import { VertexBuffer } from "./VertexBuffer";
+import { Shader } from "./shader/Shader";
+import { mat3, mat4 } from "gl-matrix";
+import { Texture2D } from "./Texture2D";
+import { UniformBuffer } from "./UniformBuffer";
+import { Material } from "src/materials/Material";
+import { RendererStats } from "./RendererStats";
+import { TextureCubeMap } from "./TextureCubeMap";
+import { ShaderSource, ShaderSources } from "./shader/ShaderSources";
 
+const temp: mat4 = mat4.create();
 
-let temp: mat4 = mat4.create();
-
-let modelview_matrix: mat4 = mat4.create();
+const modelview_matrix: mat4 = mat4.create();
 let normalview_matrix: mat3 | null = mat3.create();
-let mvp_matrix: mat4 = mat4.create();
+const mvp_matrix: mat4 = mat4.create();
 
 export class ViewportDimensions {
-    x: number = 0;
-    y: number = 0;
-    width: number = 0;
-    height: number = 0;
+    public x: number = 0;
+    public y: number = 0;
+    public width: number = 0;
+    public height: number = 0;
 }
 
 export class Renderer {
-    readonly gl: WebGL2RenderingContext;
+    public readonly gl: WebGL2RenderingContext;
     private current_vertex_buffer: VertexBuffer | undefined;
     private current_index_buffer: IndexBuffer | undefined;
     private current_material: Material | undefined;
@@ -44,30 +43,31 @@ export class Renderer {
 
     public viewport: ViewportDimensions = new ViewportDimensions();
 
-    constructor(gl: WebGL2RenderingContext) {
+    public constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
         this.stats = new RendererStats();
-
 
         Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
         Renderer._EMPTY_CUBE_TEXTURE = new TextureCubeMap(gl).texture_id;
 
         Renderer._Shaders = new Map<string, Shader>();
 
-        for (let shader_source of ShaderSources) {
+        for (const shader_source of ShaderSources) {
             if (shader_source.subclass !== undefined) {
-                Renderer._Shaders.set(shader_source.name,
-                    new shader_source.subclass(gl, shader_source.vert, shader_source.frag));
+                Renderer._Shaders.set(
+                    shader_source.name,
+                    new shader_source.subclass(gl, shader_source.vert, shader_source.frag)
+                );
             } else {
                 Renderer._Shaders.set(shader_source.name, new Shader(gl, shader_source.vert, shader_source.frag));
             }
         }
 
-        let shader = Renderer.GetShader(ShaderSource.PBR.name)!;
+        const shader = Renderer.GetShader(ShaderSource.PBR.name)!;
         //Requires shader that has these uniform buffers present
         this.uboPerFrameBlock = new UniformBuffer(shader, "ubo_per_frame");
         this.uboPerModelBlock = new UniformBuffer(shader, "ubo_per_model");
-        for (let shader of Renderer._Shaders.values()) {
+        for (const shader of Renderer._Shaders.values()) {
             this.uboPerFrameBlock.bindShader(shader, this.PerFrameBinding);
             this.uboPerModelBlock.bindShader(shader, this.PerModelBinding);
         }
@@ -92,17 +92,15 @@ export class Renderer {
 
         //NOTE: Does this bug if normalFromMat4 returns null?
         normalview_matrix = mat3.normalFromMat4(normalview_matrix!, modelview_matrix);
-        if (normalview_matrix)
-            this.uboPerModelBlock.set("normal_view", normalview_matrix);
-        else
-            throw new Error("Determinant could not be calculated for normalview_matrix");
+        if (normalview_matrix) this.uboPerModelBlock.set("normal_view", normalview_matrix);
+        else throw new Error("Determinant could not be calculated for normalview_matrix");
 
         this.uboPerModelBlock.set("mvp", mat4.mul(mvp_matrix, proj_matrix, modelview_matrix));
         this.uboPerModelBlock.update(this.gl);
     }
 
-    public setViewport(x: number, y: number, width: number, height: number) {
-        this.viewport = {x, y, width, height};
+    public setViewport(x: number, y: number, width: number, height: number): void {
+        this.viewport = { x, y, width, height };
         this.gl.viewport(x, y, width, height);
     }
 
@@ -164,25 +162,23 @@ export class Renderer {
         this.current_material = undefined;
     }
 
-    static get EMPTY_TEXTURE(): WebGLTexture {
+    public static get EMPTY_TEXTURE(): WebGLTexture {
         return this._EMPTY_TEXTURE;
     }
 
-    static get EMPTY_CUBE_TEXTURE(): WebGLTexture {
+    public static get EMPTY_CUBE_TEXTURE(): WebGLTexture {
         return this._EMPTY_CUBE_TEXTURE;
     }
 
-    static get BRDF_LUT_TEXTURE(): WebGLTexture | undefined {
+    public static get BRDF_LUT_TEXTURE(): WebGLTexture | undefined {
         return this._BRDF_LUT_TEXTURE;
     }
 
-    static set BRDF_LUT_TEXTURE(tex: WebGLTexture | undefined) {
+    public static set BRDF_LUT_TEXTURE(tex: WebGLTexture | undefined) {
         this._BRDF_LUT_TEXTURE = tex;
     }
 
-    static GetShader(name: string): Shader | undefined {
+    public static GetShader(name: string): Shader | undefined {
         return this._Shaders.get(name);
     }
-
 }
-

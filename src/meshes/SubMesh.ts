@@ -12,7 +12,7 @@ export class SubMesh {
     //Material index reference the material of the mesh instance
     public readonly material_index: number;
 
-    constructor(
+    public constructor(
         material_index: number,
         offset: number,
         count: number,
@@ -29,7 +29,7 @@ export class SubMesh {
         if (this.index_buffer) this.index_buffer.references.increment();
     }
 
-    destroy(): void {
+    public destroy(): void {
         this.vertex_buffer.references.decrement();
         if (this.index_buffer) this.index_buffer.references.decrement();
     }

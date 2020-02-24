@@ -1,17 +1,17 @@
-import {Shader} from "./shader/Shader";
-import {UniformBlock} from "./Uniform";
+import { Shader } from "./shader/Shader";
+import { UniformBlock } from "./Uniform";
 import TypedArray = NodeJS.TypedArray;
 
 const BAD_VALUE = 4294967295;
 
 export class UniformBuffer {
-    id: WebGLBuffer;
-    data: ArrayBuffer;
-    view: Float32Array;
-    map: Map<string, UniformBlock>;
-    name: string;
+    public id: WebGLBuffer;
+    public data: ArrayBuffer;
+    public view: Float32Array;
+    public map: Map<string, UniformBlock>;
+    public name: string;
 
-    constructor(shader: Shader, uniform_block_name: string) {
+    public constructor(shader: Shader, uniform_block_name: string) {
         const gl = shader.gl;
         const program = shader.ID;
 
@@ -19,7 +19,7 @@ export class UniformBuffer {
         this.id = gl.createBuffer()!;
         this.map = new Map<string, UniformBlock>();
 
-        let block_index = gl.getUniformBlockIndex(program, this.name);
+        const block_index = gl.getUniformBlockIndex(program, this.name);
 
         //UniformBuffer doesn't exist or was optimized out
         if (block_index === BAD_VALUE) {
@@ -39,8 +39,8 @@ export class UniformBuffer {
         this.data = new ArrayBuffer(block_size);
         this.view = new Float32Array(this.data);
 
-        for (let [index, uniform_index] of indices.entries()) {
-            let info: WebGLActiveInfo = gl.getActiveUniform(program, uniform_index)!;
+        for (const [index, uniform_index] of indices.entries()) {
+            const info: WebGLActiveInfo = gl.getActiveUniform(program, uniform_index)!;
             let name = info.name;
             const is_array = info.size > 1 && info.name.substr(-3) === "[0]";
             if (is_array) name = name.substr(0, name.length - 3);
@@ -57,9 +57,9 @@ export class UniformBuffer {
         gl.bufferData(gl.UNIFORM_BUFFER, block_size, gl.DYNAMIC_DRAW);
     }
 
-    public bindShader(shader: Shader, binding: number) {
-        let gl = shader.gl;
-        let block_index = gl.getUniformBlockIndex(shader.ID, this.name);
+    public bindShader(shader: Shader, binding: number): void {
+        const gl = shader.gl;
+        const block_index = gl.getUniformBlockIndex(shader.ID, this.name);
         gl.uniformBlockBinding(shader.ID, block_index, binding);
         gl.bindBufferBase(gl.UNIFORM_BUFFER, binding, this.id);
     }
@@ -70,7 +70,7 @@ export class UniformBuffer {
     }
 
     public set(uniform_name: string, data: TypedArray | number[] | number): void {
-        let uniform_block = this.map.get(uniform_name);
+        const uniform_block = this.map.get(uniform_name);
         if (uniform_block) uniform_block.set(data);
     }
 }
