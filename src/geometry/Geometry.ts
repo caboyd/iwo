@@ -24,7 +24,7 @@ export interface Geometry {
     groups: Group[];
 
     isInterleaved: boolean;
-    interleaved_attributes: Float32Array;
+    interleaved_attributes: Float32Array | undefined;
     //Bounding Sphere
 
     //Bounding Box (AABB)

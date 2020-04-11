@@ -27,6 +27,7 @@ export interface HDRBuffer {
     data: ArrayBufferView;
     width: number;
     height: number;
+    exposure: number;
 }
 
 //NOTE: Why is this necessary?  Why not instance of HDRBuffer?
@@ -35,10 +36,7 @@ export function instanceOfHDRBuffer(object: any): object is HDRBuffer {
 }
 
 export class HDRImageLoader extends FileLoader {
-    public static promise(
-        file_name: string,
-        base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
-    ): Promise<HDRBuffer> {
+    public static promise(file_name: string, base_url: string = this.Default_Base_URL): Promise<HDRBuffer> {
         return new Promise<HDRBuffer>(resolve => {
             super.promise(file_name, base_url).then((response: Response) => {
                 response.arrayBuffer().then((data: ArrayBuffer) => {
@@ -59,7 +57,7 @@ export class HDRImageLoader extends FileLoader {
         const good_format = header.get(FMT) === COLRFMT;
         if (!good_format) throw new Error("Invalid HDR Image FORMAT");
 
-        const exposure = header.get(EXPOSURE);
+        const exposure = header.has(EXPOSURE) ? header.get(EXPOSURE) : 1;
 
         const max_y = parseInt(header.get("Y")!);
         const max_x = parseInt(header.get("X")!);
@@ -102,7 +100,7 @@ export class HDRImageLoader extends FileLoader {
         }
         const float_buffer = rgbeToFloat(image);
 
-        return { data: float_buffer, height: max_y, width: max_x } as HDRBuffer;
+        return { data: float_buffer, height: max_y, width: max_x, exposure:exposure } as HDRBuffer;
     }
 
     // static promiseAll(
