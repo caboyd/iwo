@@ -12,7 +12,7 @@ export namespace TextureHelper {
     export function texParameterBuffer(
         gl: WebGL2RenderingContext,
         texture_type: TextureType,
-        buffer: ArrayBufferView | null | undefined,
+        buffer: ArrayBufferView | null,
         width: number,
         height: number,
         wrap_S: number,

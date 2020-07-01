@@ -38,7 +38,7 @@ export class Texture2D {
                 format, type, flip);
         } else if (width !== 0 && height !== 0) {
             //prettier-ignore
-            this.setImageByBuffer(gl, source, width, height, wrap_S, wrap_T, mag_filter, min_filter, internal_format,
+            this.setImageByBuffer(gl, null, width, height, wrap_S, wrap_T, mag_filter, min_filter, internal_format,
                 format, type, flip);
         } else {
             //No image or buffer sets texture to pink black checkerboard
@@ -73,7 +73,7 @@ export class Texture2D {
 
     public setImageByBuffer(
         gl: WebGL2RenderingContext,
-        buffer: ArrayBufferView | null | undefined,
+        buffer: ArrayBufferView | null,
         width: number,
         height: number,
         wrap_S: number = gl.REPEAT,

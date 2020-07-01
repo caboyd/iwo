@@ -58,7 +58,7 @@ export class TextureCubeMap {
                 mag_filter, min_filter, internal_format, format, type, flip);
         } else if (width !== 0 && height !== 0) {
             //prettier-ignore
-            TextureHelper.texParameterBuffer(gl, gl.TEXTURE_CUBE_MAP, source, width, height, wrap_S, wrap_T, wrap_R,
+            TextureHelper.texParameterBuffer(gl, gl.TEXTURE_CUBE_MAP, null, width, height, wrap_S, wrap_T, wrap_R,
                 mag_filter, min_filter, internal_format, format, type, flip);
         } else {
             //No image or buffer sets texture to pink black checkerboard
