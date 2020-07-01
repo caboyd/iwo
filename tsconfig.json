@@ -4,7 +4,7 @@
     "moduleResolution": "node",
     "module": "es6",
     "sourceMap": true,
-    "declaration": false,
+    "declaration": true,
     "baseUrl": ".",
     "paths":{
       "*":[
@@ -25,7 +25,9 @@
     "property-declaration"
   ],
   "exclude": [
-    "node_modules"
+    "dist",
+    "node_modules",
+    "rollup.config.ts"
   ]
 
 }

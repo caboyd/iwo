@@ -1,20 +1,27 @@
 {
-  "name": "iwo.ts",
+  "name": "iwo",
   "sideEffects": false,
   "version": "0.2.2",
   "description": "Typescript Webgl2 Physically Based Renderer",
-  "main": "dist/iwo.js",
+  "main": "dist/iwo.umd.js",
+  "module": "dist/iwo.es5.js",
+  "typings": "dist/types/iwo.d.ts",
   "scripts": {
     "watch": "webpack --progress --colors --watch --mode=production",
     "build": "webpack --progress --colors --mode=production",
     "builddev": "webpack --progress --colors --mode=development",
+    "rollupbuild": "tsc --module commonjs && rollup -c rollup.config.ts",
     "dev": "webpack-dev-server --content-base ./ --colors --hot --inline --mode=development --env.devServer",
     "gh-publish": "npm run build&&cd dist&&git add --all&&git commit -m \"Deploy to gh-pages\"&&git push origin gh-pages&&cd.."
   },
-  "author": "Chris Boyd",
+  "author": "caboyd",
   "license": "MIT",
   "repository": {
-    "type": "git"
+    "type": "git",
+    "url": "https://github.com/caboyd/ts-pbr-renderer"
+  },
+  "engines": {
+    "node": ">12.0.0"
   },
   "prettier": {
     "tabWidth": 4,
@@ -24,30 +31,35 @@
     "semi": true,
     "trailingComma": "es5"
   },
-  "dependencies": {},
+  "dependencies": {
+    "gl-matrix": "^3.3.0"
+  },
   "devDependencies": {
-    "@types/gl-matrix": "^2.4.5",
-    "@types/node": "^13.11.1",
-    "@types/webgl2": "0.0.5",
+    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-html": "^0.2.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^8.1.0",
+    "@types/node": "^13.13.12",
     "eslint": "^6.8.0",
-    "eslint-config-prettier": "^6.10.1",
-    "eslint-plugin-prettier": "^3.1.2",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-plugin-prettier": "^3.1.4",
     "file-loader": "^5.1.0",
-    "gl-matrix": "^3.3.0",
     "html-webpack-externals-plugin": "^3.8.0",
     "html-webpack-plugin": "^3.2.0",
     "imagemin-webpack-plugin": "^2.4.2",
     "prettier": "^1.19.1",
-    "raw-loader": "^4.0.0",
+    "raw-loader": "^4.0.1",
+    "rollup": "^2.18.1",
+    "rollup-plugin-copy": "^3.3.0",
+    "rollup-plugin-serve": "^1.0.1",
+    "rollup-plugin-sourcemaps": "^0.6.2",
+    "rollup-plugin-typescript2": "^0.27.1",
     "string-replace-loader": "^2.3.0",
-    "terser-webpack-plugin": "^2.3.5",
+    "terser-webpack-plugin": "^2.3.7",
     "ts-loader": "^6.2.2",
-    "typescript": "^3.8.3",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11",
-    "webpack-dev-server": "^3.10.3"
-  },
-  "peerDependencies": {
-    "gl-matrix": "^3.2.1"
+    "typescript": "^3.9.6",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12",
+    "webpack-dev-server": "^3.11.0"
   }
 }
