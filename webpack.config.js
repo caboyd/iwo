@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const ImageminPlugin = require("imagemin-webpack-plugin").default;
 const HtmlWebpackExternalsPlugin = require("html-webpack-externals-plugin");
 const TerserPlugin = require("terser-webpack-plugin");
+const nodeExternals = require('webpack-node-externals');
 
 let examples = {
     pbr_example: "PBR Example",
@@ -61,8 +62,9 @@ const buildExamplesConfig = (env, argv) => {
             "examples/sphere_geometry_example": "examples/sphere_geometry_example.ts",
         },
         externals: {
-			"gl-matrix": "glMatrix",
-		},
+            "gl-matrix":"glMatrix",
+        },
+
         optimization: {
             minimize: false,
             splitChunks: {
@@ -78,7 +80,7 @@ const buildExamplesConfig = (env, argv) => {
         plugins: Object.keys(examples)
             .map(function(id) {
                 return new HtmlWebpackPlugin({
-                    chunks: ["iwo", `examples/${id}`],
+                    chunks: ['iwo',`examples/${id}`],
                     filename: `examples/${id}.html`,
                     template: "examples/template.html",
                     title: `IWO Renderer - ${examples[id]}`,
@@ -98,6 +100,15 @@ const buildExamplesConfig = (env, argv) => {
                         optimizationLevel: 3,
                     },
                 })
+            ).concat(
+                new HtmlWebpackExternalsPlugin({
+                    externals: [
+                    {
+                        module: "gl-matrix",
+                        entry: "gl-matrix-min.js",
+                        global: "glMatrix",
+                    }]
+                })
             )
             .concat(
                 new HtmlWebpackPlugin({
@@ -116,6 +127,7 @@ const resolve_rules = {
     modules: [path.resolve(__dirname), "src", "node_modules"],
     // Add `.ts` and `.tsx` as a resolvable extension.
     extensions: [".webpack.js", ".web.js", ".ts", ".tsx", ".js", ".vert", ".frag"],
+
 };
 
 const module_rules = {
@@ -161,4 +173,4 @@ const module_rules = {
     ],
 };
 
-module.exports = [buildExamplesConfig, buildConfig];
+module.exports = [buildExamplesConfig];

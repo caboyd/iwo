@@ -4,7 +4,7 @@ import { Shader } from "./shader/Shader";
 import { mat3, mat4 } from "gl-matrix";
 import { Texture2D } from "./Texture2D";
 import { UniformBuffer } from "./UniformBuffer";
-import { Material } from "src/materials/Material";
+import { Material } from "materials/Material";
 import { RendererStats } from "./RendererStats";
 import { TextureCubeMap } from "./TextureCubeMap";
 import { ShaderSource, ShaderSources } from "./shader/ShaderSources";

@@ -1,14 +1,14 @@
 import resolve from '@rollup/plugin-node-resolve'
 import commonjs from '@rollup/plugin-commonjs'
 import sourceMaps from 'rollup-plugin-sourcemaps'
-import typescript from 'rollup-plugin-typescript2'
+import typescript from 'rollup-plugin-typescript2';
 import json from '@rollup/plugin-json'
-// @ts-ignore
-import copy from 'rollup-plugin-copy'
+
 
 const pkg = require('./package.json');
 
 const libraryName = 'iwo';
+
 
 export default {
     input: `src/${libraryName}.ts`,
@@ -31,14 +31,11 @@ export default {
         // Allow node_modules resolution, so you can use 'external' to control
         // which external modules to include in the bundle
         // https://github.com/rollup/rollup-plugin-node-resolve#usage
-        resolve(),
-
+        resolve( {
+          browser:true
+        }),
         // Resolve source maps to the original source
+
         sourceMaps(),
-        copy({
-            targets: [
-                { src: 'examples/index.html', dest: 'dist'}
-            ]
-        })
-    ],
+        ]
 }

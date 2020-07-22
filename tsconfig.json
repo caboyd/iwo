@@ -1,16 +1,14 @@
 {
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2015",
     "moduleResolution": "node",
-    "module": "es6",
+    "module": "es2015",
     "sourceMap": true,
-    "declaration": true,
+    "declaration": false,
     "baseUrl": ".",
-    "paths":{
-      "*":[
-        "src/*",
-        "examples/*",
-        "*"
+    "paths": {
+      "*": [
+        "src/*"
       ]
     },
     "outDir": "dist",
@@ -28,6 +26,8 @@
     "dist",
     "node_modules",
     "rollup.config.ts"
+  ],
+  "include": [
+    "src"
   ]
-
 }

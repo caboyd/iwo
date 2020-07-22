@@ -4,10 +4,10 @@
             
  */
 
-import { Geometry } from "src/geometry/Geometry";
-import { DrawMode } from "src/graphics/WebglConstants";
-import { IndexBuffer } from "src/graphics/IndexBuffer";
-import { VertexBuffer } from "src/graphics/VertexBuffer";
+import { Geometry } from "geometry/Geometry";
+import { DrawMode } from "graphics/WebglConstants";
+import { IndexBuffer } from "graphics/IndexBuffer";
+import { VertexBuffer } from "graphics/VertexBuffer";
 import { SubMesh } from "./SubMesh";
 
 export class Mesh {

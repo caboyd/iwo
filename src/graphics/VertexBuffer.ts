@@ -1,6 +1,6 @@
 import { WebGL } from "./WebglHelper";
-import { AttributeType, Geometry } from "src/geometry/Geometry";
-import { ReferenceCounter } from "src/helpers/ReferenceCounter";
+import { AttributeType, Geometry } from "geometry/Geometry";
+import { ReferenceCounter } from "helpers/ReferenceCounter";
 import { AttributeBuffer } from "./AttributeBuffer";
 
 export class VertexBuffer {

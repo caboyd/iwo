@@ -5,7 +5,10 @@
   "description": "Typescript Webgl2 Physically Based Renderer",
   "main": "dist/iwo.umd.js",
   "module": "dist/iwo.es5.js",
-  "typings": "dist/types/iwo.d.ts",
+  "typings": "dist/iwo.d.ts",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "watch": "webpack --progress --colors --watch --mode=production",
     "build": "webpack --progress --colors --mode=production",
@@ -36,9 +39,9 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^13.0.0",
-    "@rollup/plugin-html": "^0.2.0",
     "@rollup/plugin-json": "^4.1.0",
     "@rollup/plugin-node-resolve": "^8.1.0",
+    "@rollup/plugin-typescript": "^5.0.2",
     "@types/node": "^13.13.12",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
@@ -50,16 +53,16 @@
     "prettier": "^1.19.1",
     "raw-loader": "^4.0.1",
     "rollup": "^2.18.1",
-    "rollup-plugin-copy": "^3.3.0",
-    "rollup-plugin-serve": "^1.0.1",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-sourcemaps": "^0.6.2",
     "rollup-plugin-typescript2": "^0.27.1",
     "string-replace-loader": "^2.3.0",
     "terser-webpack-plugin": "^2.3.7",
     "ts-loader": "^6.2.2",
-    "typescript": "^3.9.6",
+    "typescript": "^3.9.7",
     "webpack": "^4.43.0",
     "webpack-cli": "^3.3.12",
-    "webpack-dev-server": "^3.11.0"
+    "webpack-dev-server": "^3.11.0",
+    "webpack-node-externals": "^2.5.0"
   }
 }

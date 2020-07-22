@@ -14,8 +14,6 @@ let mouse_x_total = 0;
 let mouse_y_total = 0;
 let keys: Array<boolean> = [];
 
-let spheres: IWO.MeshInstance[];
-let sphere_mat: IWO.Material;
 let grid: IWO.MeshInstance;
 let renderer: IWO.Renderer;
 
@@ -33,7 +31,7 @@ const moveCallback = (e: MouseEvent): void => {
 };
 
 (function loadWebGL(): void {
-console.log("alive");
+
     (function () {
         let script = document.createElement('script');
         script.onload = function () {
@@ -83,11 +81,6 @@ console.log("alive");
     let sun_intensity = 9;
     let sun_color = [sun_intensity * 254 / 255, sun_intensity * 238 / 255, sun_intensity * 224 / 255];
 
-    let pbrShader = IWO.PBRMaterial.Shader;
-    pbrShader.use();
-    pbrShader.setUniform("u_lights[0].position", [sun_dir[0], sun_dir[1], sun_dir[2], 0]);
-    pbrShader.setUniform("u_lights[0].color", sun_color);
-    pbrShader.setUniform("u_light_count", 1);
 
     initScene();
 
@@ -112,27 +105,11 @@ function initScene(): void {
     let plane_geom = new IWO.PlaneGeometry(100, 100, 1, 1, true);
     let plane_mesh = new IWO.Mesh(gl, plane_geom);
 
-    sphere_mat = new IWO.PBRMaterial(vec3.fromValues(1, 1, 1), 0,0, 2);
-
     //GRID
     let grid_mat = new IWO.GridMaterial(50);
     grid = new IWO.MeshInstance(plane_mesh, grid_mat);
 
-    //SPHERES
-    spheres = [];
-    let num_cols = 8;
-    let num_rows = 8;
-    for (let i = 0; i <= num_cols; i++) {
-        for (let k = 0; k <= num_rows; k++) {
-            let sphere_geom = new IWO.SphereGeometry(0.75, 3+i*2, 2+k*2);
-            let sphere_mesh = new IWO.Mesh(gl, sphere_geom);
-            let s = new IWO.MeshInstance(sphere_mesh, sphere_mat);
-            spheres.push(s);
-            let model = s.model_matrix;
-            mat4.identity(model);
-            mat4.translate(model, model, vec3.fromValues((i - num_cols / 2) * 2, 2 * num_rows - k * 2, 0));
-        }
-    }
+    //Load OBJ
 
 }
 
@@ -158,9 +135,6 @@ function drawScene(): void {
     camera.getViewMatrix(view_matrix);
     renderer.setPerFrameUniforms(view_matrix, proj_matrix);
 
-    for (let sphere of spheres) {
-        sphere.render(renderer, view_matrix, proj_matrix);
-    }
 
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);

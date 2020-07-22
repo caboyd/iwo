@@ -1,5 +1,5 @@
-import { IndexBuffer } from "src/graphics/IndexBuffer";
-import { VertexBuffer } from "src/graphics/VertexBuffer";
+import { IndexBuffer } from "graphics/IndexBuffer";
+import { VertexBuffer } from "graphics/VertexBuffer";
 
 export class SubMesh {
     public readonly index_buffer: IndexBuffer | undefined;

@@ -1,5 +1,5 @@
-import { Geometry } from "src/geometry/Geometry";
-import { ReferenceCounter } from "src/helpers/ReferenceCounter";
+import { Geometry } from "geometry/Geometry";
+import { ReferenceCounter } from "helpers/ReferenceCounter";
 import { WebGL } from "./WebglHelper";
 
 export class IndexBuffer {

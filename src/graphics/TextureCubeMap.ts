@@ -1,13 +1,13 @@
 import { Renderer } from "./Renderer";
 import { mat4 } from "gl-matrix";
 import { Texture2D } from "./Texture2D";
-import { HDRBuffer, instanceOfHDRBuffer } from "src/loader/HDRImageLoader";
-import { BoxGeometry } from "src/geometry/BoxGeometry";
-import { Mesh } from "src/meshes/Mesh";
+import { HDRBuffer, instanceOfHDRBuffer } from "loader/HDRImageLoader";
+import { BoxGeometry } from "geometry/BoxGeometry";
+import { Mesh } from "meshes/Mesh";
 import { ShaderSource } from "./shader/ShaderSources";
-import { CubeCamera } from "src/cameras/CubeCamera";
+import { CubeCamera } from "cameras/CubeCamera";
 import { TextureHelper } from "./TextureHelper";
-import { AttributeType, Geometry } from "src/geometry/Geometry";
+import { AttributeType, Geometry } from "geometry/Geometry";
 
 export class TextureCubeMap {
     public texture_id: WebGLTexture;
