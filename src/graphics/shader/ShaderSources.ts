@@ -18,43 +18,29 @@ interface ShaderSource {
     subclass: typeof Shader | undefined;
 }
 
-// const standardVert: string = require("src/shaders/standard.vert").default;
-//
-// const basicFrag: string = require("src/shaders/basic.frag").default;
-// const pbrFrag: string = require("src/shaders/pbr.frag").default;
-// const normalOnlyFrag: string = require("src/shaders/normals.frag").default;
-// const equiToCubemapFrag: string = require("src/shaders/equirectangularToCubemap.frag").default;
-// const cubemapToIrradianceFrag: string = require("src/shaders/irradiance.frag").default;
-// const cubemapSpecularPrefilterFrag: string = require("src/shaders/specularPrefilter.frag").default;
-//
-// const gridVert: string = require("src/shaders/grid.vert").default;
-// const gridFrag: string = require("src/shaders/grid.frag").default;
-//
-// const brdfVert: string = require("src/shaders/brdf.vert").default;
-// const brdfFrag: string = require("src/shaders/brdf.frag").default;
-
+//NOTE: Relative import is required for rollup-plugin-node-resolve to resolve these extensions
 // @ts-ignore
-import standardVert from "shaders/standard.vert";
+import standardVert from "../../shaders/standard.vert";
 // @ts-ignore
-import basicFrag from "shaders/basic.frag";
+import basicFrag from "../../shaders/basic.frag";
 // @ts-ignore
-import pbrFrag from "shaders/pbr.frag";
+import pbrFrag from "../../shaders/pbr.frag";
 // @ts-ignore
-import normalOnlyFrag from "shaders/normals.frag";
+import normalOnlyFrag from "../../shaders/normals.frag";
 // @ts-ignore
-import equiToCubemapFrag from "shaders/equirectangularToCubemap.frag";
+import equiToCubemapFrag from "../../shaders/equirectangularToCubemap.frag";
 // @ts-ignore
-import cubemapToIrradianceFrag from "shaders/irradiance.frag";
+import cubemapToIrradianceFrag from "../../shaders/irradiance.frag";
 // @ts-ignore
-import cubemapSpecularPrefilterFrag from "shaders/specularPrefilter.frag";
+import cubemapSpecularPrefilterFrag from "../../shaders/specularPrefilter.frag";
 // @ts-ignore
-import gridVert from "shaders/grid.vert";
+import gridVert from "../../shaders/grid.vert";
 // @ts-ignore
-import gridFrag from "shaders/grid.frag";
+import gridFrag from "../../shaders/grid.frag";
 // @ts-ignore
-import brdfVert from "shaders/brdf.vert";
+import brdfVert from "../../shaders/brdf.vert";
 // @ts-ignore
-import brdfFrag from "shaders/brdf.frag";
+import brdfFrag from "../../shaders/brdf.frag";
 
 export namespace ShaderSource {
     export const Basic: ShaderSource = {
