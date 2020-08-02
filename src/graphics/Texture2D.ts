@@ -38,10 +38,12 @@ export class Texture2D {
                 format, type, flip);
         } else if (width !== 0 && height !== 0) {
             //prettier-ignore
+            //Making empty texture of some width and height because you want to render to it
             this.setImageByBuffer(gl, null, width, height, wrap_S, wrap_T, mag_filter, min_filter, internal_format,
                 format, type, flip);
         } else {
             //No image or buffer sets texture to pink black checkerboard
+            //This should probably happen at the material loading level and not during texture setting
             //prettier-ignore
             this.setImageByBuffer(gl, TextureHelper.PINK_BLACK_CHECKERBOARD, 8, 8, gl.REPEAT,
                 gl.MIRRORED_REPEAT, gl.NEAREST, gl.NEAREST);

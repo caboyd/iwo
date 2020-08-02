@@ -1,13 +1,13 @@
 import { Renderer } from "./Renderer";
 import { mat4 } from "gl-matrix";
 import { Texture2D } from "./Texture2D";
-import { HDRBuffer, instanceOfHDRBuffer } from "src/loader/HDRImageLoader";
-import { BoxGeometry } from "src/geometry/BoxGeometry";
-import { Mesh } from "src/meshes/Mesh";
+import { HDRBuffer, instanceOfHDRBuffer } from "loader/HDRImageLoader";
+import { BoxGeometry } from "geometry/BoxGeometry";
+import { Mesh } from "meshes/Mesh";
 import { ShaderSource } from "./shader/ShaderSources";
-import { CubeCamera } from "src/cameras/CubeCamera";
+import { CubeCamera } from "cameras/CubeCamera";
 import { TextureHelper } from "./TextureHelper";
-import { AttributeType, Geometry } from "src/geometry/Geometry";
+import { AttributeType, Geometry } from "geometry/Geometry";
 
 export class TextureCubeMap {
     public texture_id: WebGLTexture;
@@ -57,6 +57,7 @@ export class TextureCubeMap {
             TextureHelper.texParameterImage(gl, gl.TEXTURE_CUBE_MAP, source as TexImageSource, wrap_S, wrap_T, wrap_R,
                 mag_filter, min_filter, internal_format, format, type, flip);
         } else if (width !== 0 && height !== 0) {
+            //I have no idea why this code path exists.
             //prettier-ignore
             TextureHelper.texParameterBuffer(gl, gl.TEXTURE_CUBE_MAP, null, width, height, wrap_S, wrap_T, wrap_R,
                 mag_filter, min_filter, internal_format, format, type, flip);

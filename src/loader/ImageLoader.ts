@@ -1,7 +1,10 @@
 import { FileLoader } from "./FileLoader";
 
 export class ImageLoader extends FileLoader {
-    public static promise(file_name: string, base_url: string = this.Default_Base_URL): Promise<HTMLImageElement> {
+    public static async promise(
+        file_name: string,
+        base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
+    ): Promise<HTMLImageElement> {
         return new Promise<HTMLImageElement>((resolve, reject) => {
             super.promise(file_name, base_url).then((response: Response) => {
                 response.blob().then((data: Blob) => {
@@ -21,7 +24,10 @@ export class ImageLoader extends FileLoader {
         });
     }
 
-    public static promiseAll(files: string[], base_url: string = this.Default_Base_URL): Promise<HTMLImageElement[]> {
+    public static async promiseAll(
+        files: string[],
+        base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
+    ): Promise<HTMLImageElement[]> {
         const imgs = Array.from({ length: files.length }, u => new Image());
         const promises: Promise<HTMLImageElement>[] = [];
 
