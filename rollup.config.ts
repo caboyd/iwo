@@ -1,17 +1,33 @@
-import resolve from '@rollup/plugin-node-resolve'
-import sourceMaps from 'rollup-plugin-sourcemaps'
-import typescript from 'rollup-plugin-typescript2';
-import glslify from 'rollup-plugin-glslify'
+import resolve from "@rollup/plugin-node-resolve";
+import sourceMaps from "rollup-plugin-sourcemaps";
+import typescript from "rollup-plugin-typescript2";
+//@ts-ignore
+import glslify from "rollup-plugin-glslify";
 
-const pkg = require('./package.json');
+const pkg = require("./package.json");
 
-const libraryName = 'iwo';
+const libraryName = "iwo";
 
 export default {
     input: `src/${libraryName}.ts`,
     output: [
-        { file: pkg.main, name: libraryName, format: 'umd', sourcemap: true },
-        { file: pkg.module, format: 'es', sourcemap: true },
+        {
+            file: pkg.main,
+            name: libraryName,
+            format: "umd",
+            sourcemap: true,
+            globals: {
+                "gl-matrix": "glMatrix",
+            },
+        },
+        {
+            file: pkg.module,
+            format: "es",
+            sourcemap: true,
+            globals: {
+                "gl-matrix": "glMatrix",
+            },
+        },
     ],
     // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
     external: ["gl-matrix"],
@@ -19,9 +35,9 @@ export default {
         // Allow node_modules resolution, so you can use 'external' to control
         // which external modules to include in the bundle
         // https://github.com/rollup/rollup-plugin-node-resolve#usage
-        resolve( {
-          //extensions: [".mjs", ".js", ".ts", ".tsx ", ".frag", ".vert", ".json"],
-          browser:true
+        resolve({
+            //extensions: [".mjs", ".js", ".ts", ".tsx ", ".frag", ".vert", ".json"],
+            browser: true,
         }),
         // Compile TypeScript files
         typescript(),
@@ -31,5 +47,5 @@ export default {
         }),
         // Resolve source maps to the original source
         sourceMaps(),
-        ]
-}
+    ],
+};

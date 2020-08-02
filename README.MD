@@ -1,6 +1,6 @@
-# Typescript Webgl2 Physically Based Renderer
+# iwo - A Typescript Webgl2 Physically Based Renderer
 
-Physically Based Renderer written in Typescript. This project was created to learn how to create a forward rendering engine from scratch.
+iwo is a physically based renderer written in Typescript. This project was created to learn how to create a forward rendering engine from scratch.
 
 ### Demo 
 [https://caboyd.github.io/iwo-examples/index.html](https://caboyd.github.io/iwo-examples/index.html)
@@ -17,15 +17,15 @@ This library is a work in progress and not yet published. To use this library lo
 This is a list of features to reference for ideas. Checkmarked features have been implemented.  
 
 ### File Loading / Importing
-- [x] [Asynchronous File Loading](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/loader/FileLoader.ts)
-- [x] [HDR Image Loader](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/loader/HDRImageLoader.ts)
+- [x] [Asynchronous File Loading](https://github.com/caboyd/iwo/blob/master/src/loader/FileLoader.ts)
+- [x] [HDR Image Loader](https://github.com/caboyd/iwor/blob/master/src/loader/HDRImageLoader.ts)
 - [ ] GLTF Importer
 - [ ] OBJ Importer
 
 ### Geometry Generation
-- [x] [Plane](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/geometry/PlaneGeometry.ts)
-- [x] [Box](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/geometry/BoxGeometry.ts)
-- [x] [Sphere](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/geometry/SphereGeometry.ts)
+- [x] [Plane](https://github.com/caboyd/iwo/blob/master/src/geometry/PlaneGeometry.ts)
+- [x] [Box](https://github.com/caboyd/iwo/blob/master/src/geometry/BoxGeometry.ts)
+- [x] [Sphere](https://github.com/caboyd/iwo/blob/master/src/geometry/SphereGeometry.ts)
 - [ ] Cylinder
 - [ ] Toroid
 - [ ] Pyramid
@@ -33,7 +33,7 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 - [ ] Splines
 
 ### Rendering
-- [x] [Physically Based Shader](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/shaders/pbr.frag)
+- [x] [Physically Based Shader](https://github.com/caboyd/iwo/blob/master/src/shaders/pbr.frag)
 - [x] Image Based Diffuse Lighting
 - [x] Image Based Specular Lighting
 - [ ] Normal Mapping
@@ -60,7 +60,7 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 - [ ] Cascaded Shadow Mapping
 
 ### Cameras
-- [x] [First Person Camera](https://github.com/caboyd/ts-pbr-renderer/blob/master/src/cameras/Camera.ts)
+- [x] [First Person Camera](https://github.com/caboyd/iwo/blob/master/src/cameras/Camera.ts)
 - [ ] Third Person (Arcball) Camera
 - [ ] Cubemap Camera
 

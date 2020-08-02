@@ -1,7 +1,7 @@
 {
   "name": "iwo",
   "sideEffects": false,
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Typescript Webgl2 Physically Based Renderer",
   "main": "dist/iwo.umd.js",
   "module": "dist/iwo.es5.js",
@@ -16,7 +16,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/caboyd/ts-pbr-renderer"
+    "url": "https://github.com/caboyd/iwo"
   },
   "engines": {
     "node": ">12.0.0"
