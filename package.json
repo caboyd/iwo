@@ -10,10 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "watch": "webpack --progress --colors --watch --mode=production",
-    "build": "rollup -c rollup.config.ts",
-    "builddev": "webpack --progress --colors --mode=development",
-    "gh-publish": "npm run build&&cd dist&&git add --all&&git commit -m \"Deploy to gh-pages\"&&git push origin gh-pages&&cd.."
+    "build": "rollup -c rollup.config.ts"
   },
   "author": "caboyd",
   "license": "MIT",
