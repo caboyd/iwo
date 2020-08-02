@@ -8,9 +8,7 @@ Physically Based Renderer written in Typescript. This project was created to lea
 [<img src="https://i.imgur.com/5aFTrlk.png" alt="Typescript PBR Renderer Demoimage">](https://caboyd.github.io/iwo-examples/index.html)
 
 ## Installing
-```
-npm install caboyd/ts-pbr-renderer
-```
+This library is a work in progress and not yet published. To use this library look at the examples repo.
 
 ## Examples
 - https://github.com/caboyd/iwo-examples
