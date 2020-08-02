@@ -1,7 +1,7 @@
 import { FileLoader } from "./FileLoader";
 
 export class ImageLoader extends FileLoader {
-    public static promise(
+    public static async promise(
         file_name: string,
         base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
     ): Promise<HTMLImageElement> {
@@ -24,7 +24,7 @@ export class ImageLoader extends FileLoader {
         });
     }
 
-    public static promiseAll(
+    public static async promiseAll(
         files: string[],
         base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
     ): Promise<HTMLImageElement[]> {
