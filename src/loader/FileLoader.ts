@@ -1,4 +1,5 @@
 export class FileLoader {
+    protected static Default_Base_URL: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
     protected static onProgress: (loaded_bytes: number, total_bytes: number, file_name: string) => void = () => {
         //no-op
     };
@@ -6,7 +7,10 @@ export class FileLoader {
         //no-op
     };
 
-    public static async promiseAll(files: string[], base_url: string = ""): Promise<Response[] | any[]> {
+    public static async promiseAll(
+        files: string[],
+        base_url: string = this.Default_Base_URL
+    ): Promise<Response[] | any[]> {
         const promises: Promise<Response>[] = [];
         for (const file of files) {
             const p = FileLoader.promise(file, base_url);
@@ -15,10 +19,7 @@ export class FileLoader {
         return Promise.all(promises);
     }
 
-    public static async promise(
-        file_name: string,
-        base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
-    ): Promise<Response | any> {
+    public static async promise(file_name: string, base_url: string = this.Default_Base_URL): Promise<Response | any> {
         if (!base_url.endsWith("/")) base_url += "/";
         return fetch(base_url + file_name)
             .then(response => {
