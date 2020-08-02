@@ -23,13 +23,10 @@ export class FileLoader {
         return fetch(base_url + file_name)
             .then(response => {
                 if (!response.ok) throw new Error(response.status + " " + response.statusText);
-                for(let entry of response.headers.entries()) {
-                    console.log(entry);
-                }
 
                 const contentLength = response.headers.get("content-length");
                 if (!contentLength)
-                        console.error("Content-Length response header unavailable");
+                        console.warn(`Content-Length response header unavailable for ${response.url}`);
 
                 const total = (contentLength && parseInt(contentLength, 10)) || 0;
                 if (response.body && ReadableStream) return FileLoader.readAllChunks(response.body, total, file_name);
