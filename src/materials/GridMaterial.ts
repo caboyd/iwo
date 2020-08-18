@@ -17,7 +17,7 @@ export class GridMaterial extends Material {
     }
 
     public activate(gl: WebGL2RenderingContext): void {
-        let shader = this.shader;
+        const shader = this.shader;
         shader.setUniform("distance", this.distance);
         shader.setUniform("frequency", this.frequency);
         shader.setUniform("highlight_frequency", this.highlight_frequency);
