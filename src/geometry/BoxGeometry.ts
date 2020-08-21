@@ -1,4 +1,5 @@
 import { AttributeType, Geometry, Group } from "./Geometry";
+import TypedArray = NodeJS.TypedArray;
 
 enum Order {
     x = 0,
@@ -8,8 +9,7 @@ enum Order {
 
 export class BoxGeometry implements Geometry {
     public indices: Uint16Array | Uint32Array | undefined;
-    public attribute_flags: number;
-    public attributes: Map<AttributeType, ArrayBufferView>;
+    public attributes: Map<AttributeType, TypedArray>;
     public groups: Group[];
 
     public isInterleaved: boolean;
@@ -28,7 +28,7 @@ export class BoxGeometry implements Geometry {
         depth_segments: number = 1,
         stretch_texture: boolean = true
     ) {
-        this.attributes = new Map<AttributeType, ArrayBufferView>();
+        this.attributes = new Map<AttributeType, TypedArray>();
 
         const width_segs = Math.floor(width_segments) || 1;
         const height_segs = Math.floor(height_segments) || 1;
@@ -94,18 +94,12 @@ export class BoxGeometry implements Geometry {
         }
 
         this.isInterleaved = true;
-        this.attribute_flags =
-            AttributeType.Vertex |
-            AttributeType.Normals |
-            AttributeType.Tex_Coords |
-            AttributeType.Tangents |
-            AttributeType.Bitangents;
 
         this.attributes.set(AttributeType.Vertex, verts);
-        this.attributes.set(AttributeType.Normals, normals);
-        this.attributes.set(AttributeType.Tex_Coords, tex_coords);
-        this.attributes.set(AttributeType.Tangents, tangents);
-        this.attributes.set(AttributeType.Bitangents, bitangents);
+        this.attributes.set(AttributeType.Normal, normals);
+        this.attributes.set(AttributeType.Tex_Coord, tex_coords);
+        this.attributes.set(AttributeType.Tangent, tangents);
+        this.attributes.set(AttributeType.Bitangent, bitangents);
         this.interleaved_attributes = interleaved;
         this.groups = groups;
 

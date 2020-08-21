@@ -7,3 +7,8 @@ export const enum DrawMode {
     TRIANGLE_STRIP = 0x0005,
     TRIANGLE_FAN = 0x0006,
 }
+
+// eslint-disable-next-line prettier/prettier
+export type glComponentType = 5120 | 5121             | 5122  | 5123              | 5124  | 5125          | 5126 | number;
+//                              BYTE | UNSIGNED_BYTE    | SHORT | UNSIGNED_SHORT    | INT   | UNSIGNED_INT  | FLOAT
+
