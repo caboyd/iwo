@@ -111,12 +111,10 @@ export class SphereGeometry implements Geometry {
         const v_buf = new Float32Array(verts.length + tex_coords.length);
         v_buf.set(verts);
         v_buf.set(tex_coords, verts.length);
+
         buffers.push({ buffer: v_buf, target: 34962 });
 
-        attrib[2] = {
-            ...attrib[2],
-            ...{ byte_offset: verts.length * 4 },
-        };
+        attrib[2].byte_offset = verts.length * 4;
 
         return {
             attributes: attrib,

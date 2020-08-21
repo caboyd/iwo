@@ -8,6 +8,7 @@ import { ShaderSource } from "./shader/ShaderSources";
 import { CubeCamera } from "cameras/CubeCamera";
 import { TextureHelper } from "./TextureHelper";
 import { AttributeType, Geometry } from "geometry/Geometry";
+import TypedArray = NodeJS.TypedArray;
 
 export class TextureCubeMap {
     public texture_id: WebGLTexture;
@@ -40,8 +41,9 @@ export class TextureCubeMap {
                     "load",
                     () => {
                         gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture_id);
-                        //prettier-ignore
+                        // eslint-disable-next-line prettier/prettier
                         TextureHelper.texParameterImage(gl, gl.TEXTURE_CUBE_MAP, source, wrap_S, wrap_T, wrap_R,
+                            // eslint-disable-next-line prettier/prettier
                             mag_filter, min_filter, internal_format, format, type, flip);
                     },
                     { once: true }
@@ -351,16 +353,13 @@ export class TextureCubeMap {
         if (Renderer.BRDF_LUT_TEXTURE === undefined) {
             //Generate brdf LUT if it doesnt exist as its required for IBL
             const quad_geom = {
-                attribute_flags: AttributeType.Vertex | AttributeType.Tex_Coords,
-                isInterleaved: true,
-                //prettier-ignore
-                interleaved_attributes: new Float32Array([
-                    // positions        // texture Coords
-                    -1.0, 1.0, 0.0,     0.0, 1.0,
-                    -1.0, -1.0, 0.0,    0.0, 0.0,
-                    1.0, 1.0, 0.0,      1.0, 1.0,
-                    1.0, -1.0, 0.0,     1.0, 0.0,
-                ]),
+                attributes: new Map<AttributeType, TypedArray>()
+                    .set(
+                        AttributeType.Vertex,
+                        new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0])
+                    )
+                    .set(AttributeType.Tex_Coord, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])),
+                isInterleaved: false,
                 groups: [{ count: 4, offset: 0, material_index: 0 }],
             } as Geometry;
             const quad_mesh = new Mesh(gl, quad_geom);

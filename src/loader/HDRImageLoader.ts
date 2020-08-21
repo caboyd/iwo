@@ -31,6 +31,7 @@ export interface HDRBuffer {
 }
 
 //NOTE: Why is this necessary?  Why not instance of HDRBuffer?
+//  ...you are dumb, you can't do instanceof for interfaces
 export function instanceOfHDRBuffer(object: any): object is HDRBuffer {
     return "data" in object && "width" in object && "height" in object;
 }

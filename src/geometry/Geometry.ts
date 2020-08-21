@@ -11,12 +11,6 @@ export enum AttributeType {
 
 //Default assumes index buffer is buffer_view_index 0
 export namespace DefaultAttribute {
-    export const SingleBufferApproach = [DefaultAttribute.Vertex, DefaultAttribute.Normal, DefaultAttribute.Tex_Coord];
-    export const MultiBufferApproach = [
-        { ...DefaultAttribute.Vertex, ...{ buffer_index: 0 } },
-        { ...DefaultAttribute.Normal, ...{ buffer_index: 1 } },
-        { ...DefaultAttribute.Tex_Coord, ...{ buffer_index: 2 } },
-    ];
     export const Vertex: Attribute = {
         type: AttributeType.Vertex,
         enabled: true,
@@ -41,6 +35,13 @@ export namespace DefaultAttribute {
         component_count: 2,
         data_type: "VEC2",
     };
+
+    export const SingleBufferApproach = [DefaultAttribute.Vertex, DefaultAttribute.Normal, DefaultAttribute.Tex_Coord];
+    export const MultiBufferApproach = [
+        { ...DefaultAttribute.Vertex, ...{ buffer_index: 0 } },
+        { ...DefaultAttribute.Normal, ...{ buffer_index: 1 } },
+        { ...DefaultAttribute.Tex_Coord, ...{ buffer_index: 2 } },
+    ];
 }
 
 /*
@@ -98,8 +99,8 @@ export interface BufferedGeometry {
     //Bounding Box (AABB)
 }
 
-export function isBufferedGeometry(item: any): item is BufferedGeometry {
-    return item.buffers && item.attributes && item.groups;
+export function isBufferedGeometry(object: any): object is BufferedGeometry {
+    return "buffers" in object && "attributes" in object && "groups" in object;
 }
 
 class SampleGeometryIndexed implements BufferedGeometry {

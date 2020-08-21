@@ -19,7 +19,7 @@ export class Mesh {
     public count: number;
 
     public constructor(gl: WebGL2RenderingContext, geometry: Geometry | BufferedGeometry) {
-        if ((isBufferedGeometry(geometry) && geometry.index_buffer) || ("indices" in geometry && geometry.indices))
+        if ((isBufferedGeometry(geometry) && "index_buffer" in geometry) || ("indices" in geometry && geometry.indices))
             this.index_buffer = new IndexBuffer(gl, geometry);
         this.vertex_buffer = new VertexBuffer(gl, geometry);
         this.sub_meshes = [];

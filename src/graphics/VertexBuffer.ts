@@ -94,6 +94,7 @@ export class VertexBuffer {
 
     public bindBuffers(gl: WebGL2RenderingContext): void {
         if (this.legacy) {
+            gl.bindVertexArray(null);
             if (this.interleaved) {
                 let offset = 0;
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.VBO!);
@@ -191,7 +192,7 @@ export class VertexBuffer {
             if (this.legacy) {
                 if (this.VBO) gl.deleteBuffer(this.VBO);
                 for (const buffer of this.attribute_buffers.values()) {
-                    gl.deleteBuffer(buffer);
+                    gl.deleteBuffer(buffer.buffer);
                 }
             } else {
                 if (this.VAO) gl.deleteVertexArray(this.VAO);
