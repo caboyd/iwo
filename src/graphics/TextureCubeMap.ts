@@ -59,7 +59,7 @@ export class TextureCubeMap {
             TextureHelper.texParameterImage(gl, gl.TEXTURE_CUBE_MAP, source as TexImageSource, wrap_S, wrap_T, wrap_R,
                 mag_filter, min_filter, internal_format, format, type, flip);
         } else if (width !== 0 && height !== 0) {
-            //I have no idea why this code path exists.
+            // This code path exists for rendering to empty textures
             //prettier-ignore
             TextureHelper.texParameterBuffer(gl, gl.TEXTURE_CUBE_MAP, null, width, height, wrap_S, wrap_T, wrap_R,
                 mag_filter, min_filter, internal_format, format, type, flip);
