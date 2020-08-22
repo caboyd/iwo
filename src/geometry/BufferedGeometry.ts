@@ -55,7 +55,7 @@ export namespace DefaultAttribute {
         };
     };
 
-    export const SingleBufferApproach = (): Attribute[] => {
+    export const SingleBufferApproach = (): Attributes => {
         return [
             DefaultAttribute.Vertex(),
             DefaultAttribute.Tex_Coord(),
@@ -64,7 +64,7 @@ export namespace DefaultAttribute {
             DefaultAttribute.Bitangent(),
         ];
     };
-    export const MultiBufferApproach = (): Attribute[] => {
+    export const MultiBufferApproach = (): Attributes => {
         return [
             { ...DefaultAttribute.Vertex(), ...{ buffer_index: 0 } },
             { ...DefaultAttribute.Tex_Coord(), ...{ buffer_index: 1 } },
@@ -75,9 +75,6 @@ export namespace DefaultAttribute {
     };
 }
 
-/*
-
- */
 export interface Attribute {
     type: AttributeType;
     enabled?: boolean;
@@ -92,33 +89,31 @@ export interface Attribute {
     normalized?: boolean;
 }
 
+export type Attributes = readonly [Attribute, Attribute, Attribute, Attribute, Attribute];
+
 export interface GeometryBuffer {
     buffer: TypedArray;
     //ARRAY_BUFFER | ELEMENT_ARRAY_BUFFER
     target: 34962 | 34963;
 }
 
-export interface BufferedGeometry {
-    attributes: Attribute[];
-    index_buffer?: GeometryBuffer;
-    buffers: GeometryBuffer[];
-    groups: Group[];
-
-    //Bounding Sphere
-
-    //Bounding Box (AABB)
-}
-
-export function isBufferedGeometry(object: any): object is BufferedGeometry {
-    return "buffers" in object && "attributes" in object && "groups" in object;
-}
+// export interface BufferedGeometry {
+//     attributes: Attribute[];
+//     index_buffer?: GeometryBuffer;
+//     buffers: GeometryBuffer[];
+//     groups: Group[];
+//
+//     //Bounding Sphere
+//
+//     //Bounding Box (AABB)
+// }
 
 export interface BufferedGeometryOptions {
     interleave_buffer?: boolean;
 }
 
 export class BufferedGeometry {
-    public attributes: Attribute[];
+    public attributes: Attributes;
     public index_buffer?: GeometryBuffer;
     public buffers: GeometryBuffer[];
     public groups: Group[];
@@ -156,6 +151,10 @@ export class BufferedGeometry {
         this.attributes[2].enabled = geom.attributes.has(AttributeType.Normal);
         this.attributes[3].enabled = geom.attributes.has(AttributeType.Tangent);
         this.attributes[4].enabled = geom.attributes.has(AttributeType.Bitangent);
+
+        // for (const i of AttributeTypeValues) {
+        //     this.attributes[i].enabled = geom.attributes.has(i);
+        // }
     }
 
     private setupConcatenatedBuffer(geom: Geometry): void {
@@ -166,6 +165,13 @@ export class BufferedGeometry {
 
         let offset = 0;
         let previous_buffers_length = 0;
+        // for (const i of AttributeTypeValues) {
+        //     const arr = geom.attributes.get(i)!;
+        //     this.attributes[i + 1].byte_offset = offset += arr.byteLength;
+        //     concat_buffer.set(arr, previous_buffers_length);
+        //     previous_buffers_length += arr.length;
+        // }
+
         if (geom.attributes.has(AttributeType.Vertex)) {
             const arr = geom.attributes.get(AttributeType.Vertex)!;
             this.attributes[1].byte_offset = offset += arr.byteLength;

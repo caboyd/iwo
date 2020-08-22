@@ -1,25 +1,18 @@
-import {  Geometry, } from "geometry/Geometry";
+import { Geometry } from "geometry/Geometry";
 import { ReferenceCounter } from "helpers/ReferenceCounter";
 import { WebGL } from "./WebglHelper";
-import { BufferedGeometry, isBufferedGeometry } from "geometry/BufferedGeometry";
+import { BufferedGeometry } from "geometry/BufferedGeometry";
 
 export class IndexBuffer {
     public readonly EBO: WebGLBuffer;
     public readonly indices: Uint16Array | Uint32Array;
     public readonly references: ReferenceCounter;
 
-    public constructor(gl: WebGL2RenderingContext, geometry: Geometry | BufferedGeometry) {
-        if ("indices" in geometry && geometry.indices) {
-            this.indices = geometry.indices;
-        } else if (isBufferedGeometry(geometry) && geometry.index_buffer) {
-            this.indices =
-                geometry.index_buffer.buffer.BYTES_PER_ELEMENT == 2
-                    ? (geometry.index_buffer.buffer as Uint16Array)
-                    : (geometry.index_buffer.buffer as Uint32Array);
-        } else {
-            throw new Error("Geometry has no indices.");
-        }
-
+    public constructor(gl: WebGL2RenderingContext, geometry: BufferedGeometry) {
+        if (geometry.index_buffer === undefined)
+            throw new Error("Cannot create IndexBuffer. Geometry.index_buffer is undefined.");
+        const b = geometry.index_buffer.buffer;
+        this.indices = b.BYTES_PER_ELEMENT == 2 ? (b as Uint16Array) : (b as Uint32Array);
         this.EBO = WebGL.buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, this.indices);
         this.references = new ReferenceCounter();
     }

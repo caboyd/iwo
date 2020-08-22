@@ -9,7 +9,7 @@ import { DrawMode } from "graphics/WebglConstants";
 import { IndexBuffer } from "graphics/IndexBuffer";
 import { VertexBuffer } from "graphics/VertexBuffer";
 import { SubMesh } from "./SubMesh";
-import { BufferedGeometry, isBufferedGeometry } from "geometry/BufferedGeometry";
+import { BufferedGeometry } from "geometry/BufferedGeometry";
 
 export class Mesh {
     public readonly index_buffer: IndexBuffer | undefined;
@@ -20,14 +20,21 @@ export class Mesh {
     public count: number;
 
     public constructor(gl: WebGL2RenderingContext, geometry: Geometry | BufferedGeometry) {
-        if ((isBufferedGeometry(geometry) && "index_buffer" in geometry && geometry.index_buffer !== undefined) || ("indices" in geometry && geometry.indices !== undefined))
-            this.index_buffer = new IndexBuffer(gl, geometry);
-        this.vertex_buffer = new VertexBuffer(gl, geometry);
+        let buf_geom: BufferedGeometry = geometry as BufferedGeometry;
+        if (geometry instanceof Geometry) {
+            buf_geom =
+                geometry.getBufferedGeometry !== undefined
+                    ? geometry.getBufferedGeometry()
+                    : new BufferedGeometry(geometry as Geometry);
+        }
+
+        if (buf_geom.index_buffer !== undefined) this.index_buffer = new IndexBuffer(gl, buf_geom);
+        this.vertex_buffer = new VertexBuffer(gl, buf_geom);
         this.sub_meshes = [];
         this.draw_mode = DrawMode.TRIANGLES;
         this.count = 0;
 
-        for (const group of geometry.groups) {
+        for (const group of buf_geom.groups) {
             this.count += group.count;
             this.sub_meshes.push(
                 new SubMesh(group.material_index, group.offset, group.count, this.vertex_buffer, this.index_buffer)

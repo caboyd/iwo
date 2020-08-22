@@ -1,5 +1,4 @@
 import { AttributeType, Geometry, Group } from "./Geometry";
-import TypedArray = NodeJS.TypedArray;
 
 enum Order {
     x = 0,
@@ -7,17 +6,7 @@ enum Order {
     z = 2,
 }
 
-export class BoxGeometry implements Geometry {
-    public indices: Uint16Array | Uint32Array | undefined;
-    public attributes: Map<AttributeType, TypedArray>;
-    public groups: Group[];
-
-    public isInterleaved: boolean;
-    public interleaved_attributes: Float32Array;
-
-    //Bounding Sphere
-
-    //Bounding Box (AABB)
+export class BoxGeometry extends Geometry {
 
     public constructor(
         width: number = 1,
@@ -28,7 +17,7 @@ export class BoxGeometry implements Geometry {
         depth_segments: number = 1,
         stretch_texture: boolean = true
     ) {
-        this.attributes = new Map<AttributeType, TypedArray>();
+        super();
 
         const width_segs = Math.floor(width_segments) || 1;
         const height_segs = Math.floor(height_segments) || 1;
@@ -92,8 +81,6 @@ export class BoxGeometry implements Geometry {
             //Build Bottom Side
             buildSide(Order.x, Order.z, Order.y, width, width_segs, depth, depth_segs, -half_height, 1, 1, 5);
         }
-
-        this.isInterleaved = true;
 
         this.attributes.set(AttributeType.Vertex, verts);
         this.attributes.set(AttributeType.Normal, normals);

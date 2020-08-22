@@ -1,15 +1,7 @@
 import { AttributeType, Geometry, Group } from "./Geometry";
 import { BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
-import TypedArray = NodeJS.TypedArray;
 
-export class SphereGeometry implements Geometry {
-    public indices: Uint16Array | Uint32Array;
-    public attributes: Map<AttributeType, TypedArray>;
-    public groups: Group[];
-
-    public isInterleaved: boolean = false;
-    public interleaved_attributes: Float32Array | undefined;
-
+export class SphereGeometry extends Geometry {
     public constructor(
         radius: number,
         horizontal_segments: number,
@@ -19,8 +11,7 @@ export class SphereGeometry implements Geometry {
         theta_start = 0,
         theta_length: number = Math.PI
     ) {
-        this.attributes = new Map<AttributeType, TypedArray>();
-        this.groups = [];
+        super();
 
         const flip_u = horizontal_segments < 0;
         const flip_v = vertical_segments < 0;

@@ -1,5 +1,5 @@
 export class FileLoader {
-    protected static Default_Base_URL: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
+    public static Default_Base_URL: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"));
     protected static onProgress: (loaded_bytes: number, total_bytes: number, file_name: string) => void = () => {
         //no-op
     };
@@ -26,8 +26,7 @@ export class FileLoader {
                 if (!response.ok) throw new Error(response.status + " " + response.statusText);
 
                 const contentLength = response.headers.get("content-length");
-                if (!contentLength)
-                        console.warn(`Content-Length response header unavailable for ${response.url}`);
+                if (!contentLength) console.warn(`Content-Length response header unavailable for ${response.url}`);
 
                 const total = (contentLength && parseInt(contentLength, 10)) || 0;
                 if (response.body && ReadableStream) return FileLoader.readAllChunks(response.body, total, file_name);

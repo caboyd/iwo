@@ -43,9 +43,21 @@ export class TextureCubeMap {
                     () => {
                         gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.texture_id);
                         // eslint-disable-next-line prettier/prettier
-                        TextureHelper.texParameterImage(gl, gl.TEXTURE_CUBE_MAP, source, wrap_S, wrap_T, wrap_R,
+                        TextureHelper.texParameterImage(
+                            gl,
+                            gl.TEXTURE_CUBE_MAP,
+                            source,
+                            wrap_S,
+                            wrap_T,
+                            wrap_R,
                             // eslint-disable-next-line prettier/prettier
-                            mag_filter, min_filter, internal_format, format, type, flip);
+                            mag_filter,
+                            min_filter,
+                            internal_format,
+                            format,
+                            type,
+                            flip
+                        );
                     },
                     { once: true }
                 );
@@ -353,22 +365,20 @@ export class TextureCubeMap {
     ): void {
         if (Renderer.BRDF_LUT_TEXTURE === undefined) {
             //Generate brdf LUT if it doesnt exist as its required for IBL
-            const quad_geom = {
-                attributes: new Map<AttributeType, TypedArray>()
-                    .set(
-                        AttributeType.Vertex,
-                        new Float32Array(0)
-                    )
-                    .set(AttributeType.Tex_Coord, new Float32Array(0)),
-                interleaved_attributes: new Float32Array([
+            const quad_geom = new Geometry();
+            quad_geom.attributes = new Map<AttributeType, TypedArray>()
+                .set(AttributeType.Vertex, new Float32Array(0))
+                .set(AttributeType.Tex_Coord, new Float32Array(0));
+            // prettier-ignore
+            quad_geom.interleaved_attributes = new Float32Array([
                     // positions        // texture Coords
-                    -1.0, 1.0, 0.0,     0.0, 1.0,
+                    -1.0,  1.0, 0.0,    0.0, 1.0,
                     -1.0, -1.0, 0.0,    0.0, 0.0,
-                    1.0, 1.0, 0.0,      1.0, 1.0,
-                    1.0, -1.0, 0.0,     1.0, 0.0,
-                ]),
-                groups: [{ count: 4, offset: 0, material_index: 0 }],
-            } as Geometry;
+                     1.0,  1.0, 0.0,    1.0, 1.0,
+                     1.0, -1.0, 0.0,    1.0, 0.0,
+                ]);
+            quad_geom.groups = [{ count: 4, offset: 0, material_index: 0 }];
+
             const quad_mesh = new Mesh(gl, quad_geom);
             quad_mesh.draw_mode = gl.TRIANGLE_STRIP;
 

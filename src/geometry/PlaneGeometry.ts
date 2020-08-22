@@ -1,6 +1,5 @@
 import { AttributeType, Geometry, Group } from "./Geometry";
 import { BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
-import TypedArray = NodeJS.TypedArray;
 
 enum Order {
     x = 0,
@@ -8,18 +7,7 @@ enum Order {
     z = 2,
 }
 
-export class PlaneGeometry implements Geometry {
-    public indices: Uint16Array | Uint32Array | undefined;
-    public attributes: Map<AttributeType, TypedArray>;
-    public groups: Group[];
-
-    public isInterleaved: boolean;
-    public interleaved_attributes: Float32Array;
-
-    //Bounding Sphere
-
-    //Bounding Box (AABB)
-
+export class PlaneGeometry extends Geometry {
     public constructor(
         width: number = 1,
         depth: number = 1,
@@ -27,7 +15,7 @@ export class PlaneGeometry implements Geometry {
         depth_segments: number = 1,
         stretch_texture: boolean = true
     ) {
-        this.attributes = new Map<AttributeType, TypedArray>();
+        super();
 
         const width_segs = Math.floor(width_segments) || 1;
         const depth_segs = Math.floor(depth_segments) || 1;
@@ -66,8 +54,6 @@ export class PlaneGeometry implements Geometry {
             //Build Top Side
             buildSide(Order.x, Order.z, Order.y, width, width_segs, depth, depth_segs, 0, 1, -1, 0);
         }
-
-        this.isInterleaved = true;
 
         this.attributes.set(AttributeType.Vertex, verts);
         this.attributes.set(AttributeType.Normal, normals);
@@ -214,8 +200,6 @@ export class PlaneGeometry implements Geometry {
 
     public getBufferedGeometry(): BufferedGeometry {
         const attrib = DefaultAttribute.SingleBufferApproach();
-        attrib.push(DefaultAttribute.Tangent());
-        attrib.push(DefaultAttribute.Bitangent());
         const index_buffer = { buffer: this.indices, target: 34963 };
 
         for (const a of attrib) a.byte_stride = 56; //12 + 8 + 12 + 12 + 12;
