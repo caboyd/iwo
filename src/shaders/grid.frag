@@ -27,7 +27,7 @@ void main() {
     float line = min(grid.x, grid.y);
 
     // Just visualize the grid lines directly
-    vec3 color = vec3(0.5 - min(line,1.0));
+    vec3 color = vec3(0.5);
     float alpha = 1.0 - line;
 
     //blue lines every x units
