@@ -4,11 +4,12 @@
             
  */
 
-import { BufferedGeometry, Geometry, isBufferedGeometry } from "geometry/Geometry";
+import { Geometry } from "geometry/Geometry";
 import { DrawMode } from "graphics/WebglConstants";
 import { IndexBuffer } from "graphics/IndexBuffer";
 import { VertexBuffer } from "graphics/VertexBuffer";
 import { SubMesh } from "./SubMesh";
+import { BufferedGeometry, isBufferedGeometry } from "geometry/BufferedGeometry";
 
 export class Mesh {
     public readonly index_buffer: IndexBuffer | undefined;
@@ -19,7 +20,7 @@ export class Mesh {
     public count: number;
 
     public constructor(gl: WebGL2RenderingContext, geometry: Geometry | BufferedGeometry) {
-        if ((isBufferedGeometry(geometry) && "index_buffer" in geometry) || ("indices" in geometry && geometry.indices))
+        if ((isBufferedGeometry(geometry) && "index_buffer" in geometry && geometry.index_buffer !== undefined) || ("indices" in geometry && geometry.indices !== undefined))
             this.index_buffer = new IndexBuffer(gl, geometry);
         this.vertex_buffer = new VertexBuffer(gl, geometry);
         this.sub_meshes = [];

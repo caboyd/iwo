@@ -9,6 +9,7 @@ import { CubeCamera } from "cameras/CubeCamera";
 import { TextureHelper } from "./TextureHelper";
 import { AttributeType, Geometry } from "geometry/Geometry";
 import TypedArray = NodeJS.TypedArray;
+import { BufferedGeometry } from "geometry/BufferedGeometry";
 
 export class TextureCubeMap {
     public texture_id: WebGLTexture;
@@ -356,10 +357,16 @@ export class TextureCubeMap {
                 attributes: new Map<AttributeType, TypedArray>()
                     .set(
                         AttributeType.Vertex,
-                        new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0])
+                        new Float32Array(0)
                     )
-                    .set(AttributeType.Tex_Coord, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0])),
-                isInterleaved: false,
+                    .set(AttributeType.Tex_Coord, new Float32Array(0)),
+                interleaved_attributes: new Float32Array([
+                    // positions        // texture Coords
+                    -1.0, 1.0, 0.0,     0.0, 1.0,
+                    -1.0, -1.0, 0.0,    0.0, 0.0,
+                    1.0, 1.0, 0.0,      1.0, 1.0,
+                    1.0, -1.0, 0.0,     1.0, 0.0,
+                ]),
                 groups: [{ count: 4, offset: 0, material_index: 0 }],
             } as Geometry;
             const quad_mesh = new Mesh(gl, quad_geom);

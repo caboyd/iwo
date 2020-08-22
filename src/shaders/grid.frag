@@ -47,7 +47,7 @@ void main() {
     float wd = fwidth(d);
     float rad = 0.015 *length(view_pos);
     float circle = smoothstep(rad + wd, rad - wd, d);
-    color += vec3(0.) * (1. - alpha);
+    color = mix(color,color-vec3(0.5),circle);
     alpha = max(alpha,circle);
 
     //Fade out edge into circle

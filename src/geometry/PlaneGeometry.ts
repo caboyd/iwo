@@ -1,4 +1,5 @@
 import { AttributeType, Geometry, Group } from "./Geometry";
+import { BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
 import TypedArray = NodeJS.TypedArray;
 
 enum Order {
@@ -47,8 +48,8 @@ export class PlaneGeometry implements Geometry {
         const indices = this.indices;
 
         const verts = new Float32Array(total_verts * 3);
-        const normals = new Float32Array(total_verts * 3);
         const tex_coords = new Float32Array(total_verts * 2);
+        const normals = new Float32Array(total_verts * 3);
         const tangents = new Float32Array(total_verts * 3);
         const bitangents = new Float32Array(total_verts * 3);
 
@@ -209,5 +210,26 @@ export class PlaneGeometry implements Geometry {
                 material_index: mat_index,
             } as Group);
         }
+    }
+
+    public getBufferedGeometry(): BufferedGeometry {
+        const attrib = DefaultAttribute.SingleBufferApproach();
+        attrib.push(DefaultAttribute.Tangent());
+        attrib.push(DefaultAttribute.Bitangent());
+        const index_buffer = { buffer: this.indices, target: 34963 };
+
+        for (const a of attrib) a.byte_stride = 56; //12 + 8 + 12 + 12 + 12;
+        attrib[0].byte_offset = 0;
+        attrib[1].byte_offset = 12;
+        attrib[2].byte_offset = 20;
+        attrib[3].byte_offset = 32;
+        attrib[4].byte_offset = 44;
+
+        return {
+            attributes: attrib,
+            index_buffer: index_buffer,
+            buffers: [{ buffer: this.interleaved_attributes, target: 34962 }],
+            groups: this.groups,
+        } as BufferedGeometry;
     }
 }

@@ -2,6 +2,7 @@ export { Camera, Camera_Movement } from "./cameras/Camera";
 export { CubeCamera } from "./cameras/CubeCamera";
 export { BoxGeometry } from "./geometry/BoxGeometry";
 export { Geometry } from "./geometry/Geometry";
+export { BufferedGeometry } from "./geometry/BufferedGeometry";
 export { PlaneGeometry } from "./geometry/PlaneGeometry";
 export { SphereGeometry } from "./geometry/SphereGeometry";
 export { AttributeBuffer } from "./graphics/AttributeBuffer";

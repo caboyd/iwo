@@ -1,8 +1,9 @@
 import { WebGL } from "./WebglHelper";
-import { Attribute, AttributeType, BufferedGeometry, Geometry, isBufferedGeometry } from "geometry/Geometry";
+import { AttributeType, Geometry } from "geometry/Geometry";
 import { ReferenceCounter } from "helpers/ReferenceCounter";
 import { AttributeBuffer } from "./AttributeBuffer";
 import TypedArray = NodeJS.TypedArray;
+import { Attribute, BufferedGeometry, isBufferedGeometry } from "geometry/BufferedGeometry";
 
 export class VertexBuffer {
     public attributes: Attribute[];
@@ -26,6 +27,7 @@ export class VertexBuffer {
             this.constructFromBufferedGeometry(gl, geometry);
         } else {
             this.legacy = true;
+            if(geometry.interleaved_attributes !== undefined) this.interleaved = true;
             this.constructFromGeometry(gl, geometry as Geometry);
         }
     }
@@ -33,8 +35,7 @@ export class VertexBuffer {
     private constructFromGeometry(gl: WebGL2RenderingContext, geometry: Geometry): void {
         this.attribute_buffer_views = geometry.attributes;
 
-        this.interleaved = geometry.isInterleaved;
-        if (this.interleaved && geometry.interleaved_attributes) {
+        if (geometry.interleaved_attributes !== undefined) {
             this.VBO = WebGL.buildBuffer(gl, gl.ARRAY_BUFFER, geometry.interleaved_attributes);
             if (this.attribute_buffer_views.has(AttributeType.Vertex)) this.stride += 12;
             if (this.attribute_buffer_views.has(AttributeType.Tex_Coord)) this.stride += 8;
@@ -60,6 +61,7 @@ export class VertexBuffer {
         //assert attribute index are in ascending order
         this.assertAttributeAsc();
         this.setupVAOBuffers(gl);
+        gl.bindVertexArray(null);
     }
 
     private assertAttributeAsc(): void {

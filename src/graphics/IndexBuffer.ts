@@ -1,6 +1,7 @@
-import { BufferedGeometry, Geometry, isBufferedGeometry } from "geometry/Geometry";
+import {  Geometry, } from "geometry/Geometry";
 import { ReferenceCounter } from "helpers/ReferenceCounter";
 import { WebGL } from "./WebglHelper";
+import { BufferedGeometry, isBufferedGeometry } from "geometry/BufferedGeometry";
 
 export class IndexBuffer {
     public readonly EBO: WebGLBuffer;

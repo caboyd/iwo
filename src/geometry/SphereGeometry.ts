@@ -1,4 +1,5 @@
-import { AttributeType, BufferedGeometry, DefaultAttribute, Geometry, GeometryBuffer, Group } from "./Geometry";
+import { AttributeType, Geometry, Group } from "./Geometry";
+import { BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
 import TypedArray = NodeJS.TypedArray;
 
 export class SphereGeometry implements Geometry {
@@ -90,8 +91,9 @@ export class SphereGeometry implements Geometry {
             index += 2;
         }
 
-        this.attributes.set(AttributeType.Vertex, new Float32Array(verts));
-        this.attributes.set(AttributeType.Normal, new Float32Array(verts));
+        const vert_buff = new Float32Array(verts);
+        this.attributes.set(AttributeType.Vertex, vert_buff);
+        this.attributes.set(AttributeType.Normal, vert_buff);
         this.attributes.set(AttributeType.Tex_Coord, new Float32Array(tex_coords));
         if (verts.length >= 65536) this.indices = new Uint32Array(indices);
         else this.indices = new Uint16Array(indices);
@@ -100,10 +102,7 @@ export class SphereGeometry implements Geometry {
     }
 
     public getBufferedGeometry(): BufferedGeometry {
-        const attrib = DefaultAttribute.SingleBufferApproach;
-        const buffers: GeometryBuffer[] = [];
-        let i_buf;
-
+        const attrib = DefaultAttribute.SingleBufferApproach();
         const verts = this.attributes.get(AttributeType.Vertex)!;
         const tex_coords = this.attributes.get(AttributeType.Tex_Coord)!;
         const index_buffer = { buffer: this.indices, target: 34963 };
@@ -112,14 +111,12 @@ export class SphereGeometry implements Geometry {
         v_buf.set(verts);
         v_buf.set(tex_coords, verts.length);
 
-        buffers.push({ buffer: v_buf, target: 34962 });
-
-        attrib[2].byte_offset = verts.length * 4;
+        attrib[1].byte_offset = verts.length * 4;
 
         return {
             attributes: attrib,
             index_buffer: index_buffer,
-            buffers: buffers,
+            buffers: [{ buffer: v_buf, target: 34962 }],
             groups: this.groups,
         } as BufferedGeometry;
     }
