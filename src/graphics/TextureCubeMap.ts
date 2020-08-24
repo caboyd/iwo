@@ -367,24 +367,19 @@ export class TextureCubeMap {
             //Generate brdf LUT if it doesnt exist as its required for IBL
             const quad_geom = new Geometry();
             quad_geom.attributes = new Map<AttributeType, TypedArray>()
-                .set(AttributeType.Vertex, new Float32Array(0))
-                .set(AttributeType.Tex_Coord, new Float32Array(0));
-            // prettier-ignore
-            quad_geom.interleaved_attributes = new Float32Array([
-                    // positions        // texture Coords
-                    -1.0,  1.0, 0.0,    0.0, 1.0,
-                    -1.0, -1.0, 0.0,    0.0, 0.0,
-                     1.0,  1.0, 0.0,    1.0, 1.0,
-                     1.0, -1.0, 0.0,    1.0, 0.0,
-                ]);
-            quad_geom.groups = [{ count: 4, offset: 0, material_index: 0 }];
+                .set(
+                    AttributeType.Vertex,
+                    new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0])
+                )
+                .set(AttributeType.Tex_Coord, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
+            quad_geom.groups = [];
 
             const quad_mesh = new Mesh(gl, quad_geom);
             quad_mesh.draw_mode = gl.TRIANGLE_STRIP;
 
             //prettier-ignore
             const lut_tex = new Texture2D(gl, undefined, 512, 512, gl.CLAMP_TO_EDGE, 
-                gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, gl.RG16F, gl.RG, gl.HALF_FLOAT, true);
+                gl.CLAMP_TO_EDGE, gl.LINEAR, gl.LINEAR, gl.RG16F, gl.RG, gl.HALF_FLOAT, false);
             gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
             gl.bindRenderbuffer(gl.RENDERBUFFER, captureRBO);
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 512, 512);

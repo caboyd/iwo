@@ -26,12 +26,17 @@ struct Material {
     float roughness;
     float metallic;
     float ao;
+    vec3 emissive_factor;
 
     sampler2D albedo_sampler;
     samplerCube irradiance_sampler;
     samplerCube env_sampler;
+    sampler2D normal_sampler;
+    sampler2D occlusion_sampler;
+    sampler2D metal_roughness_sampler;
+    sampler2D emissive_sampler;
     sampler2D brdf_LUT_sampler;
-    bool active_textures[3];
+    bool active_textures[7];
 };
 
 struct Light {
@@ -42,6 +47,7 @@ struct Light {
 uniform int u_light_count;
 uniform Light u_lights[16];
 uniform Material u_material;
+uniform float gamma;
 
 float saturate(float a){
     return clamp(a, 0.0, 1.0);
@@ -75,7 +81,7 @@ float G_GGX_SmithCorrelated(vec3 N, vec3 V, vec3 L, float roughness) {
 
 vec3 fresnelSchlick(float cosTheta, vec3 F0){
     // Original approximation by Christophe Schlick '94
-    //return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+    //float fresnel = pow(1.0 - cosTheta, 5.0);
 
     // Optimized variant (presented by Epic at SIGGRAPH '13)
     // https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
@@ -85,13 +91,11 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0){
 
 vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 {
-    // Original approximation by Christophe Schlick '94
-    //return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
-
-    // Optimized variant (presented by Epic at SIGGRAPH '13)
-    // https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
+    // See fresnelSchlick
     float fresnel = exp2((-5.55473 * cosTheta - 6.98316) * cosTheta);
-    return (1.0 - F0) * fresnel + F0;
+    vec3 Fr = max(vec3( 1.0 - roughness* roughness), F0) - F0;
+
+    return Fr * fresnel + F0;
 }
 
 void main() {
@@ -101,20 +105,46 @@ void main() {
     else
     albedo = u_material.albedo.rgb;
 
+    vec3 emission;
+    if(u_material.active_textures[6])
+        emission = u_material.emissive_factor *  texture(u_material.emissive_sampler,tex_coord).rgb;
+    else
+        emission = vec3(0);
+
+    float metallic = u_material.metallic;
+    if(u_material.active_textures[5])
+    metallic = u_material.metallic * texture(u_material.metal_roughness_sampler, tex_coord).b;
+
+    float roughness = u_material.roughness;
+    if(u_material.active_textures[5])
+    roughness = u_material.roughness * texture(u_material.metal_roughness_sampler, tex_coord).g;
 
     //Normal
+    //FIXME: NEED TO USE TANGENT SPACE NORMALS
     vec3 N = normalize(world_normal);
+    if(u_material.active_textures[3]){
+        N = texture(u_material.normal_sampler, tex_coord).rgb;
+        N = N * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
+        N = world_normal * N;
+//        N = normalize(N);
+    }
+
+
     //View Direction
     vec3 V = normalize(camera_pos - world_pos);
     //Reflect Direction
     vec3 R = reflect(-V, N);
 
     vec3 F0 = vec3(0.04);
-    F0 = mix(F0, albedo, u_material.metallic);
+    F0 = mix(F0, albedo, metallic);
 
     vec3 Lo = vec3(0.0);
 
     vec3 color;
+
+    float AO = u_material.ao;
+    if(u_material.active_textures[4])
+        AO = u_material.ao * texture(u_material.occlusion_sampler, tex_coord).r;
 
     for (int i = 0; i < u_light_count; i++){
 
@@ -134,15 +164,17 @@ void main() {
 
         vec3 H = normalize(V + L);
 
-        float NDF = DistributionGGX_Trowbridge_Reitz(N, H, u_material.roughness);
-        float G = G_GGX_SmithCorrelated(N, V, L, u_material.roughness);
+
+        float NDF = DistributionGGX_Trowbridge_Reitz(N, H, roughness );
+        float G = G_GGX_SmithCorrelated(N, V, L, roughness);
         vec3 F = fresnelSchlick(saturate(dot(H, V)), F0);
+
         vec3 specular = NDF * G * F;
 
         vec3 kS = F;
         vec3 kD = vec3(1.0) - kS;
 
-        kD *= (1.0 - u_material.metallic);
+        kD *= (1.0 - metallic);
 
         // add to outgoing radiance Lo
         float NdotL = saturate(dot(N, L));
@@ -153,7 +185,7 @@ void main() {
     vec3 ambient;
 
     // ambient lighting (we now use IBL as the ambient term)
-    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, u_material.roughness);
+    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
 
     vec3 irradiance;
     if (u_material.active_textures[1]){
@@ -162,39 +194,37 @@ void main() {
         vec3 kD = 1.0 - kS;
         if(!u_material.active_textures[2])
             kD = vec3(1.0);
-        kD *= 1.0 - u_material.metallic;
-        
+        kD *= 1.0 - metallic;
         irradiance = texture(u_material.irradiance_sampler, N).rgb;
-        vec3 diffuse = irradiance * u_material.albedo;
-
-        ambient = (kD * diffuse) * u_material.ao;
+        vec3 diffuse = irradiance * albedo;
+        ambient = (kD * diffuse) * AO;
     } else {
-        ambient = vec3(0.03) * albedo * u_material.ao;
+        ambient = vec3(0.03) * albedo * AO;
     }
 
     if (u_material.active_textures[2]){
         // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
         const float MAX_REFLECTION_LOD = 4.0;
-        vec3 prefilteredColor = textureLod(u_material.env_sampler, R, u_material.roughness * MAX_REFLECTION_LOD).rgb;
-        vec2 brdf  = texture(u_material.brdf_LUT_sampler, vec2(max(dot(N, V), 0.0), u_material.roughness)).rg;
+        vec3 prefilteredColor = textureLod(u_material.env_sampler, R, roughness * MAX_REFLECTION_LOD).rgb;
+        vec2 brdf  = texture(u_material.brdf_LUT_sampler, vec2(max(dot(N, V), 0.0), roughness)).rg;
         vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
 
-        ambient = specular * u_material.ao;
-    }
-    
-    color = ambient + Lo ;
+        ambient += (specular * AO);
 
-    //    //HDR correction
-    //    color = color / (color + vec3(1.0));
-    //    //Gamme correction
-    //    color = pow(color, vec3(1.0/2.2));    
+    }
+    color = ambient + Lo + emission;
+
+    //HDR correction
+    //color = color / (color + vec3(1.0));
+    //Gamma correction
+    color = pow(color, vec3(1.0/gamma));
 
     //HDR + Gamma Correction Magic
     //https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting  slide 140
-    color = max(vec3(0.0), color - 0.004);
-    color = (color * (6.2*color + 0.5)) / (color *(6.2*color + 1.7)+0.06);
+    //color = max(vec3(0.0), color - 0.004);
+    //color = (color * (6.2*color + 0.5)) / (color *(6.2*color + 1.7)+0.06);
 
-    frag_color = vec4(color, 1.0);
+    frag_color = vec4(color,1.0);
 
 }
 

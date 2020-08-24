@@ -8,12 +8,13 @@ export class IndexBuffer {
     public readonly indices: Uint16Array | Uint32Array;
     public readonly references: ReferenceCounter;
 
-    public constructor(gl: WebGL2RenderingContext, geometry: BufferedGeometry) {
+    public constructor(gl: WebGL2RenderingContext, geometry: BufferedGeometry, stop?: boolean) {
         if (geometry.index_buffer === undefined)
             throw new Error("Cannot create IndexBuffer. Geometry.index_buffer is undefined.");
+
         const b = geometry.index_buffer.buffer;
         this.indices = b.BYTES_PER_ELEMENT == 2 ? (b as Uint16Array) : (b as Uint32Array);
-        this.EBO = WebGL.buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, this.indices);
+        this.EBO = stop ? gl.createBuffer()! : WebGL.buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, b);
         this.references = new ReferenceCounter();
     }
 

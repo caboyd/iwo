@@ -1,6 +1,6 @@
 import { WebGL } from "./WebglHelper";
 import { ReferenceCounter } from "helpers/ReferenceCounter";
-import { Attribute, Attributes, BufferedGeometry } from "geometry/BufferedGeometry";
+import { AttributeComponentCountMap, Attributes, BufferedGeometry } from "geometry/BufferedGeometry";
 
 export class VertexBuffer {
     public attributes: Attributes;
@@ -22,39 +22,33 @@ export class VertexBuffer {
 
         //Turn the geometry buffer into WebGLBuffers
         for (const buffer of geometry.buffers) {
-            if (buffer.target != gl.ARRAY_BUFFER) continue;
+            //Need to add buffer for index_buffer to not mess up indexing
+            if (buffer.target === gl.ELEMENT_ARRAY_BUFFER && geometry.index_buffer !== undefined){
+                this.buffers.push(gl.createBuffer()!);
+                continue;
+            }
             const b = WebGL.buildBuffer(gl, buffer.target, buffer.buffer);
             this.buffers.push(b);
         }
 
-        //assert attribute index are in ascending order
-        this.assertAttributeAsc();
         this.setupVAOBuffers(gl);
         gl.bindVertexArray(null);
     }
 
-    private assertAttributeAsc(): void {
-        let i = 0;
-        for (const attrib of this.attributes) {
-            if (i > attrib.buffer_index)
-                throw new Error("Attributes must be in ascending buffer order to ensure binding order is correct");
-            i = attrib.buffer_index;
-        }
-    }
-
     public setupVAOBuffers(gl: WebGL2RenderingContext): void {
-        let buffer_index = -1;
+        let bound_buffer = undefined;
         for (const attrib of this.attributes) {
+            if (!attrib.enabled) continue;
             //Bind correct buffer
-            if (attrib.buffer_index > buffer_index) {
+            if (this.buffers[attrib.buffer_index] !== bound_buffer) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers[attrib.buffer_index]);
-                buffer_index = attrib.buffer_index;
+                bound_buffer = this.buffers[attrib.buffer_index];
             }
 
             gl.enableVertexAttribArray(attrib.type);
             gl.vertexAttribPointer(
                 attrib.type,
-                attrib.component_count,
+                AttributeComponentCountMap[attrib.type],
                 attrib.component_type,
                 attrib.normalized ?? false,
                 attrib.byte_stride ?? 0,

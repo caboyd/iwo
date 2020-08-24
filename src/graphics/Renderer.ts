@@ -108,6 +108,13 @@ export class Renderer {
         this.gl.viewport(this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height);
     }
 
+    public resetSaveBindings(): void {
+        this.current_vertex_buffer = undefined;
+        this.current_index_buffer = undefined;
+        this.current_material = undefined;
+        this.current_shader = undefined;
+    }
+
     public draw(
         draw_mode: number,
         count: number,
@@ -151,7 +158,6 @@ export class Renderer {
             this.gl.drawArrays(draw_mode, offset, count);
             this.stats.vertex_draw_count += count;
         }
-
         this.stats.draw_calls++;
     }
 

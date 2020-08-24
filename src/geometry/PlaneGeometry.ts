@@ -190,11 +190,11 @@ export class PlaneGeometry extends Geometry {
                 }
             }
             //Each side is a seperate group so they can be rendered with different materials
-            groups.push({
-                count: index_count,
-                offset: (i_ptr - index_count) * index_size,
-                material_index: mat_index,
-            } as Group);
+            // groups.push({
+            //     count: index_count,
+            //     offset: (i_ptr - index_count) * index_size,
+            //     material_index: mat_index,
+            // } as Group);
         }
     }
 

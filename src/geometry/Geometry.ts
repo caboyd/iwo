@@ -1,6 +1,7 @@
 import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { TypedArray } from "types/types";
 
+//TODO: Change to match glTF https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#meshes
 export enum AttributeType {
     Vertex = 0,
     Tex_Coord = 1,
@@ -28,10 +29,10 @@ export interface Group {
 export class Geometry {
     public indices: Uint16Array | Uint32Array | undefined;
     public attributes: Map<AttributeType, TypedArray>;
-    public groups: Group[];
+    public groups?: Group[];
     public interleaved_attributes: Float32Array | undefined;
 
-    constructor() {
+    public constructor() {
         this.attributes = new Map<AttributeType, TypedArray>();
         this.groups = [];
     }

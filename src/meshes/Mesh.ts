@@ -4,7 +4,7 @@
             
  */
 
-import { Geometry } from "geometry/Geometry";
+import { AttributeType, Geometry, Group } from "geometry/Geometry";
 import { DrawMode } from "graphics/WebglConstants";
 import { IndexBuffer } from "graphics/IndexBuffer";
 import { VertexBuffer } from "graphics/VertexBuffer";
@@ -25,20 +25,33 @@ export class Mesh {
             buf_geom =
                 geometry.getBufferedGeometry !== undefined
                     ? geometry.getBufferedGeometry()
-                    : new BufferedGeometry(geometry as Geometry);
+                    : BufferedGeometry.fromGeometry(geometry as Geometry);
         }
 
         if (buf_geom.index_buffer !== undefined) this.index_buffer = new IndexBuffer(gl, buf_geom);
         this.vertex_buffer = new VertexBuffer(gl, buf_geom);
+
         this.sub_meshes = [];
         this.draw_mode = DrawMode.TRIANGLES;
         this.count = 0;
 
-        for (const group of buf_geom.groups) {
-            this.count += group.count;
-            this.sub_meshes.push(
-                new SubMesh(group.material_index, group.offset, group.count, this.vertex_buffer, this.index_buffer)
-            );
+        if (buf_geom.groups === undefined || buf_geom.groups.length == 0) {
+            //If a geometry has no groups we can assume:
+            //  count is indices count or vertices count /3
+            //  material is 0
+            //  offset is 0
+            this.count =
+                buf_geom.index_buffer !== undefined
+                    ? buf_geom.index_buffer.buffer.length
+                    : buf_geom.buffers[buf_geom.attributes[AttributeType.Vertex].buffer_index].buffer.length / 3;
+            this.sub_meshes.push(new SubMesh(0, 0, this.count, this.vertex_buffer, this.index_buffer));
+        } else {
+            for (const group of buf_geom.groups) {
+                this.count += group.count;
+                this.sub_meshes.push(
+                    new SubMesh(group.material_index, group.offset, group.count, this.vertex_buffer, this.index_buffer)
+                );
+            }
         }
     }
 

@@ -86,7 +86,7 @@ export namespace TextureHelper {
         )
             throw new Error("TextureCubeMap loadBuffer failed. OES_texture_float_linear not available.");
 
-        if (flip) gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, 1);
+        gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
     }
 
     function texParamHelperEnd(

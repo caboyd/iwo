@@ -89,7 +89,7 @@ export class SphereGeometry extends Geometry {
         if (verts.length >= 65536) this.indices = new Uint32Array(indices);
         else this.indices = new Uint16Array(indices);
 
-        this.groups.push({ count: indices.length, offset: 0, material_index: 0 } as Group);
+        //this.groups?.push({ count: indices.length, offset: 0, material_index: 0 } as Group);
     }
 
     public getBufferedGeometry(): BufferedGeometry {

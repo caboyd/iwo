@@ -1,5 +1,6 @@
 //Base Material Class
 import { Shader } from "../graphics/shader/Shader";
+import { Texture2D } from "graphics/Texture2D";
 
 export abstract class Material {
     protected constructor() {}

@@ -1,17 +1,16 @@
 import { AttributeType, Geometry, Group } from "geometry/Geometry";
-import { glComponentType } from "graphics/WebglConstants";
+import { ComponentFormatType, ComponentType } from "graphics/WebglConstants";
 import TypedArray = NodeJS.TypedArray;
+import { UniformInfo, UniformType } from "graphics/Uniform";
 
 //Default assumes index buffer is buffer_view_index 0
 export namespace DefaultAttribute {
     export const Vertex = (): Attribute => {
         return {
-            data_type: "VEC3",
             type: AttributeType.Vertex,
             enabled: true,
             buffer_index: 0,
             component_type: 5126, // FLOAT
-            component_count: 3,
         };
     };
     export const Tex_Coord = (): Attribute => {
@@ -20,8 +19,6 @@ export namespace DefaultAttribute {
             enabled: true,
             buffer_index: 0,
             component_type: 5126, // FLOAT
-            component_count: 2,
-            data_type: "VEC2",
         };
     };
     export const Normal = (): Attribute => {
@@ -30,28 +27,22 @@ export namespace DefaultAttribute {
             enabled: true,
             buffer_index: 0,
             component_type: 5126, // FLOAT
-            component_count: 3,
-            data_type: "VEC3",
         };
     };
     export const Tangent = (): Attribute => {
         return {
             type: AttributeType.Tangent,
-            enabled: true,
+            enabled: false,
             buffer_index: 0,
             component_type: 5126, // FLOAT
-            component_count: 3,
-            data_type: "VEC3",
         };
     };
     export const Bitangent = (): Attribute => {
         return {
             type: AttributeType.Bitangent,
-            enabled: true,
+            enabled: false,
             buffer_index: 0,
             component_type: 5126, // FLOAT
-            component_count: 3,
-            data_type: "VEC3",
         };
     };
 
@@ -82,19 +73,38 @@ export interface Attribute {
     byte_offset?: number;
     byte_stride?: number;
     // eslint-disable-next-line prettier/prettier
-    component_type: glComponentType;
-    component_count: 1 | 2 | 3 | 4 | 9 | 16;
-    //SCALAR | VEC2 | VEC3 | VEC4 | MAT2 | MAT3 | MAT4
-    data_type: "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4";
+    component_type: ComponentType;
+    // component_count: 1 | 2 | 3 | 4 | 9 | 16;
+    // //SCALAR | VEC2 | VEC3 | VEC4 | MAT2 | MAT3 | MAT4
+    // component_format_type: ComponentFormatType;
     normalized?: boolean;
 }
+
+type AttributeComponentCount = { readonly [TKey in AttributeType]: number };
+type AttributeAccessorType = { readonly [TKey in AttributeType]: ComponentFormatType };
+
+export const AttributeComponentCountMap = {
+    [AttributeType.Vertex]: 3,
+    [AttributeType.Tex_Coord]: 2,
+    [AttributeType.Normal]: 3,
+    [AttributeType.Tangent]: 3,
+    [AttributeType.Bitangent]: 3,
+};
+
+export const AttributeAccessorTypeMap: AttributeAccessorType = {
+    [AttributeType.Vertex]: "VEC3",
+    [AttributeType.Tex_Coord]: "VEC2",
+    [AttributeType.Normal]: "VEC3",
+    [AttributeType.Tangent]: "VEC3",
+    [AttributeType.Bitangent]: "VEC3",
+};
 
 export type Attributes = readonly [Attribute, Attribute, Attribute, Attribute, Attribute];
 
 export interface GeometryBuffer {
     buffer: TypedArray;
     //ARRAY_BUFFER | ELEMENT_ARRAY_BUFFER
-    target: 34962 | 34963;
+    target: 34962 | 34963 | number;
 }
 
 // export interface BufferedGeometry {
@@ -116,28 +126,34 @@ export class BufferedGeometry {
     public attributes: Attributes;
     public index_buffer?: GeometryBuffer;
     public buffers: GeometryBuffer[];
-    public groups: Group[];
+    public groups?: Group[];
 
-    public constructor(geom: Geometry, options?: BufferedGeometryOptions) {
+    public constructor() {
         this.attributes = DefaultAttribute.SingleBufferApproach();
         this.buffers = [];
-        this.groups = geom.groups;
-        this.index_buffer = geom.indices ? { buffer: geom.indices, target: 34963 } : undefined;
+    }
 
-        this.setupAttributes(geom);
+    public static fromGeometry(geom: Geometry, options?: BufferedGeometryOptions): BufferedGeometry {
+        const b = new BufferedGeometry();
+        b.attributes = DefaultAttribute.SingleBufferApproach();
+        b.buffers = [];
+        b.groups = geom.groups;
+        b.index_buffer = geom.indices ? { buffer: geom.indices, target: 34963 } : undefined;
+
+        b.setupAttributes(geom);
 
         if (options?.interleave_buffer === true) {
-            if (geom.interleaved_attributes) this.buffers.push({ buffer: geom.interleaved_attributes, target: 34962 });
+            if (geom.interleaved_attributes) b.buffers.push({ buffer: geom.interleaved_attributes, target: 34962 });
             else {
                 throw new Error("Code does not yet exist to interleave a buffer for you");
                 //this.setupInterleavedBuffer(geom);
             }
-            this.setupStrideOffset(geom);
+            b.setupStrideOffset(geom);
         } else {
-            this.setupConcatenatedBuffer(geom);
+            b.setupConcatenatedBuffer(geom);
         }
+        return b;
     }
-
     //TODO: finish this if i want
     private setupInterleavedBuffer(geom: Geometry): void {
         //loopity loop through everything and put in a float32array

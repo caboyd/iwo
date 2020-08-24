@@ -1,5 +1,18 @@
 import { TextureHelper } from "./TextureHelper";
 
+export interface Texture2DOptions {
+    width: number;
+    height: number;
+    wrap_S: number;
+    wrap_T: number;
+    mag_filter: number;
+    min_filter: number;
+    internal_format: number;
+    format: number;
+    type: number;
+    flip: boolean;
+}
+
 export class Texture2D {
     public texture_id: WebGLTexture;
 
@@ -15,7 +28,7 @@ export class Texture2D {
         internal_format: number = gl.RGBA,
         format: number = gl.RGBA,
         type: number = gl.UNSIGNED_BYTE,
-        flip: boolean = true
+        flip: boolean = false
     ) {
         this.texture_id = gl.createTexture()!;
 

@@ -69,7 +69,7 @@ export class UniformBuffer {
         gl.bufferSubData(gl.UNIFORM_BUFFER, 0, this.view);
     }
 
-    public set(uniform_name: string, data: TypedArray | number[] | number): void {
+    public set(uniform_name: string, data: TypedArray | number[]): void {
         const uniform_block = this.map.get(uniform_name);
         if (uniform_block) uniform_block.set(data);
     }

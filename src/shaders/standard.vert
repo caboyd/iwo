@@ -46,5 +46,5 @@ void main() {
     world_pos = (view_inverse * vec4(view_pos, 1.0)).xyz;
     world_normal = normalize(inverseTransformDirection( view_normal, view ));
         
-    tex_coord = a_tex_coord;
+    tex_coord =  a_tex_coord;
 }

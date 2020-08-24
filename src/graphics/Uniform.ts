@@ -105,12 +105,12 @@ export interface UniformInfo {
     size: number;
     items_per_row: number;
     default_rows: number;
-    set: Function;
-    set_array?: Function;
+    set: (gl: WebGL2RenderingContext, location: WebGLUniformLocation) => (_: any) => void;
+    set_array?: (gl: WebGL2RenderingContext, location: WebGLUniformLocation) => (_: any) => void;
 }
 
 export class Uniform {
-    public readonly set: Function;
+    public readonly set: (_: any) => void;
 
     public constructor(gl: WebGL2RenderingContext, program: WebGLProgram, info: WebGLActiveInfo) {
         const location = gl.getUniformLocation(program, info.name)!;
@@ -126,12 +126,12 @@ export class Uniform {
 }
 
 export class UniformBlock {
-    public readonly set: Function;
+    public readonly set: (value: TypedArray | number[]) => void;
     private readonly _buffer_view: TypedArray;
 
     public constructor(buffer: ArrayBuffer, type: UniformType, offset: number, count: number, size: number) {
         // eslint-disable-next-line @typescript-eslint/no-use-before-define
-        const uniform_info = uniform_info_map[type as UniformType];
+        const uniform_info = uniform_info_map[type];
         const total_count = uniform_info.default_rows * count;
 
         if (!uniform_info.Type) throw new Error("Samplers not allowed in Uniform Buffers");

@@ -26,7 +26,7 @@ export class ImageLoader extends FileLoader {
 
     public static async promiseAll(
         files: string[],
-        base_url: string = window.location.href.substr(0, window.location.href.lastIndexOf("/"))
+        base_url: string = FileLoader.Default_Base_URL
     ): Promise<HTMLImageElement[]> {
         const imgs = Array.from({ length: files.length }, u => new Image());
         const promises: Promise<HTMLImageElement>[] = [];
