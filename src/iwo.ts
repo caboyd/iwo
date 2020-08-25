@@ -1,4 +1,5 @@
 export { Camera, Camera_Movement } from "./cameras/Camera";
+export { OrbitControl } from "./cameras/OrbitControl";
 export { CubeCamera } from "./cameras/CubeCamera";
 export { BoxGeometry } from "./geometry/BoxGeometry";
 export { Geometry } from "./geometry/Geometry";

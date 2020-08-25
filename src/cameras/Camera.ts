@@ -59,14 +59,15 @@ export class Camera {
         this.calculateOrientation();
     }
 
-    public getRight(out: vec3): vec3 {
+    public getRight(out?: vec3): vec3 {
+        out = out ?? vec3.create();
         quat.conjugate(temp_quat, this.orientation);
         vec3.set(out, 1, 0, 0);
         vec3.transformQuat(out, out, temp_quat);
         return out;
     }
 
-    public getForward(out: vec3): vec3 {
+    public getForward(out: vec3 = vec3.create()): vec3 {
         quat.conjugate(temp_quat, this.orientation);
         vec3.set(out, 0, 0, -1);
         vec3.transformQuat(out, out, temp_quat);

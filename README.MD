@@ -18,9 +18,9 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 
 ### File Loading / Importing
 - [x] [Asynchronous File Loading](https://github.com/caboyd/iwo/blob/master/src/loader/FileLoader.ts)
-- [x] [HDR Image Loader](https://github.com/caboyd/iwor/blob/master/src/loader/HDRImageLoader.ts)
-- [ ] GLTF Importer
-- [ ] OBJ Importer
+- [x] [HDR Image Loader](https://github.com/caboyd/iwor/blob/master/src/loader/HDRImageLoader.ts)  
+:construction: GLTF Importer
+
 
 ### Geometry Generation
 - [x] [Plane](https://github.com/caboyd/iwo/blob/master/src/geometry/PlaneGeometry.ts)
@@ -38,12 +38,14 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 - [x] Image Based Specular Lighting
 - [ ] Normal Mapping
 - [ ] Parallax mapping - ([Tutorial](http://apoorvaj.io/exploring-bump-mapping-with-webgl.html))
+- [ ] Volumetric Rendering
+- [ ] 
 - [ ] Render Targets
-- [ ] Render to Cubemap
+- [x] Render to Cubemap
 - [ ] Scene Rendering
 
 ### Rendering Performance
-- [ ] Frustrum Culling
+- [ ] Frustum Culling
 - [ ] Occlusion Culling
 - [ ] Instanced Rendering
 
@@ -53,7 +55,7 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 - [ ] Font Rendering
 - [ ] Fog
 - [ ] Motion Blur
-- [ ] Screenshots
+
 
 ### Shadows
 - [ ] Shadow Mapping
@@ -61,8 +63,8 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 
 ### Cameras
 - [x] [First Person Camera](https://github.com/caboyd/iwo/blob/master/src/cameras/Camera.ts)
-- [ ] Third Person (Arcball) Camera
-- [ ] Cubemap Camera
+- [ ] Third Person (Arcball/Orbit) Camera
+- [x] Cubemap Camera
 
 ### Animation
 - [ ] Skeletal animation
