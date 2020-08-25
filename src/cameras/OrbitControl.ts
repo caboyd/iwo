@@ -50,17 +50,17 @@ export class OrbitControl {
     // }
 
     public scroll(scroll_direction_forward: boolean): void {
-        let step_dir = vec3.sub(vec3.create(), this.orbit_point, this.camera.position);
-        let new_len = vec3.len(step_dir);
-        new_len += this.step_size * (scroll_direction_forward ? 1 : -1);
-        new_len = Math.max(this.minimum_distance, new_len);
-        console.log(step_dir, vec3.len(step_dir));
-        step_dir = vec3.normalize(step_dir, step_dir);
+        let target_to_camera = vec3.sub(vec3.create(), this.camera.position, this.orbit_point);
+        let step_modified_length = vec3.len(target_to_camera);
+        step_modified_length += this.step_size * (scroll_direction_forward ? 1 : -1);
+        step_modified_length = Math.max(this.minimum_distance, step_modified_length);
 
-        step_dir = vec3.scale(step_dir, step_dir, new_len);
+        //Rescale vector
+        target_to_camera = vec3.normalize(target_to_camera, target_to_camera);
+        target_to_camera = vec3.scale(target_to_camera, target_to_camera, step_modified_length);
 
-        vec3.sub(this.camera.position, this.orbit_point, step_dir);
-        console.log(this.camera.position, step_dir, new_len);
+        //Set camera back to scaled vector position
+        vec3.add(this.camera.position, this.orbit_point, target_to_camera);
     }
 
     public processMouseMovement(xOffset: number, yOffset: number, constrainPitch: boolean = true): void {
@@ -72,7 +72,6 @@ export class OrbitControl {
         yOffset *= this.mouse_sensitivity;
 
         const angle_y = vec3.angle(this.camera.getForward(), this.camera.up);
-        console.log(angle_y, Math.PI * 0.92, Math.PI * 0.08);
 
         if (constrainPitch) {
             if (angle_y > Math.PI * 0.99 && yOffset < 0) yOffset = 0;
