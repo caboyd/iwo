@@ -9,6 +9,7 @@ export enum Camera_Movement {
     LEFT,
     RIGHT,
     UP,
+    DOWN,
 }
 
 let forward = vec3.create();

@@ -5,7 +5,22 @@ export interface OrbitControlOptions {
     mouse_sensitivity?: number;
     orbit_point?: vec3;
     minimum_distance?: number;
+    orbit_control_binds?: OrbitControlBinds;
 }
+
+export interface OrbitControlBinds {
+    LEFT: string;
+    RIGHT: string;
+    UP: string;
+    DOWN: string;
+}
+
+export const DefaultOrbitControlBinds: OrbitControlBinds = {
+    LEFT: "ArrowLeft",
+    RIGHT: "ArrowRight",
+    UP: "ArrowUp",
+    DOWN: "ArrowDown",
+};
 
 export class OrbitControl {
     private camera: Camera;
@@ -16,6 +31,7 @@ export class OrbitControl {
     private readonly mouse_sensitivity: number = 0.005;
     private readonly step_size: number = 0.5;
     private readonly minimum_distance: number = 5.0;
+    private readonly orbit_control_binds: OrbitControlBinds = DefaultOrbitControlBinds;
     public orbit_point: vec3 = [0, 0, 0];
 
     public constructor(camera: Camera, options?: OrbitControlOptions) {
@@ -23,41 +39,47 @@ export class OrbitControl {
         this.mouse_sensitivity = options?.mouse_sensitivity ?? this.mouse_sensitivity;
         this.orbit_point = options?.orbit_point ?? this.orbit_point;
         this.minimum_distance = options?.minimum_distance ?? this.minimum_distance;
+        this.orbit_control_binds = options?.orbit_control_binds ?? this.orbit_control_binds;
         this.camera.lookAt(this.orbit_point);
+
+        window.addEventListener("keydown", (e: KeyboardEvent) => {
+            if (Object.values(this.orbit_control_binds).includes(e.code)) this.processKeyboard(e.code);
+        });
+
+        window.addEventListener("wheel", (e: WheelEvent) => {
+            e.stopPropagation();
+            this.scroll(e.deltaY > 0);
+        });
     }
 
     public update(): void {}
 
-    // public processKeyboard(direction: Camera_Movement): void {
-    //
-    //     //move camera
-    //     //move orbit point
-    //
-    //     forward = this.getForward(forward);
-    //     right = this.getRight(right);
-    //
-    //     if (direction == Camera_Movement.FORWARD) {
-    //         vec3.scaleAndAdd(this.position, this.position, forward, velocity);
-    //     } else if (direction == Camera_Movement.BACKWARD) {
-    //         vec3.scaleAndAdd(this.position, this.position, forward, -velocity);
-    //     } else if (direction == Camera_Movement.LEFT) {
-    //         vec3.scaleAndAdd(this.position, this.position, right, -velocity);
-    //     } else if (direction == Camera_Movement.RIGHT) {
-    //         vec3.scaleAndAdd(this.position, this.position, right, velocity);
-    //     } else if (direction == Camera_Movement.UP) {
-    //         vec3.scaleAndAdd(this.position, this.position, this.worldUp, velocity);
-    //     }
-    // }
+    public processKeyboard(key: string): void {
+        const target_to_camera = vec3.sub(vec3.create(), this.camera.position, this.orbit_point);
+        if (key === this.orbit_control_binds.LEFT) {
+            //move camera based on step_size
+            vec3.scaleAndAdd(this.camera.position, this.camera.position, this.camera.getRight(), -this.step_size);
+        } else if (key === this.orbit_control_binds.RIGHT) {
+            vec3.scaleAndAdd(this.camera.position, this.camera.position, this.camera.getRight(), this.step_size);
+        } else if (key === this.orbit_control_binds.UP) {
+            vec3.scaleAndAdd(this.camera.position, this.camera.position, this.camera.up, this.step_size);
+        } else if (key === this.orbit_control_binds.DOWN) {
+            vec3.scaleAndAdd(this.camera.position, this.camera.position, this.camera.up, -this.step_size);
+        }
+        //place orbit point to same relative position
+        vec3.sub(this.orbit_point, this.camera.position, target_to_camera);
+        this.camera.lookAt(this.orbit_point);
+    }
 
     public scroll(scroll_direction_forward: boolean): void {
         let target_to_camera = vec3.sub(vec3.create(), this.camera.position, this.orbit_point);
-        let step_modified_length = vec3.len(target_to_camera);
-        step_modified_length += this.step_size * (scroll_direction_forward ? 1 : -1);
-        step_modified_length = Math.max(this.minimum_distance, step_modified_length);
+        const dist = vec3.len(target_to_camera);
+        let step_scaled_dist = dist + this.step_size * (scroll_direction_forward ? 1 : -1);
+        step_scaled_dist = Math.max(this.minimum_distance, step_scaled_dist);
 
         //Rescale vector
         target_to_camera = vec3.normalize(target_to_camera, target_to_camera);
-        target_to_camera = vec3.scale(target_to_camera, target_to_camera, step_modified_length);
+        target_to_camera = vec3.scale(target_to_camera, target_to_camera, step_scaled_dist);
 
         //Set camera back to scaled vector position
         vec3.add(this.camera.position, this.orbit_point, target_to_camera);
