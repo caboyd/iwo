@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /**
  * Created by Chris on May, 2019
  */
+import { TextureOptions } from "graphics/Texture2D";
+import { TextureCubeMapOptions } from "graphics/TextureCubeMap";
 
 type TextureType =
     | WebGL2RenderingContext["TEXTURE_2D"]
@@ -13,65 +16,49 @@ export namespace TextureHelper {
         gl: WebGL2RenderingContext,
         texture_type: TextureType,
         buffer: ArrayBufferView | null,
-        width: number,
-        height: number,
-        wrap_S: number,
-        wrap_T: number,
-        wrap_R: number | undefined,
-        mag_filter: number,
-        min_filter: number,
-        internal_format: number,
-        format: number,
-        type: number,
-        flip: boolean
+        options: TextureOptions
     ): void {
-        texParamHelperStart(gl, min_filter, format, flip);
+        const o = options;
+        texParamHelperStart(gl, o.min_filter, o.format, o.flip);
 
         if (texture_type == gl.TEXTURE_CUBE_MAP) {
             for (let i = 0; i < 6; i++) {
                 // note that we store each face with 16 bit floating point values
                 //prettier-ignore
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, width, height,
-                    0, format, type, buffer);
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, o.internal_format, o.width, o.height,
+                    0, o.format, o.type, buffer);
             }
         } else if (texture_type == gl.TEXTURE_2D) {
-            gl.texImage2D(texture_type, 0, internal_format, width, height, 0, format, type, buffer);
+            gl.texImage2D(texture_type, 0, o.internal_format, o.width, o.height, 0, o.format, o.type, buffer);
         } else {
             throw new Error(`texture type ${texture_type} not supported.`);
         }
 
-        texParamHelperEnd(gl, texture_type, wrap_S, wrap_T, wrap_R, mag_filter, min_filter);
+        texParamHelperEnd(gl, texture_type, options);
     }
 
     export function texParameterImage(
         gl: WebGL2RenderingContext,
         texture_type: TextureType,
         image: TexImageSource,
-        wrap_S: number,
-        wrap_T: number,
-        wrap_R: number | undefined,
-        mag_filter: number,
-        min_filter: number,
-        internal_format: number,
-        format: number,
-        type: number,
-        flip: boolean
+        options: TextureOptions | TextureCubeMapOptions
     ): void {
-        texParamHelperStart(gl, min_filter, format, flip);
+        const o = options;
+        texParamHelperStart(gl, o.min_filter, o.format, o.flip);
         if (texture_type == gl.TEXTURE_CUBE_MAP) {
             for (let i = 0; i < 6; i++) {
                 // note that we store each face with 16 bit floating point values
                 //prettier-ignore
-                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, internal_format, format, type,
+                gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, o.internal_format, o.format, options.type,
                     image as ImageData);
             }
         } else if (texture_type == gl.TEXTURE_2D) {
-            gl.texImage2D(texture_type, 0, internal_format, format, type, image as ImageData);
+            gl.texImage2D(texture_type, 0, o.internal_format, o.format, o.type, image as ImageData);
         } else {
             throw new Error(`texture type ${texture_type} not supported.`);
         }
 
-        texParamHelperEnd(gl, texture_type, wrap_S, wrap_T, wrap_R, mag_filter, min_filter);
+        texParamHelperEnd(gl, texture_type, o);
     }
 
     function texParamHelperStart(gl: WebGL2RenderingContext, min_filter: number, format: number, flip: boolean): void {
@@ -84,35 +71,29 @@ export namespace TextureHelper {
             min_filter != gl.NEAREST &&
             min_filter != gl.NEAREST_MIPMAP_NEAREST
         )
-            throw new Error("TextureCubeMap loadBuffer failed. OES_texture_float_linear not available.");
+            throw new Error("OES_texture_float_linear not available.");
 
         gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, flip);
     }
 
-    function texParamHelperEnd(
-        gl: WebGL2RenderingContext,
-        texture_type: TextureType,
-        wrap_S: number,
-        wrap_T: number,
-        wrap_R: number | undefined,
-        mag_filter: number,
-        min_filter: number
-    ): void {
-        gl.texParameteri(texture_type, gl.TEXTURE_WRAP_S, wrap_S);
-        gl.texParameteri(texture_type, gl.TEXTURE_WRAP_T, wrap_T);
-        if (wrap_R) gl.texParameteri(texture_type, gl.TEXTURE_WRAP_R, wrap_R);
-        gl.texParameteri(texture_type, gl.TEXTURE_MAG_FILTER, mag_filter);
-        gl.texParameteri(texture_type, gl.TEXTURE_MIN_FILTER, min_filter);
+    function texParamHelperEnd(gl: WebGL2RenderingContext, texture_type: TextureType, options: TextureOptions): void {
+        gl.texParameteri(texture_type, gl.TEXTURE_WRAP_S, options.wrap_S);
+        gl.texParameteri(texture_type, gl.TEXTURE_WRAP_T, options.wrap_T);
+        gl.texParameteri(texture_type, gl.TEXTURE_WRAP_R, options.wrap_R);
+        gl.texParameteri(texture_type, gl.TEXTURE_MAG_FILTER, options.mag_filter);
+        gl.texParameteri(texture_type, gl.TEXTURE_MIN_FILTER, options.min_filter);
         if (
-            min_filter == gl.LINEAR_MIPMAP_LINEAR ||
-            min_filter == gl.LINEAR_MIPMAP_NEAREST ||
-            min_filter == gl.NEAREST_MIPMAP_LINEAR ||
-            min_filter == gl.NEAREST_MIPMAP_NEAREST
+            [
+                gl.LINEAR_MIPMAP_LINEAR,
+                gl.LINEAR_MIPMAP_NEAREST,
+                gl.NEAREST_MIPMAP_LINEAR,
+                gl.NEAREST_MIPMAP_NEAREST,
+            ].includes(options.min_filter)
         )
             gl.generateMipmap(texture_type);
     }
 
-    export function isArrayBufferView(value: any): boolean {
+    export function isArrayBufferView(value: any): value is ArrayBufferView {
         return value && value.buffer instanceof ArrayBuffer && value.byteLength !== undefined;
     }
 

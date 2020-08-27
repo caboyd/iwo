@@ -44,20 +44,7 @@ export class PBRMaterial extends Material {
         const shader = this.shader;
         const active_textures = [false, false, false, false, false, false];
         if (this.albedo_texture === undefined && this.albedo_image) {
-            this.albedo_texture = new Texture2D(
-                gl,
-                this.albedo_image,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                false
-            );
+            this.albedo_texture = new Texture2D(gl, this.albedo_image, { flip: false });
         }
         if (this.albedo_texture) {
             this.albedo_texture.bind(gl, 0);
@@ -75,20 +62,7 @@ export class PBRMaterial extends Material {
         }
 
         if (this.normal_texture === undefined && this.normal_image) {
-            this.normal_texture = new Texture2D(
-                gl,
-                this.normal_image,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                false
-            );
+            this.normal_texture = new Texture2D(gl, this.normal_image, { flip: false });
         }
         if (this.normal_texture) {
             this.normal_texture.bind(gl, 3);
@@ -96,20 +70,7 @@ export class PBRMaterial extends Material {
         }
 
         if (this.occlusion_texture === undefined && this.occlusion_image) {
-            this.occlusion_texture = new Texture2D(
-                gl,
-                this.occlusion_image,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                false
-            );
+            this.occlusion_texture = new Texture2D(gl, this.occlusion_image, { flip: false });
         }
         if (this.occlusion_texture) {
             this.occlusion_texture.bind(gl, 4);
@@ -117,20 +78,7 @@ export class PBRMaterial extends Material {
         }
 
         if (this.metal_roughness_texture === undefined && this.metal_roughness_image) {
-            this.metal_roughness_texture = new Texture2D(
-                gl,
-                this.metal_roughness_image,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                false
-            );
+            this.metal_roughness_texture = new Texture2D(gl, this.metal_roughness_image, { flip: false });
         }
         if (this.metal_roughness_texture) {
             this.metal_roughness_texture.bind(gl, 5);
@@ -138,20 +86,7 @@ export class PBRMaterial extends Material {
         }
 
         if (this.emissive_texture === undefined && this.emissive_image) {
-            this.emissive_texture = new Texture2D(
-                gl,
-                this.emissive_image,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                false
-            );
+            this.emissive_texture = new Texture2D(gl, this.emissive_image, { flip: false });
         }
         if (this.emissive_texture) {
             this.emissive_texture.bind(gl, 6);

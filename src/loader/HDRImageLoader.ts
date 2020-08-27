@@ -101,7 +101,7 @@ export class HDRImageLoader extends FileLoader {
         }
         const float_buffer = rgbeToFloat(image);
 
-        return { data: float_buffer, height: max_y, width: max_x, exposure:exposure } as HDRBuffer;
+        return { data: float_buffer, height: max_y, width: max_x, exposure: exposure } as HDRBuffer;
     }
 
     // static promiseAll(
