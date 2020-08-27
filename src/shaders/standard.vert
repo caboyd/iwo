@@ -31,14 +31,31 @@ out vec2 tex_coord;
 out vec3 view_normal;
 out vec3 world_normal;
 out vec3 camera_pos;
+//out mat3 TBN;
 
 vec3 inverseTransformDirection(in vec3 normal, in mat4 matrix) {
     return normalize( (vec4(normal,0.0) * matrix).xyz );
 }
 
+vec3 calculate_tangent(vec3 n) {
+    vec3 v = vec3(1.0, 0.0, 0.0);
+    float d = dot(v, n);
+    if (abs(d) < 1.0e-3) {
+        v = vec3(0.0, 1.0, 0.0);
+        d = dot(v, n);
+    }
+    return normalize(v - d * n);
+}
+
 void main() {
     gl_Position = mvp * vec4(a_vertex,1.0f);
-    
+
+//
+//    vec3 n = normalize(gl_NormalMatrix * gl_Normal);
+//    vec3 t = calculate_tangent(n);
+//    vec3 b = cross(n, t);
+//    TBN = mat3(t,b,n);
+
     camera_pos = inverse(view)[3].xyz;
     local_pos = a_vertex;
     view_pos = (model_view * vec4(a_vertex,1.0f)).xyz ;

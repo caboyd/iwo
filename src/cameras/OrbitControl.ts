@@ -2,10 +2,11 @@ import { Camera, Camera_Movement } from "./Camera";
 import { mat4, vec3, vec4 } from "gl-matrix";
 
 export interface OrbitControlOptions {
-    mouse_sensitivity?: number;
-    orbit_point?: vec3;
-    minimum_distance?: number;
-    orbit_control_binds?: OrbitControlBinds;
+    mouse_sensitivity: number;
+    orbit_point: vec3;
+    minimum_distance: number;
+    maximum_distance: number;
+    orbit_control_binds: OrbitControlBinds;
 }
 
 export interface OrbitControlBinds {
@@ -30,15 +31,17 @@ export class OrbitControl {
 
     private readonly mouse_sensitivity: number = 0.005;
     private readonly step_size: number = 0.5;
-    private readonly minimum_distance: number = 5.0;
+    public minimum_distance: number = 5.0;
+    public maximum_distance: number = 5.0;
     private readonly orbit_control_binds: OrbitControlBinds = DefaultOrbitControlBinds;
     public orbit_point: vec3 = [0, 0, 0];
 
-    public constructor(camera: Camera, options?: OrbitControlOptions) {
+    public constructor(camera: Camera, options?: Partial<OrbitControlOptions>) {
         this.camera = camera;
         this.mouse_sensitivity = options?.mouse_sensitivity ?? this.mouse_sensitivity;
         this.orbit_point = options?.orbit_point ?? this.orbit_point;
         this.minimum_distance = options?.minimum_distance ?? this.minimum_distance;
+        this.maximum_distance = options?.maximum_distance ?? this.maximum_distance;
         this.orbit_control_binds = options?.orbit_control_binds ?? this.orbit_control_binds;
         this.camera.lookAt(this.orbit_point);
 
@@ -76,6 +79,7 @@ export class OrbitControl {
         const dist = vec3.len(target_to_camera);
         let step_scaled_dist = dist + this.step_size * (scroll_direction_forward ? 1 : -1);
         step_scaled_dist = Math.max(this.minimum_distance, step_scaled_dist);
+        step_scaled_dist = Math.min(this.maximum_distance, step_scaled_dist);
 
         //Rescale vector
         target_to_camera = vec3.normalize(target_to_camera, target_to_camera);

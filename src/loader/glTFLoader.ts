@@ -126,7 +126,7 @@ export class glTFLoader {
                                     offset,
                                     length
                                 ),
-                                target: buffer_view.target!,
+                                target: 34963,
                             };
                             //  x.index_buffer =
                             //        {
@@ -245,7 +245,7 @@ export class glTFLoader {
         const length = buffer_view.byteLength / 4;
         x.buffers.push({
             buffer: ArrayBufferToTypedArray(componentType, array_buffers[buffer_index], offset, length),
-            target: buffer_view.target!,
+            target: 34962,
         });
 
         a.type = type;

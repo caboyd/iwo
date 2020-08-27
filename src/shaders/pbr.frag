@@ -11,6 +11,7 @@ in vec2 tex_coord;
 in vec3 view_normal;
 in vec3 world_normal;
 in vec3 camera_pos;
+in mat3 TBN;
 
 layout (std140) uniform ubo_per_frame{
 // base alignment   // aligned offset
@@ -98,6 +99,14 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
     return Fr * fresnel + F0;
 }
 
+bool isnan( float val )
+{
+    return ( val < 0.0 || 0.0 < val || val == 0.0 ) ? false : true;
+    // important: some nVidias failed to cope with version below.
+    // Probably wrong optimization.
+    /*return ( val <= 0.0 || 0.0 <= val ) ? false : true;*/
+}
+
 void main() {
     vec3 albedo;
     if (u_material.active_textures[0])
@@ -126,7 +135,7 @@ void main() {
         N = texture(u_material.normal_sampler, tex_coord).rgb;
         N = N * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
         N = world_normal * N;
-//        N = normalize(N);
+        N = normalize(N);
     }
 
 
@@ -196,8 +205,11 @@ void main() {
             kD = vec3(1.0);
         kD *= 1.0 - metallic;
         irradiance = texture(u_material.irradiance_sampler, N).rgb;
+        //HDR correction
+        //irradiance = irradiance / (irradiance + vec3(1.0));
         vec3 diffuse = irradiance * albedo;
         ambient = (kD * diffuse) * AO;
+
     } else {
         ambient = vec3(0.03) * albedo * AO;
     }
@@ -213,9 +225,9 @@ void main() {
 
     }
     color = ambient + Lo + emission;
-
+    //color = ambient;
     //HDR correction
-    //color = color / (color + vec3(1.0));
+    color = color / (color + vec3(1.0));
     //Gamma correction
     color = pow(color, vec3(1.0/gamma));
 
