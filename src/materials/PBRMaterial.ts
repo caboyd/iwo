@@ -43,8 +43,12 @@ export class PBRMaterial extends Material {
     public activate(gl: WebGL2RenderingContext): void {
         const shader = this.shader;
         const active_textures = [false, false, false, false, false, false];
-        if (this.albedo_texture === undefined && this.albedo_image) {
-            this.albedo_texture = new Texture2D(gl, this.albedo_image, { flip: false });
+        if (this.albedo_texture === undefined && this.albedo_image && this.albedo_image.complete) {
+            this.albedo_texture = new Texture2D(gl, this.albedo_image, {
+                flip: false,
+                internal_format: gl.SRGB8_ALPHA8,
+                format: gl.RGBA,
+            });
         }
         if (this.albedo_texture) {
             this.albedo_texture.bind(gl, 0);
@@ -61,15 +65,15 @@ export class PBRMaterial extends Material {
             active_textures[2] = true;
         }
 
-        if (this.normal_texture === undefined && this.normal_image) {
-            this.normal_texture = new Texture2D(gl, this.normal_image, { flip: false });
+        if (this.normal_texture === undefined && this.normal_image?.complete) {
+            this.normal_texture = new Texture2D(gl, this.normal_image, { flip: false, min_filter: gl.NEAREST });
         }
         if (this.normal_texture) {
             this.normal_texture.bind(gl, 3);
             active_textures[3] = true;
         }
 
-        if (this.occlusion_texture === undefined && this.occlusion_image) {
+        if (this.occlusion_texture === undefined && this.occlusion_image?.complete) {
             this.occlusion_texture = new Texture2D(gl, this.occlusion_image, { flip: false });
         }
         if (this.occlusion_texture) {
@@ -77,7 +81,7 @@ export class PBRMaterial extends Material {
             active_textures[4] = true;
         }
 
-        if (this.metal_roughness_texture === undefined && this.metal_roughness_image) {
+        if (this.metal_roughness_texture === undefined && this.metal_roughness_image?.complete) {
             this.metal_roughness_texture = new Texture2D(gl, this.metal_roughness_image, { flip: false });
         }
         if (this.metal_roughness_texture) {
@@ -85,7 +89,7 @@ export class PBRMaterial extends Material {
             active_textures[5] = true;
         }
 
-        if (this.emissive_texture === undefined && this.emissive_image) {
+        if (this.emissive_texture === undefined && this.emissive_image?.complete) {
             this.emissive_texture = new Texture2D(gl, this.emissive_image, { flip: false });
         }
         if (this.emissive_texture) {

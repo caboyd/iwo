@@ -2,16 +2,18 @@
 precision highp float;
 
 #define PI 3.14159265358979
+#define MIN_PERCEPTUAL_ROUGHNESS 0.045
+#define MIN_ROUGHNESS            0.002025
 
 out vec4 frag_color;
 
 in vec3 view_pos;
 in vec3 world_pos;
 in vec2 tex_coord;
+in vec3 normal;
 in vec3 view_normal;
 in vec3 world_normal;
 in vec3 camera_pos;
-in mat3 TBN;
 
 layout (std140) uniform ubo_per_frame{
 // base alignment   // aligned offset
@@ -48,6 +50,7 @@ struct Light {
 uniform int u_light_count;
 uniform Light u_lights[16];
 uniform Material u_material;
+uniform vec3 light_ambient;
 uniform float gamma;
 
 float saturate(float a){
@@ -55,10 +58,10 @@ float saturate(float a){
 }
 
 
-float DistributionGGX_Trowbridge_Reitz (vec3 N, vec3 H, float roughness) {
-    float alphaRoughness = roughness * roughness;
+float DistributionGGX_Trowbridge_Reitz (vec3 N, vec3 H, float perceptual_roughness) {
+    float roughness = perceptual_roughness * perceptual_roughness;
 
-    float a2 = alphaRoughness * alphaRoughness;
+    float a2 = roughness * roughness;
     float NdotH = saturate(dot(N, H));
     float NdotH2 = NdotH*NdotH;
 
@@ -70,10 +73,10 @@ float DistributionGGX_Trowbridge_Reitz (vec3 N, vec3 H, float roughness) {
 
 // Moving Frostbite to Physically Based Rendering 3.0 - page 12, listing 2
 // https://seblagarde.files.wordpress.com/2015/07/course_notes_moving_frostbite_to_pbr_v32.pdf
-float G_GGX_SmithCorrelated(vec3 N, vec3 V, vec3 L, float roughness) {
+float G_GGX_SmithCorrelated(vec3 N, vec3 V, vec3 L, float perceptual_roughness) {
     float NdotV = saturate(dot(N, V));
     float NdotL = saturate(dot(N, L));
-    float a2 = roughness * roughness;
+    float a2 = perceptual_roughness * perceptual_roughness;
     // dotNL and dotNV are explicitly swapped. This is not a mistake.
     float gv = NdotL * sqrt(a2 + (1.0 - a2) * (NdotV*NdotV));
     float gl = NdotV * sqrt(a2 + (1.0 - a2) * (NdotL*NdotL));
@@ -90,11 +93,13 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0){
     return (1.0 - F0) * fresnel + F0;
 }
 
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float perceptual_roughness)
 {
+    float roughness = perceptual_roughness * perceptual_roughness;
+
     // See fresnelSchlick
     float fresnel = exp2((-5.55473 * cosTheta - 6.98316) * cosTheta);
-    vec3 Fr = max(vec3( 1.0 - roughness* roughness), F0) - F0;
+    vec3 Fr = max(vec3( 1.0 - roughness), F0) - F0;
 
     return Fr * fresnel + F0;
 }
@@ -105,6 +110,55 @@ bool isnan( float val )
     // important: some nVidias failed to cope with version below.
     // Probably wrong optimization.
     /*return ( val <= 0.0 || 0.0 <= val ) ? false : true;*/
+}
+
+//https://github.com/google/filament/blob/3862b44ef4a2cd3c41dec85a8d5760835ba15f0d/shaders/src/light_indirect.fs#L101
+float perceptualRoughnessToLod(float perceptualRoughness) {
+    // The mapping below is a quadratic fit for log2(perceptualRoughness)+iblRoughnessOneLevel when
+    // iblRoughnessOneLevel is 4. We found empirically that this mapping works very well for
+    // a 256 cubemap with 5 levels used. But also scales well for other iblRoughnessOneLevel values.
+    const float MAX_REFLECTION_LOD = 4.0;
+    return MAX_REFLECTION_LOD * perceptualRoughness * (2.0 - perceptualRoughness);
+}
+
+vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm, vec3 mapN ) {
+    vec3 q0 = dFdx( eye_pos );
+    vec3 q1 = dFdy( eye_pos );
+    vec2 st0 = dFdx( tex_coord.st );
+    vec2 st1 = dFdy( tex_coord.st );
+    float scale = sign( st1.t * st0.s - st0.t * st1.s );
+    vec3 S = normalize( ( q0 * st1.t - q1 * st0.t ) * scale );
+    vec3 T = normalize( ( - q0 * st1.s + q1 * st0.s ) * scale );
+    vec3 N = normalize( surf_norm );
+    mat3 tsn = mat3( S, T, N );
+    mapN.xy *= ( float( gl_FrontFacing ) * 2.0 - 1.0 );
+    return normalize( tsn * mapN );
+}
+
+mat3 cotangent_frame(vec3 normal, vec3 p, vec2 uv, vec2 tangentSpaceParams) {
+    uv = gl_FrontFacing ? uv : -uv;
+    vec3 dp1 = dFdx(p);
+    vec3 dp2 = dFdy(p);
+    vec2 duv1 = dFdx(uv);
+    vec2 duv2 = dFdy(uv);
+    vec3 dp2perp = cross(dp2, normal);
+    vec3 dp1perp = cross(normal, dp1);
+    vec3 tangent = dp2perp*duv1.x+dp1perp*duv2.x;
+    vec3 bitangent = dp2perp*duv1.y+dp1perp*duv2.y;
+    tangent *= tangentSpaceParams.x;
+    bitangent *= tangentSpaceParams.y;
+    float invmax = inversesqrt(max(dot(tangent, tangent), dot(bitangent, bitangent)));
+    return mat3(tangent*invmax, bitangent*invmax, normal);
+}
+
+
+
+vec3 perturbNormalBase(mat3 cotangentFrame, vec3 normal, float scale) {
+    normal = normalize(normal*vec3(scale, scale, 1.0));
+    return normalize(cotangentFrame*normal);
+}
+vec3 perturbNormal(mat3 cotangentFrame, vec3 textureSample, float scale) {
+    return perturbNormalBase(cotangentFrame, textureSample, scale);
 }
 
 void main() {
@@ -124,20 +178,25 @@ void main() {
     if(u_material.active_textures[5])
     metallic = u_material.metallic * texture(u_material.metal_roughness_sampler, tex_coord).b;
 
-    float roughness = u_material.roughness;
+    float perceptual_roughness = u_material.roughness;
     if(u_material.active_textures[5])
-    roughness = u_material.roughness * texture(u_material.metal_roughness_sampler, tex_coord).g;
+    perceptual_roughness = u_material.roughness * texture(u_material.metal_roughness_sampler, tex_coord).g;
+    perceptual_roughness = clamp(perceptual_roughness,MIN_PERCEPTUAL_ROUGHNESS, perceptual_roughness);
+
 
     //Normal
-    //FIXME: NEED TO USE TANGENT SPACE NORMALS
     vec3 N = normalize(world_normal);
     if(u_material.active_textures[3]){
-        N = texture(u_material.normal_sampler, tex_coord).rgb;
-        N = N * ( float( gl_FrontFacing ) * 2.0 - 1.0 );
-        N = world_normal * N;
-        N = normalize(N);
-    }
+       vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - 1.0;
+//        mapN.y = -mapN.y;
+//        N = perturbNormal2Arb( view_pos, world_normal, mapN);
 
+        //vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz;
+        //mapN.y = -mapN.y;
+        mat3 TBN = cotangent_frame(world_normal, view_pos, tex_coord, vec2(1.,1.));
+
+        N = perturbNormal(TBN, mapN, 1.0);
+    }
 
     //View Direction
     vec3 V = normalize(camera_pos - world_pos);
@@ -174,8 +233,8 @@ void main() {
         vec3 H = normalize(V + L);
 
 
-        float NDF = DistributionGGX_Trowbridge_Reitz(N, H, roughness );
-        float G = G_GGX_SmithCorrelated(N, V, L, roughness);
+        float NDF = DistributionGGX_Trowbridge_Reitz(N, H, perceptual_roughness );
+        float G = G_GGX_SmithCorrelated(N, V, L, perceptual_roughness);
         vec3 F = fresnelSchlick(saturate(dot(H, V)), F0);
 
         vec3 specular = NDF * G * F;
@@ -191,10 +250,10 @@ void main() {
 
     }
 
-    vec3 ambient;
+    vec3 ambient ;
 
     // ambient lighting (we now use IBL as the ambient term)
-    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, roughness);
+    vec3 F = fresnelSchlickRoughness(max(dot(N, V), 0.0), F0, perceptual_roughness);
 
     vec3 irradiance;
     if (u_material.active_textures[1]){
@@ -204,27 +263,28 @@ void main() {
         if(!u_material.active_textures[2])
             kD = vec3(1.0);
         kD *= 1.0 - metallic;
-        irradiance = texture(u_material.irradiance_sampler, N).rgb;
-        //HDR correction
-        //irradiance = irradiance / (irradiance + vec3(1.0));
-        vec3 diffuse = irradiance * albedo;
-        ambient = (kD * diffuse) * AO;
+
+        irradiance = texture(u_material.irradiance_sampler, world_normal).rgb;
+        vec3 diffuse = (irradiance + (light_ambient * PI)) * albedo;
+        ambient += (kD * diffuse) * AO ;
 
     } else {
-        ambient = vec3(0.03) * albedo * AO;
+        ambient = (light_ambient * PI) * albedo * AO;
     }
 
     if (u_material.active_textures[2]){
         // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
-        const float MAX_REFLECTION_LOD = 4.0;
-        vec3 prefilteredColor = textureLod(u_material.env_sampler, R, roughness * MAX_REFLECTION_LOD).rgb;
-        vec2 brdf  = texture(u_material.brdf_LUT_sampler, vec2(max(dot(N, V), 0.0), roughness)).rg;
-        vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
-
-        ambient += (specular * AO);
+        float lod = perceptualRoughnessToLod(perceptual_roughness);
+        vec3 prefilteredColor = textureLod(u_material.env_sampler, R, lod).rgb;
+        vec2 brdf  = texture(u_material.brdf_LUT_sampler, vec2(max(dot(N, V), 0.0), perceptual_roughness)).rg;
+        vec3 specular = prefilteredColor * (F0 * brdf.x + brdf.y);
+        ambient += (specular * AO * PI);
 
     }
-    color = ambient + Lo + emission;
+
+    color = Lo + emission + ambient;
+    //color = N * F;
+
     //color = ambient;
     //HDR correction
     color = color / (color + vec3(1.0));

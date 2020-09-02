@@ -32,7 +32,7 @@ export class OrbitControl {
     private readonly mouse_sensitivity: number = 0.005;
     private readonly step_size: number = 0.5;
     public minimum_distance: number = 5.0;
-    public maximum_distance: number = 5.0;
+    public maximum_distance: number = 10.0;
     private readonly orbit_control_binds: OrbitControlBinds = DefaultOrbitControlBinds;
     public orbit_point: vec3 = [0, 0, 0];
 

@@ -82,11 +82,12 @@ export class glTFLoader {
                     // console.log(geom_buffers);
 
                     let images: HTMLImageElement[] = [];
-                    if (o.images)
-                        images = await ImageLoader.promiseAll(
+                    if (o.images) {
+                        images = ImageLoader.loadAllBackground(
                             o.images.map(v => v.uri!),
                             base_url
                         );
+                    }
 
                     const buffered_geometries = [];
 

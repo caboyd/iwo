@@ -24,13 +24,23 @@ export class ImageLoader extends FileLoader {
         });
     }
 
-    public static async promiseAll(
+    public static loadAllBackground(
         files: string[],
         base_url: string = FileLoader.Default_Base_URL
-    ): Promise<HTMLImageElement[]> {
-        const imgs = Array.from({ length: files.length }, u => new Image());
+    ): HTMLImageElement[] {
+        const imgs = Array.from({ length: files.length }, () => new Image());
         const promises: Promise<HTMLImageElement>[] = [];
 
+        this.promiseImages(files, base_url, imgs, promises);
+        return imgs;
+    }
+
+    private static promiseImages(
+        files: string[],
+        base_url: string,
+        imgs: HTMLImageElement[],
+        promises: Promise<HTMLImageElement>[]
+    ) {
         return super.promiseAll(files, base_url).then((responses: Response[] | any) => {
             for (let i = 0; i < responses.length; i++) {
                 const img = imgs[i];
@@ -52,6 +62,16 @@ export class ImageLoader extends FileLoader {
             }
             return Promise.all(promises);
         });
+    }
+
+    public static async promiseAll(
+        files: string[],
+        base_url: string = FileLoader.Default_Base_URL
+    ): Promise<HTMLImageElement[]> {
+        const imgs = Array.from({ length: files.length }, () => new Image());
+        const promises: Promise<HTMLImageElement>[] = [];
+
+        return this.promiseImages(files, base_url, imgs, promises);
     }
 
     public static load(file_name: string, base_url: string = ""): HTMLImageElement {
