@@ -186,46 +186,11 @@ void main() {
 
     // Old Broken Normal Formula
 
-    // vec3 N = normalize(world_normal);
-    // if(u_material.active_textures[3]){
-    //    vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - vec3(1.0);
-    //     //mapN.y = -mapN.y;
-    //     //N = perturbNormal2Arb( view_pos, world_normal, mapN);
-    //     //vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz;
-    //     //mapN.y = -mapN.y;
-    //     mat3 TBN = cotangent_frame(world_normal, view_pos, tex_coord, vec2(1.,1.));
-    //     N = perturbNormal(TBN, mapN, 1.0);
-    //     N = normalize(N);
-    // }
-
-
-    //Normal
     vec3 N = normalize(world_normal);
-
-    vec2 UV = tex_coord;
-    vec3 uv_dx = dFdx(vec3(UV, 0.0));
-    vec3 uv_dy = dFdy(vec3(UV, 0.0));
-    vec3 t_ = (uv_dy.t * dFdx(world_pos) - uv_dx.t * dFdy(world_pos)) /
-    (uv_dx.s * uv_dy.t - uv_dy.s * uv_dx.t);
-    vec3 n, t, b, ng; 
-
-    ng = normalize(world_normal);
-    t = normalize(t_ - ng * dot(ng, t_));
-    b = cross(ng, t);
-
-    // For a back-facing surface, the tangential basis vectors are negated.
-    if (gl_FrontFacing == false) {
-        t *= -1.0;
-        b *= -1.0;
-        ng *= -1.0;
-    }
-
     if(u_material.active_textures[3]){
-        vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - vec3(1.0);
-        mapN = normalize(mapN);
-        N = normalize(mat3(t,b,ng) * mapN);
-    } else {
-        N = ng;
+       vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - vec3(1.0);
+        mat3 TBN = cotangent_frame(world_normal, world_pos, tex_coord, vec2(1.,1.));
+        N = perturbNormal(TBN, mapN, 1.0);
     }
 
     //View Direction
@@ -262,7 +227,6 @@ void main() {
 
         vec3 H = normalize(V + L);
 
-
         float NDF = DistributionGGX_Trowbridge_Reitz(N, H, perceptual_roughness );
         float G = G_GGX_SmithCorrelated(N, V, L, perceptual_roughness);
         vec3 F = fresnelSchlick(saturate(dot(H, V)), F0);
@@ -282,6 +246,7 @@ void main() {
 
     vec3 ambient;
     float NoV = max(dot(N,V),0.0);
+    float PI_light = PI;
 
     // ambient lighting (we now use IBL as the ambient term)
     vec3 F = fresnelSchlickRoughness(NoV, F0, perceptual_roughness);
@@ -300,7 +265,7 @@ void main() {
         ambient += (kD * diffuse) * AO ;
 
     } else {
-        ambient = (light_ambient) * albedo * AO;
+        ambient = (light_ambient ) * albedo * AO;
     }
 
     if (u_material.active_textures[2]){
@@ -316,7 +281,7 @@ void main() {
       
     }
     
-    color = Lo + emission + ambient;
+    color = Lo + (emission + ambient) * PI_light;
 
     
     //HDR correction
