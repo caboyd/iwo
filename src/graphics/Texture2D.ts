@@ -59,7 +59,7 @@ export class Texture2D {
             //Making empty texture of some width and height because you want to render to it
             this.setImageByBuffer(gl, null, o);
         } else {
-            //No image or buffer sets texture to pink black checkerboard
+            //No image or buffer exists. so we set texture to pink black checkerboard
             //This should probably happen at the material loading level and not during texture setting
             const o2 = {
                 ...DefaultTextureOptions,
