@@ -21,7 +21,7 @@ export { WebGL } from "./graphics/WebglHelper";
 export { ReferenceCounter } from "./helpers/ReferenceCounter";
 export { FileLoader } from "./loader/FileLoader";
 export { HDRImageLoader, HDRBuffer } from "./loader/HDRImageLoader";
-export { glTFLoader, glTFData } from "./loader/gltfLoader";
+export { glTFLoader, glTFData } from "./loader/glTFLoader";
 export { ImageLoader } from "./loader/ImageLoader";
 export { TextureLoader } from "./loader/TextureLoader";
 export { BasicMaterial } from "./materials/BasicMaterial";
