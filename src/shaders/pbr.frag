@@ -195,6 +195,7 @@ void main() {
     //     //mapN.y = -mapN.y;
     //     mat3 TBN = cotangent_frame(world_normal, view_pos, tex_coord, vec2(1.,1.));
     //     N = perturbNormal(TBN, mapN, 1.0);
+    //     N = normalize(N);
     // }
 
 
@@ -204,7 +205,7 @@ void main() {
     vec2 UV = tex_coord;
     vec3 uv_dx = dFdx(vec3(UV, 0.0));
     vec3 uv_dy = dFdy(vec3(UV, 0.0));
-    vec3 t_ = (uv_dy.t * dFdx(view_pos) - uv_dx.t * dFdy(view_pos)) /
+    vec3 t_ = (uv_dy.t * dFdx(world_pos) - uv_dx.t * dFdy(world_pos)) /
     (uv_dx.s * uv_dy.t - uv_dy.s * uv_dx.t);
     vec3 n, t, b, ng; 
 
@@ -321,7 +322,9 @@ void main() {
     //HDR correction
     color = color / (color + vec3(1.0));
     //Gamma correction
-    color = pow(color, vec3(1.0/gamma));
+    float g = gamma;
+    if(g < 0.0001) g = 2.2;
+    color = pow(color, vec3(1.0/g));
 
     //HDR + Gamma Correction Magic
     //https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting  slide 140

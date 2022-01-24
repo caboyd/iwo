@@ -1,6 +1,6 @@
+import { TypedArray } from "types/types";
 import { Shader } from "./shader/Shader";
 import { UniformBlock } from "./Uniform";
-import TypedArray = NodeJS.TypedArray;
 
 const BAD_VALUE = 4294967295;
 
