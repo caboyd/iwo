@@ -83,7 +83,7 @@ export interface Attribute {
 type AttributeComponentCount = { readonly [TKey in AttributeType]: number };
 type AttributeAccessorType = { readonly [TKey in AttributeType]: ComponentFormatType };
 
-export const AttributeComponentCountMap = {
+export const AttributeComponentCountMap: AttributeComponentCount = {
     [AttributeType.Vertex]: 3,
     [AttributeType.Tex_Coord]: 2,
     [AttributeType.Normal]: 3,

@@ -1,5 +1,6 @@
 import { FileLoader } from "./FileLoader";
 import { AttributeType } from "geometry/Geometry";
+//https://www.npmjs.com/package/gltf-typescript-generator
 import { Accessor, glTF, MeshPrimitive } from "loader/spec/glTF";
 import { Attribute, BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
 import { Material } from "materials/Material";
