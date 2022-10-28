@@ -8,8 +8,9 @@ import { TextureCubeMap } from "../graphics/TextureCubeMap";
 export class BasicMaterial extends Material {
     private equirectangular_albedo: boolean = false;
     public albedo: vec3;
-    public albedo_texture: Texture2D | undefined;
-    public albedo_cube_texture: TextureCubeMap | undefined;
+    public albedo_image?: HTMLImageElement;
+    public albedo_texture?: Texture2D;
+    public albedo_cube_texture?: TextureCubeMap;
 
     public constructor(color: vec3) {
         super();
@@ -19,6 +20,12 @@ export class BasicMaterial extends Material {
     public activate(gl: WebGL2RenderingContext): void {
         const shader = this.shader;
         const active_textures = [false, false];
+
+        if (this.albedo_texture === undefined && this.albedo_image?.complete) {
+            this.albedo_texture = new Texture2D(gl, this.albedo_image, {
+                flip: false,
+            });
+        }
 
         if (this.albedo_texture) {
             this.albedo_texture.bind(gl, 0);

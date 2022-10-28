@@ -5,6 +5,7 @@ import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { Material } from "materials/Material";
 import { TypedArray } from "types/types";
 import { vec3, vec2 } from "gl-matrix";
+import { MtlLoader } from "./MtlLoader";
 
 export interface ObjData {
     objects: { name: string; buffered_geometry: BufferedGeometry }[];
@@ -76,7 +77,7 @@ export class ObjLoader extends FileLoader {
         return new Promise<ObjData>((resolve) => {
             super.promise(file_name, base_url).then((response: Response) => {
                 response.text().then((s: string) => {
-                    const data = ObjLoader.fromObjString(s);
+                    const data = ObjLoader.fromObjString(s, base_url);
 
                     resolve(data);
                 });
@@ -84,68 +85,53 @@ export class ObjLoader extends FileLoader {
         });
     }
 
-    private static fromObjString(s: string, float32Array = Float32Array): ObjData {
+    private static async fromObjString(s: string, base_url: string = this.Default_Base_URL): Promise<ObjData> {
         const lines = s.split(/\r?\n/);
         console.log(lines);
 
-        const vertices: vec3[] = [];
-        const tex_coords: vec2[] = [];
-        const normals: vec3[] = [];
+        const raw_obj_data: RawObjData = { objects: [] };
+        let materials: Promise<Map<string, Material>>;
 
-        const v_indices: Number[] = [];
-        const vt_indices: Number[] = [];
-        const vn_indices: Number[] = [];
-
-        let mat_file: string;
-        let traits: VertexDataTraits;
-
-        const geom: Geometry = {
-            indices: undefined,
-            attributes: new Map<AttributeType, TypedArray>(),
-            groups: [],
-            interleaved_attributes: undefined,
-        };
-
-        for (let line of lines) parse_line(line);
+        // for(let line of lines) parse_line(line);
 
         return {} as ObjData;
 
-        function parse_line(line: string) {
-            const arr = line.split(" ");
-            const nums = arr.map(Number);
-            const first = arr[0];
+        // function parse_line(line: string) {
+        //     const arr = line.split(" ");
+        //     const nums = arr.map(Number);
+        //     const first = arr[0];
 
-            switch (first) {
-                case "#": //comment
-                    break;
-                case "mtllib":
-                    mat_file = arr[1];
-                    break;
-                case "v":
-                    traits |= VertexDataTraits.v;
-                    vertices.push([nums[1], nums[2], nums[3]]);
-                    break;
-                case "vt":
-                    traits |= VertexDataTraits.vt;
-                    tex_coords.push([nums[1], nums[2]]);
-                    break;
-                case "vn":
-                    traits |= VertexDataTraits.vn;
-                    normals.push([nums[1], nums[2], nums[3]]);
-                    break;
-                case "vp":
-                    throw "Not able to parse obj files with parameter space vertices (vp)";
-                case "cstype":
-                    throw "Not able to parse obj files with rational or non-rational forms of curve or surface type (cstype)";
-                case "f":
-                    let f1 = arr[1].split("/").map(Number);
-                    let f2 = arr[2].split("/").map(Number);
-                    let f3 = arr[3].split("/").map(Number);
-                    //let f4 = arr[4].split("/").map(Number);
-                    v_indices.push(f1[0], f2[0], f3[0]);
-                    vt_indices.push(f1[1], f2[1], f3[1]);
-                    vn_indices.push(f1[2], f2[2], f3[2]);
-            }
-        }
+        //     switch (first) {
+        //         case "#": //comment
+        //             break;
+        //         case "mtllib":
+        //             materials = MtlLoader.promise(arr[1], base_url)
+        //             break;
+        //         case "v":
+        //             traits |= VertexDataTraits.v;
+        //             vertices.push([nums[1], nums[2], nums[3]]);
+        //             break;
+        //         case "vt":
+        //             traits |= VertexDataTraits.vt;
+        //             tex_coords.push([nums[1], nums[2]]);
+        //             break;
+        //         case "vn":
+        //             traits |= VertexDataTraits.vn;
+        //             normals.push([nums[1], nums[2], nums[3]]);
+        //             break;
+        //         case "vp":
+        //             throw "Not able to parse obj files with parameter space vertices (vp)";
+        //         case "cstype":
+        //             throw "Not able to parse obj files with rational or non-rational forms of curve or surface type (cstype)";
+        //         case "f":
+        //             let f1 = arr[1].split("/").map(Number);
+        //             let f2 = arr[2].split("/").map(Number);
+        //             let f3 = arr[3].split("/").map(Number);
+        //             //let f4 = arr[4].split("/").map(Number);
+        //             v_indices.push(f1[0], f2[0], f3[0]);
+        //             vt_indices.push(f1[1], f2[1], f3[1]);
+        //             vn_indices.push(f1[2], f2[2], f3[2]);
+        //     }
+        // }
     }
 }
