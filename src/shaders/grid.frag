@@ -32,13 +32,19 @@ void main() {
 
     //blue lines every x units
     if((mod(world_pos.x + 0.5, highlight_frequency)) < 1. && grid.x < 1.) {
-        color = vec3(0.1,0.3,1.);
+        if(world_pos.z > 0.0)
+            color = vec3(0,0.8,1.);
+        else
+            color = vec3(0.1,0.3,1.);
         alpha = max(alpha,1.0 - grid.x);
     }
 
     //red lines every x units
     if(abs(mod(world_pos.z + 0.5, highlight_frequency)) < 1. && grid.y < 1.) {
-        color = vec3(0.9,0.1,0.1);
+        if(world_pos.x > 0.0)
+            color = vec3(0.9,0.7,0.1);
+        else
+            color = vec3(0.9,0.1,0.1);
         alpha = max(alpha,1.0 - grid.y);
     }
 
