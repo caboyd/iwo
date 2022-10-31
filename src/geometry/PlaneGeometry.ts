@@ -8,6 +8,9 @@ enum Order {
 }
 
 export class PlaneGeometry extends Geometry {
+    /**
+     * @param {boolean} stretch_texture true stretches texture across segments, false repeats texture
+     */
     public constructor(
         width: number = 1,
         depth: number = 1,
@@ -137,8 +140,8 @@ export class PlaneGeometry extends Geometry {
                         ? (i * horizontal_step) / horizontal_size
                         : i;
                     interleaved[interleaved_ptr + 4] = tex_coords[tex_ptr++] = stretch_texture
-                        ? (j * vertical_step) / vertical_size
-                        : j;
+                        ? 1 - (j * vertical_step) / vertical_size
+                        : 1 - j;
 
                     //The normal is just 1 in the direction of the side
                     interleaved[ipx + 5] = normals[px] = 0;
