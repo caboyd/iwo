@@ -1,14 +1,13 @@
-import { FileLoader } from "./FileLoader";
-import { AttributeType, Geometry } from "geometry/Geometry";
-import { Mesh } from "meshes/Mesh";
 import { BufferedGeometry } from "geometry/BufferedGeometry";
+import { AttributeType, Geometry, Group } from "geometry/Geometry";
 import { Material } from "materials/Material";
-import { vec3, vec2 } from "gl-matrix";
-import { MtlLoader } from "./MtlLoader";
+import { FileLoader } from "./FileLoader";
+import { MtlData, MtlLoader, MtlOptions } from "./MtlLoader";
+
 
 export interface ObjData {
     objects: { name: string; buffered_geometry: BufferedGeometry }[];
-    materials: Material[];
+    materials?: Material | Material[] | undefined;
 }
 
 enum VertexDataTraits {
@@ -18,23 +17,22 @@ enum VertexDataTraits {
     vp = 8,
 }
 
-type RawObjDataArray = {
-    objects: RawObjData[];
-};
+type RawObjDataArray = RawObjData[];
 
 type RawObjData = {
     name: string;
     trait_flags: VertexDataTraits;
-    data: {
-        [VertexDataTraits.v]: [number, number, number][];
-        [VertexDataTraits.vt]: [number, number][];
-        [VertexDataTraits.vn]: [number, number, number][];
-        // [VertexDataTraits.vp]: [number, number, number][];
-    };
+
+    v: [number, number, number][];
+    vt: [number, number][];
+    vn: [number, number, number][];
+    // vp: [number, number, number][];
 
     groups: FaceGroup[];
     //used for calculating normals that are not provided
-    smoothing_groups: SmoothingGroup[];
+    smoothing_groups: {
+        [key: number]: number[];
+    };
 };
 
 type SmoothingGroup = {
@@ -55,12 +53,14 @@ type Face = {
     vn_indices: number[];
 };
 
+export type ObjOptions = MtlOptions
+
 export class ObjLoader extends FileLoader {
-    public static async promise(file_name: string, base_url: string = this.Default_Base_URL): Promise<ObjData> {
+    public static async promise(file_name: string, base_url: string = this.Default_Base_URL, obj_options?: ObjOptions): Promise<ObjData> {
         return new Promise<ObjData>((resolve) => {
             super.promise(file_name, base_url).then((response: Response) => {
                 response.text().then((s: string) => {
-                    const data = ObjLoader.fromObjString(s, base_url);
+                    const data = ObjLoader.fromObjString(s, base_url, obj_options);
 
                     resolve(data);
                 });
@@ -68,25 +68,24 @@ export class ObjLoader extends FileLoader {
         });
     }
 
-    private static async fromObjString(s: string, base_url: string = this.Default_Base_URL): Promise<ObjData> {
+    private static async fromObjString(s: string, base_url: string = this.Default_Base_URL, obj_options?: ObjOptions): Promise<ObjData> {
         const lines = s.split(/\r?\n/);
-        console.log(lines);
 
-        const raw_obj_data_array: RawObjDataArray = { objects: [createEmptyObject("Default")] };
-        let current_obj = raw_obj_data_array.objects[0];
+        const raw_obj_data_array: RawObjDataArray = [createEmptyObject("Default")];
+        let current_obj = raw_obj_data_array[0];
         let current_group = current_obj.groups[0];
-        let current_smoothing_group: SmoothingGroup | undefined = undefined;
+        let current_smoothing_group: number[] | undefined = undefined;
 
-        let materials: Promise<Map<string, Material>>;
+        let materials: MtlData | undefined = undefined;
 
-        for (let line of lines) parse_line(line.trim());
+        for (let line of lines) await parse_line(line.trim());
 
-        console.log(raw_obj_data_array);
-        return {} as ObjData;
+        return generateGeometry(raw_obj_data_array, materials);
 
-        function parse_line(line: string) {
+        async function parse_line(line: string) {
             if (line.length === 0 || line[0] === "#") return;
-            const arr = line.split(" ");
+            //split spaces of any size
+            const arr = line.split(/\s+/);
             const nums = arr.map(Number);
             const first = arr[0];
 
@@ -97,7 +96,7 @@ export class ObjLoader extends FileLoader {
                     if (current_obj.name === "Default") current_obj.name = arr[1];
                     else {
                         current_obj = createEmptyObject(arr[1]);
-                        raw_obj_data_array.objects.push(current_obj);
+                        raw_obj_data_array.push(current_obj);
                     }
                     break;
                 case "g":
@@ -112,19 +111,19 @@ export class ObjLoader extends FileLoader {
                     current_group.material_name = arr[1];
                     break;
                 case "mtllib":
-                    materials = MtlLoader.promise(arr[1], base_url);
+                    materials = await MtlLoader.promise(arr[1], base_url, obj_options);
                     break;
                 case "v":
                     current_obj.trait_flags |= VertexDataTraits.v;
-                    current_obj.data[VertexDataTraits.v].push([nums[1], nums[2], nums[3]]);
+                    current_obj.v.push([nums[1], nums[2], nums[3]]);
                     break;
                 case "vt":
                     current_obj.trait_flags |= VertexDataTraits.vt;
-                    current_obj.data[VertexDataTraits.vt].push([nums[1], nums[2]]);
+                    current_obj.vt.push([nums[1], nums[2]]);
                     break;
                 case "vn":
                     current_obj.trait_flags |= VertexDataTraits.vn;
-                    current_obj.data[VertexDataTraits.vn].push([nums[1], nums[2], nums[3]]);
+                    current_obj.vn.push([nums[1], nums[2], nums[3]]);
                     break;
                 case "vp":
                     throw "Not able to parse obj files with parameter space vertices (vp)";
@@ -132,11 +131,8 @@ export class ObjLoader extends FileLoader {
                     throw "Not able to parse obj files with rational or non-rational forms of curve or surface type (cstype)";
                 case "s":
                     //sides
-                    current_smoothing_group = {
-                        index: Number(arr[1]),
-                        faces_array_indices: [],
-                    };
-                    current_obj.smoothing_groups.push(current_smoothing_group);
+                    current_smoothing_group = [];
+                    current_obj.smoothing_groups[Number(arr[1])] = current_smoothing_group;
                     break;
                 case "f":
                     const new_face: Face = {
@@ -156,7 +152,7 @@ export class ObjLoader extends FileLoader {
                         if (vn) new_face.vn_indices.push(vn);
                     }
                     if (current_smoothing_group) {
-                        current_smoothing_group.faces_array_indices.push(current_group.faces.length);
+                        current_smoothing_group.push(current_group.faces.length);
                     }
                     current_group.faces.push(new_face);
                     break;
@@ -169,12 +165,11 @@ function createEmptyObject(name: string): RawObjData {
     return {
         name: name,
         trait_flags: 0,
-        data: {
-            [VertexDataTraits.v]: [],
-            [VertexDataTraits.vt]: [],
-            [VertexDataTraits.vn]: [],
-            // [VertexDataTraits.vp]: [],
-        },
+        v: [],
+        vt: [],
+        vn: [],
+        // vp: [],
+
         groups: [
             {
                 name: "Default",
@@ -190,4 +185,70 @@ function createEmptyGroup(name: string): FaceGroup {
         name: name,
         faces: [],
     };
+}
+
+function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlData): ObjData {
+    let mats: Material | Material[] | undefined = materials
+        ? Object.values(materials).map((mat) => mat.material)
+        : undefined;
+    if (mats && mats.length === 1) mats = mats[0];
+
+    const result: ObjData = {
+        objects: [],
+        materials: mats,
+    };
+
+    for (const raw_obj_data of raw_obj_data_array) {
+        const geom = new Geometry();
+        geom.groups = [];
+        const v_arr = [];
+        const vt_arr = [];
+        const vt_check = raw_obj_data.trait_flags & VertexDataTraits.vt;
+        const vn_arr = [];
+        const vn_check = raw_obj_data.trait_flags & VertexDataTraits.vn;
+        let offset = 0;
+
+        for (const group of raw_obj_data.groups) {
+            const geom_group: Group = {
+                offset: offset,
+                count: 0,
+                material_index: materials && group.material_name ? materials[group.material_name].index : 0,
+            };
+            let elements = 0;
+            //TODO: Generate n-2 triangles
+            for (const face of group.faces) {
+                for (let i = 0; i < face.v_indices.length - 2; i++) {
+                    elements += 3;
+                    v_arr.push(...raw_obj_data.v[face.v_indices[0] - 1]);
+                    v_arr.push(...raw_obj_data.v[face.v_indices[i + 1] - 1]);
+                    v_arr.push(...raw_obj_data.v[face.v_indices[i + 2] - 1]);
+                    if (vt_check) {
+                        vt_arr.push(...raw_obj_data.vt[face.vt_indices[0] - 1]);
+                        vt_arr.push(...raw_obj_data.vt[face.vt_indices[i + 1] - 1]);
+                        vt_arr.push(...raw_obj_data.vt[face.vt_indices[i + 2] - 1]);
+                    }
+                    if (vn_check) {
+                        vn_arr.push(...raw_obj_data.vn[face.vn_indices[0] - 1]);
+                        vn_arr.push(...raw_obj_data.vn[face.vn_indices[i + 1] - 1]);
+                        vn_arr.push(...raw_obj_data.vn[face.vn_indices[i + 2] - 1]);
+                    }
+                }
+            }
+
+            //update offset and count
+            geom_group.count = elements;
+            offset += elements;
+            geom.groups.push(geom_group);
+        }
+        //build geom
+        geom.attributes.set(AttributeType.Vertex, new Float32Array(v_arr));
+        if (vt_check) geom.attributes.set(AttributeType.Tex_Coord, new Float32Array(vt_arr));
+        if (vn_check) geom.attributes.set(AttributeType.Normal, new Float32Array(vn_arr));
+        result.objects.push({
+            name: raw_obj_data.name,
+            buffered_geometry: BufferedGeometry.fromGeometry(geom),
+        });
+    }
+
+    return result;
 }

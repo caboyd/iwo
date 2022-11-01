@@ -1,9 +1,9 @@
-import { Material } from "./Material";
-import { Shader } from "graphics/shader/Shader";
-import { Renderer } from "graphics/Renderer";
-import { Texture2D } from "graphics/Texture2D";
 import { vec3 } from "gl-matrix";
+import { Renderer } from "graphics/Renderer";
+import { Shader } from "graphics/shader/Shader";
+import { Texture2D } from "graphics/Texture2D";
 import { TextureCubeMap } from "graphics/TextureCubeMap";
+import { Material, MaterialOptions } from "./Material";
 
 export class PBRMaterial extends Material {
     public albedo: vec3;
@@ -24,12 +24,15 @@ export class PBRMaterial extends Material {
     public irradiance_texture: TextureCubeMap | undefined;
     public specular_env: TextureCubeMap | undefined;
 
+    private material_options?: MaterialOptions
+
     public constructor(
         color: vec3,
         metallic: number,
         roughness: number,
         ambient_occlusion?: number,
-        emissive_factor?: vec3
+        emissive_factor?: vec3,
+        material_options?: MaterialOptions
     ) {
         super();
 
@@ -38,6 +41,7 @@ export class PBRMaterial extends Material {
         this.roughness = roughness;
         this.ao = ambient_occlusion || this.ao;
         this.emissive_factor = emissive_factor || this.emissive_factor;
+        this.material_options = material_options;
     }
 
     public activate(gl: WebGL2RenderingContext): void {
@@ -45,8 +49,8 @@ export class PBRMaterial extends Material {
         const active_textures = [false, false, false, false, false, false];
         if (this.albedo_texture === undefined && this.albedo_image && this.albedo_image.complete) {
             this.albedo_texture = new Texture2D(gl, this.albedo_image, {
-                flip: false,
-                internal_format: gl.SRGB8_ALPHA8,
+                flip: this.material_options?.flip_image_y || false,
+                internal_format: this.material_options?.disable_srgb ?  gl.RGBA : gl.SRGB8_ALPHA8,
                 format: gl.RGBA,
             });
         }
@@ -67,7 +71,7 @@ export class PBRMaterial extends Material {
 
         if (this.normal_texture === undefined && this.normal_image?.complete) {
             this.normal_texture = new Texture2D(gl, this.normal_image, {
-                flip: false,
+                flip: this.material_options?.flip_image_y || false,
             });
         }
         if (this.normal_texture) {
@@ -77,7 +81,7 @@ export class PBRMaterial extends Material {
 
         if (this.occlusion_texture === undefined && this.occlusion_image?.complete) {
             this.occlusion_texture = new Texture2D(gl, this.occlusion_image, {
-                flip: false,
+                flip: this.material_options?.flip_image_y || false,
             });
         }
         if (this.occlusion_texture) {
@@ -87,7 +91,7 @@ export class PBRMaterial extends Material {
 
         if (this.metal_roughness_texture === undefined && this.metal_roughness_image?.complete) {
             this.metal_roughness_texture = new Texture2D(gl, this.metal_roughness_image, {
-                flip: false,
+                flip: this.material_options?.flip_image_y || false,
             });
         }
         if (this.metal_roughness_texture) {
@@ -97,8 +101,8 @@ export class PBRMaterial extends Material {
 
         if (this.emissive_texture === undefined && this.emissive_image?.complete) {
             this.emissive_texture = new Texture2D(gl, this.emissive_image, {
-                flip: false,
-                internal_format: gl.SRGB8_ALPHA8,
+                flip: this.material_options?.flip_image_y || false,
+                internal_format: this.material_options?.disable_srgb ?  gl.RGBA : gl.SRGB8_ALPHA8,
                 format: gl.RGBA,
             });
         }

@@ -1,10 +1,11 @@
 import { FileLoader } from "./FileLoader";
-import { Material } from "materials/Material";
+import { Material, MaterialOptions } from "materials/Material";
 import { ImageLoader } from "./ImageLoader";
 import { vec3 } from "gl-matrix";
 import { PBRMaterial } from "/materials/PBRMaterial";
 
-type MtlData = {
+type RawMtlData = {
+    material_index: number;
     Ns?: number;
     Ni?: number;
     d?: number;
@@ -25,25 +26,35 @@ type MtlData = {
     map_Ke_index?: number;
 };
 
+export type MtlData = {
+    [name: string]: {
+        index: number;
+        material: Material;
+    };
+};
+
+export type MtlOptions = MaterialOptions;
+
 export class MtlLoader extends FileLoader {
     public static async promise(
         file_name: string,
-        base_url: string = this.Default_Base_URL
-    ): Promise<Map<string, Material>> {
+        base_url: string = this.Default_Base_URL,
+        mtl_options?: MtlOptions
+    ): Promise<MtlData> {
         const response = await super.promise(file_name, base_url);
         const text = await response.text();
-        const data = MtlLoader.fromMtlString(text, base_url);
+        const data = MtlLoader.fromMtlString(text, base_url, mtl_options);
         return data;
     }
 
-    private static fromMtlString(s: string, base_url = this.Default_Base_URL): Map<string, Material> {
+    private static fromMtlString(s: string, base_url = this.Default_Base_URL, mtl_options?: MtlOptions): MtlData {
         const lines = s.split(/\r?\n/);
 
         const mtl_data = MtlLoader.toMtlData(lines);
 
         //find unique images and load them
         const unique_images: string[] = [];
-        for (let [key, value] of mtl_data) {
+        for (let [name, value] of mtl_data) {
             if (value.map_Ka) {
                 if (!unique_images.includes(value.map_Ka)) unique_images.push(value.map_Ka);
                 value.map_Ka_index = unique_images.indexOf(value.map_Ka);
@@ -63,31 +74,38 @@ export class MtlLoader extends FileLoader {
         }
         const images = ImageLoader.loadAllBackground(unique_images, base_url);
 
-        const m: Map<string, Material> = new Map();
+        const m: MtlData = {};
         //create materials
-        for (let [key, value] of mtl_data) {
+        for (let [name, value] of mtl_data) {
             //we dont have ambient so color is diffuse + ambient
             const color = value.Kd || vec3.create();
             if (value.Ka) vec3.add(color, color, value.Ka);
             const emmisive = value.Ke;
-            //use specular average color as metallic 
-            const metallic = value.Ks ? ((value.Ks[0] + value.Ks[1] + value.Ks[2]) / 3) : 0;
+            //use specular average color as metallic
+            const metallic = value.Ks ? (value.Ks[0] + value.Ks[1] + value.Ks[2]) / 3 : 0;
             //use specular exponent as rougness
-            const roughness = value.Ns ? (1 - Math.max(value.Ns / 1000, 0.975)) : 0;
-    
-            const mat = new PBRMaterial(color, metallic, roughness, undefined, emmisive);
+            const roughness = value.Ns ? 1 - Math.min(Math.pow(Math.log10(value.Ns), 2) / 9, 0.975) : 0;
+
+            const mat = new PBRMaterial(color, metallic, roughness, undefined, emmisive, mtl_options);
             if (value.map_Kd_index !== undefined) mat.albedo_image = images[value.map_Kd_index];
             if (value.map_Ke_index !== undefined) mat.emissive_image = images[value.map_Ke_index];
-            m.set(key, mat);
+            m[name] = { index: value.material_index, material: mat };
         }
 
         return m;
     }
 
-    private static toMtlData(lines: string[]): Map<string, MtlData> {
-        const m: Map<string, MtlData> = new Map();
+    private static toMtlData(lines: string[]): Map<string, RawMtlData> {
+        const m: Map<string, RawMtlData> = new Map();
         let current_object = "";
-        let current_mtldata: MtlData = {} as MtlData;
+        let current_mtldata: RawMtlData = {} as RawMtlData;
+
+        let getMaterialIndex = ((m) => {
+            return function () {
+                m++;
+                return m;
+            };
+        })(-1);
 
         for (let line of lines) {
             const arr = line.trim().split(" ");
@@ -96,7 +114,7 @@ export class MtlLoader extends FileLoader {
             switch (first) {
                 case "newmtl":
                     current_object = arr[1];
-                    current_mtldata = {} as MtlData;
+                    current_mtldata = { material_index: getMaterialIndex() } as RawMtlData;
                     m.set(current_object, current_mtldata);
                     break;
                 case "Ns":

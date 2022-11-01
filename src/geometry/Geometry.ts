@@ -1,5 +1,5 @@
-import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { TypedArray } from "types/types";
+
 
 //TODO: Change to match glTF https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#meshes
 export enum AttributeType {
@@ -37,7 +37,9 @@ export class Geometry {
         this.groups = [];
     }
 
-    public getBufferedGeometry?(): BufferedGeometry;
+    // public getBufferedGeometry(options?: BufferedGeometryOptions): BufferedGeometry {
+    //     return BufferedGeometry.fromGeometry(this, options)
+    // };
 
     //TODO
     //Bounding Sphere

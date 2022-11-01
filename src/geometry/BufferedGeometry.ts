@@ -1,69 +1,58 @@
-import { AttributeType, Geometry, Group } from "geometry/Geometry";
 import { ComponentFormatType, ComponentType } from "graphics/WebglConstants";
+import { AttributeType, Geometry, Group } from "./Geometry";
 import TypedArray = NodeJS.TypedArray;
-import { UniformInfo, UniformType } from "graphics/Uniform";
 
 //Default assumes index buffer is buffer_view_index 0
 export namespace DefaultAttribute {
-    export const Vertex = (): Attribute => {
-        return {
-            type: AttributeType.Vertex,
-            enabled: true,
-            buffer_index: 0,
-            component_type: 5126, // FLOAT
-        };
-    };
-    export const Tex_Coord = (): Attribute => {
-        return {
-            type: AttributeType.Tex_Coord,
-            enabled: true,
-            buffer_index: 0,
-            component_type: 5126, // FLOAT
-        };
-    };
-    export const Normal = (): Attribute => {
-        return {
-            type: AttributeType.Normal,
-            enabled: true,
-            buffer_index: 0,
-            component_type: 5126, // FLOAT
-        };
-    };
-    export const Tangent = (): Attribute => {
-        return {
-            type: AttributeType.Tangent,
-            enabled: false,
-            buffer_index: 0,
-            component_type: 5126, // FLOAT
-        };
-    };
-    export const Bitangent = (): Attribute => {
-        return {
-            type: AttributeType.Bitangent,
-            enabled: false,
-            buffer_index: 0,
-            component_type: 5126, // FLOAT
-        };
-    };
+    export const Vertex = (): Attribute => ({
+        type: AttributeType.Vertex,
+        enabled: true,
+        buffer_index: 0,
+        component_type: 5126, // FLOAT
+    });
 
-    export const SingleBufferApproach = (): Attributes => {
-        return [
-            DefaultAttribute.Vertex(),
-            DefaultAttribute.Tex_Coord(),
-            DefaultAttribute.Normal(),
-            DefaultAttribute.Tangent(),
-            DefaultAttribute.Bitangent(),
-        ];
-    };
-    export const MultiBufferApproach = (): Attributes => {
-        return [
-            { ...DefaultAttribute.Vertex(), ...{ buffer_index: 0 } },
-            { ...DefaultAttribute.Tex_Coord(), ...{ buffer_index: 1 } },
-            { ...DefaultAttribute.Normal(), ...{ buffer_index: 2 } },
-            { ...DefaultAttribute.Tangent(), ...{ buffer_index: 3 } },
-            { ...DefaultAttribute.Bitangent(), ...{ buffer_index: 4 } },
-        ];
-    };
+    export const Tex_Coord = (): Attribute => ({
+        type: AttributeType.Tex_Coord,
+        enabled: true,
+        buffer_index: 0,
+        component_type: 5126, // FLOAT
+    });
+
+    export const Normal = (): Attribute => ({
+        type: AttributeType.Normal,
+        enabled: true,
+        buffer_index: 0,
+        component_type: 5126, // FLOAT
+    });
+
+    export const Tangent = (): Attribute => ({
+        type: AttributeType.Tangent,
+        enabled: false,
+        buffer_index: 0,
+        component_type: 5126, // FLOAT
+    });
+
+    export const Bitangent = (): Attribute => ({
+        type: AttributeType.Bitangent,
+        enabled: false,
+        buffer_index: 0,
+        component_type: 5126, // FLOAT
+    });
+
+    export const SingleBufferApproach = (): Attributes => [
+        DefaultAttribute.Vertex(),
+        DefaultAttribute.Tex_Coord(),
+        DefaultAttribute.Normal(),
+        DefaultAttribute.Tangent(),
+        DefaultAttribute.Bitangent(),
+    ];
+    export const MultiBufferApproach = (): Attributes => [
+        { ...DefaultAttribute.Vertex(), ...{ buffer_index: 0 } },
+        { ...DefaultAttribute.Tex_Coord(), ...{ buffer_index: 1 } },
+        { ...DefaultAttribute.Normal(), ...{ buffer_index: 2 } },
+        { ...DefaultAttribute.Tangent(), ...{ buffer_index: 3 } },
+        { ...DefaultAttribute.Bitangent(), ...{ buffer_index: 4 } },
+    ];
 }
 
 export interface Attribute {
@@ -247,6 +236,11 @@ export class BufferedGeometry {
             this.attributes[4].byte_offset = stride;
             stride += 12;
         }
-        this.attributes[0].byte_stride = this.attributes[1].byte_stride = this.attributes[2].byte_stride = this.attributes[3].byte_stride = this.attributes[4].byte_stride = stride;
+        this.attributes[0].byte_stride =
+            this.attributes[1].byte_stride =
+            this.attributes[2].byte_stride =
+            this.attributes[3].byte_stride =
+            this.attributes[4].byte_stride =
+                stride;
     }
 }

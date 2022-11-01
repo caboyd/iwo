@@ -22,10 +22,7 @@ export class Mesh {
     public constructor(gl: WebGL2RenderingContext, geometry: Geometry | BufferedGeometry) {
         let buf_geom: BufferedGeometry = geometry as BufferedGeometry;
         if (geometry instanceof Geometry) {
-            buf_geom =
-                geometry.getBufferedGeometry !== undefined
-                    ? geometry.getBufferedGeometry()
-                    : BufferedGeometry.fromGeometry(geometry as Geometry);
+            buf_geom = BufferedGeometry.fromGeometry(geometry as Geometry);
         }
 
         if (buf_geom.index_buffer !== undefined) this.index_buffer = new IndexBuffer(gl, buf_geom);
