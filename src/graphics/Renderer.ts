@@ -130,6 +130,7 @@ export class Renderer {
         }
 
         if (mat && mat != this.current_material) {
+            if (mat.cleanupGLState) mat.cleanupGLState(this.gl);
             this.current_material = mat;
             this.current_material.activate(this.gl);
             this.stats.material_bind_count++;

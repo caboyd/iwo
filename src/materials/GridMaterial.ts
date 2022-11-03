@@ -21,6 +21,14 @@ export class GridMaterial extends Material {
         shader.setUniform("distance", this.distance);
         shader.setUniform("frequency", this.frequency);
         shader.setUniform("highlight_frequency", this.highlight_frequency);
+
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+    }
+
+    public cleanupGLState(gl: WebGL2RenderingContext): void {
+        gl.disable(gl.BLEND);
     }
 
     public get shader(): Shader {

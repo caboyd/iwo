@@ -34,3 +34,16 @@ export { PBRMaterial } from "./materials/PBRMaterial";
 export { Mesh } from "./meshes/Mesh";
 export { MeshInstance } from "./meshes/MeshInstance";
 export { SubMesh } from "./meshes/SubMesh";
+
+
+export function initGL(canvas: HTMLCanvasElement): WebGL2RenderingContext {
+  try {
+      const gl = <WebGL2RenderingContext>canvas.getContext("webgl2");
+      if (!gl) {
+        alert("WebGL is not available on your browser.");
+    }
+    return gl;
+  } catch (e) {
+      throw new Error("GL init error:\n" + e);
+  }
+}
