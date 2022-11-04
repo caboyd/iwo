@@ -1,5 +1,6 @@
-export { Camera, Camera_Movement } from "./cameras/Camera";
+export { Camera } from "./cameras/Camera";
 export { OrbitControl } from "./cameras/OrbitControl";
+export { FPSControl } from "./cameras/FPSControl";
 export { CubeCamera } from "./cameras/CubeCamera";
 export { BoxGeometry } from "./geometry/BoxGeometry";
 export { Geometry } from "./geometry/Geometry";
@@ -35,15 +36,14 @@ export { Mesh } from "./meshes/Mesh";
 export { MeshInstance } from "./meshes/MeshInstance";
 export { SubMesh } from "./meshes/SubMesh";
 
-
 export function initGL(canvas: HTMLCanvasElement): WebGL2RenderingContext {
-  try {
-      const gl = <WebGL2RenderingContext>canvas.getContext("webgl2");
-      if (!gl) {
-        alert("WebGL is not available on your browser.");
+    try {
+        const gl = <WebGL2RenderingContext>canvas.getContext("webgl2");
+        if (!gl) {
+            alert("WebGL is not available on your browser.");
+        }
+        return gl;
+    } catch (e) {
+        throw new Error("GL init error:\n" + e);
     }
-    return gl;
-  } catch (e) {
-      throw new Error("GL init error:\n" + e);
-  }
 }

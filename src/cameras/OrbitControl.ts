@@ -9,7 +9,7 @@ export interface OrbitControlOptions {
     scroll_step_size: number;
     arrow_step_size: number;
     constrain_pitch: boolean;
-    orbit_control_binds: OrbitControlBinds;
+    binds: OrbitControlBinds;
 }
 
 export interface OrbitControlBinds {
@@ -20,7 +20,7 @@ export interface OrbitControlBinds {
     RESET: string;
 }
 
-type ActiveOrbitControlBinds = {
+type ActiveKeys = {
     [key: string]: boolean;
 };
 
@@ -40,7 +40,7 @@ const DefaultOrbitControlOptions: OrbitControlOptions = {
     arrow_step_size: 0.05,
     scroll_step_size: 0.5,
     constrain_pitch: true,
-    orbit_control_binds: DefaultOrbitControlBinds,
+    binds: DefaultOrbitControlBinds,
 };
 
 export class OrbitControl {
@@ -51,18 +51,18 @@ export class OrbitControl {
     private scroll_y_total: number = 0;
 
     public reset_orbit_point: vec3;
-    public readonly oc_opt: OrbitControlOptions;
+    public readonly opt: OrbitControlOptions;
 
-    private active_keys: ActiveOrbitControlBinds = Object.fromEntries(
+    public readonly active_keys: ActiveKeys = Object.fromEntries(
         Object.entries(DefaultOrbitControlBinds).map(([k, v]) => [v, false])
-    ) as ActiveOrbitControlBinds;
+    );
 
     public constructor(camera: Camera, options: Partial<OrbitControlOptions> = DefaultOrbitControlOptions) {
         this.camera = camera;
 
-        this.oc_opt = { ...DefaultOrbitControlOptions, ...options };
-        this.reset_orbit_point = vec3.clone(this.oc_opt.orbit_point);
-        this.camera.lookAt(this.oc_opt.orbit_point);
+        this.opt = { ...DefaultOrbitControlOptions, ...options };
+        this.reset_orbit_point = vec3.clone(this.opt.orbit_point);
+        this.camera.lookAt(this.opt.orbit_point);
 
         document.addEventListener("keydown", this.keydownEventCallback);
         document.addEventListener("keyup", this.keyupEventCallback);
@@ -96,10 +96,10 @@ export class OrbitControl {
         this.scroll_y_total += e.deltaY;
     };
 
-    public update(delta_ms?: number): void {
+    public update(delta_ms: number = 1000 / 60): void {
         if (this.scroll_y_total != 0) this.scroll(this.scroll_y_total > 0);
-        this.processMouseMovement();
-        this.processKeyboard();
+        this.processMouseMovement(delta_ms);
+        this.processKeyboard(delta_ms);
     }
 
     public destroy(): void {
@@ -109,54 +109,54 @@ export class OrbitControl {
         document.removeEventListener("wheel", this.mousewheelCallback);
     }
 
-    public processKeyboard(): void {
-        const bind = this.oc_opt.orbit_control_binds;
-        const opt = this.oc_opt;
+    public processKeyboard(delta_ms: number): void {
+        const bind = this.opt.binds;
+        const opt = this.opt;
         const cam = this.camera;
+        const step_size = opt.arrow_step_size * delta_ms * (60 / 1000);
 
-        let target_to_camera = vec3.sub(vec3.create(), this.camera.position, this.oc_opt.orbit_point);
+        let target_to_camera = vec3.sub(vec3.create(), cam.position, opt.orbit_point);
 
         if (this.active_keys[bind.LEFT]) {
             //move camera based on step_size
-            vec3.scaleAndAdd(cam.position, cam.position, cam.getRight(), -opt.arrow_step_size);
+            vec3.scaleAndAdd(cam.position, cam.position, cam.getRight(), -step_size);
         }
         if (this.active_keys[bind.RIGHT]) {
-            vec3.scaleAndAdd(cam.position, cam.position, cam.getRight(), opt.arrow_step_size);
+            vec3.scaleAndAdd(cam.position, cam.position, cam.getRight(), step_size);
         }
         if (this.active_keys[bind.UP]) {
-            vec3.scaleAndAdd(cam.position, cam.position, cam.up, opt.arrow_step_size);
+            vec3.scaleAndAdd(cam.position, cam.position, cam.up, step_size);
         }
         if (this.active_keys[bind.DOWN]) {
-            vec3.scaleAndAdd(cam.position, cam.position, cam.up, -opt.arrow_step_size);
+            vec3.scaleAndAdd(cam.position, cam.position, cam.up, -step_size);
         }
-
         if (this.active_keys[bind.RESET]) {
-            vec3.copy(this.oc_opt.orbit_point, this.reset_orbit_point);
-            vec3.sub(target_to_camera, this.camera.position, this.oc_opt.orbit_point);
+            vec3.copy(this.opt.orbit_point, this.reset_orbit_point);
+            vec3.sub(target_to_camera, cam.position, opt.orbit_point);
         }
 
         //place orbit point to same relative position
-        vec3.sub(this.oc_opt.orbit_point, this.camera.position, target_to_camera);
-        this.camera.lookAt(this.oc_opt.orbit_point);
+        vec3.sub(this.opt.orbit_point, this.camera.position, target_to_camera);
+        this.camera.lookAt(this.opt.orbit_point);
     }
 
     public scroll(scroll_direction_forward: boolean): void {
         this.scroll_y_total = 0;
-        let target_to_camera = vec3.sub(vec3.create(), this.camera.position, this.oc_opt.orbit_point);
+        let target_to_camera = vec3.sub(vec3.create(), this.camera.position, this.opt.orbit_point);
         const dist = vec3.len(target_to_camera);
-        let step_scaled_dist = dist + this.oc_opt.scroll_step_size * (scroll_direction_forward ? 1 : -1);
-        step_scaled_dist = Math.max(this.oc_opt.minimum_distance, step_scaled_dist);
-        step_scaled_dist = Math.min(this.oc_opt.maximum_distance, step_scaled_dist);
+        let step_scaled_dist = dist + this.opt.scroll_step_size * (scroll_direction_forward ? 1 : -1);
+        step_scaled_dist = Math.max(this.opt.minimum_distance, step_scaled_dist);
+        step_scaled_dist = Math.min(this.opt.maximum_distance, step_scaled_dist);
 
         //Rescale vector
         target_to_camera = vec3.normalize(target_to_camera, target_to_camera);
         target_to_camera = vec3.scale(target_to_camera, target_to_camera, step_scaled_dist);
 
         //Set camera back to scaled vector position
-        vec3.add(this.camera.position, this.oc_opt.orbit_point, target_to_camera);
+        vec3.add(this.camera.position, this.opt.orbit_point, target_to_camera);
     }
 
-    public processMouseMovement(): void {
+    public processMouseMovement(delta_ms: number): void {
         let xOffset = -this.mouse_x_total;
         let yOffset = -this.mouse_y_total;
 
@@ -164,17 +164,17 @@ export class OrbitControl {
 
         //rotate about orbit_point
 
-        xOffset *= this.oc_opt.mouse_sensitivity;
-        yOffset *= this.oc_opt.mouse_sensitivity;
+        xOffset *= this.opt.mouse_sensitivity * delta_ms * (60 / 1000);
+        yOffset *= this.opt.mouse_sensitivity * delta_ms * (60 / 1000);
 
         const angle_y = vec3.angle(this.camera.getForward(), this.camera.up);
 
-        if (this.oc_opt.constrain_pitch) {
+        if (this.opt.constrain_pitch) {
             if (angle_y > Math.PI * 0.99 && yOffset < 0) yOffset = 0;
             if (angle_y < Math.PI * 0.01 && yOffset > 0) yOffset = 0;
         }
 
-        this.rotateAroundTarget(this.oc_opt.orbit_point, xOffset, yOffset);
+        this.rotateAroundTarget(this.opt.orbit_point, xOffset, yOffset);
 
         this.mouse_x_total = 0;
         this.mouse_y_total = 0;
