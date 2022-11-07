@@ -1,5 +1,6 @@
-import { AttributeType, Geometry, Group } from "./Geometry";
 import { BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
+import { GL } from "graphics/WebglConstants";
+import { AttributeType, Geometry } from "./Geometry";
 
 export class SphereGeometry extends Geometry {
     public constructor(
@@ -96,7 +97,7 @@ export class SphereGeometry extends Geometry {
         const attrib = DefaultAttribute.SingleBufferApproach();
         const verts = this.attributes.get(AttributeType.Vertex)!;
         const tex_coords = this.attributes.get(AttributeType.Tex_Coord)!;
-        const index_buffer = { buffer: this.indices, target: 34963 };
+        const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
 
         const v_buf = new Float32Array(verts.length + tex_coords.length);
         v_buf.set(verts);
@@ -107,7 +108,7 @@ export class SphereGeometry extends Geometry {
         return {
             attributes: attrib,
             index_buffer: index_buffer,
-            buffers: [{ buffer: v_buf, target: 34962 }],
+            buffers: [{ buffer: v_buf, target: GL.ARRAY_BUFFER }],
             groups: this.groups,
         } as BufferedGeometry;
     }

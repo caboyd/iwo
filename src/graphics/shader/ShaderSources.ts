@@ -9,6 +9,7 @@ import { PBRShader } from "./PBRShader";
 import { EquiToCubemapShader } from "./EquiToCubemapShader";
 import { CubemapToIrradianceShader } from "./CubemapToIrradianceShader";
 import { CubemapSpecularPrefilterShader } from "./CubemapSpecularPrefilterShader";
+import { LineShader } from "./LineShader";
 
 //Shaders may have a subclass defined for custom shader setup
 interface ShaderSource {
@@ -41,6 +42,11 @@ import gridFrag from "../../shaders/grid.frag";
 import brdfVert from "../../shaders/brdf.vert";
 // @ts-ignore
 import brdfFrag from "../../shaders/brdf.frag";
+// @ts-ignore
+import lineFrag from "../../shaders/line.frag";
+// @ts-ignore
+import lineVert from "../../shaders/line.vert";
+
 
 export namespace ShaderSource {
     export const Basic: ShaderSource = {
@@ -97,6 +103,13 @@ export namespace ShaderSource {
         vert: brdfVert,
         frag: brdfFrag,
         subclass: undefined,
+    };
+
+    export const Line: ShaderSource = {
+        name: "LineShader",
+        vert: lineVert,
+        frag: lineFrag,
+        subclass: LineShader,
     };
 }
 

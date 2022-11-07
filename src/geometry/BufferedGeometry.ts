@@ -1,4 +1,4 @@
-import { ComponentFormatType, ComponentType } from "graphics/WebglConstants";
+import { ComponentType, DrawMode, GL } from "graphics/WebglConstants";
 import { AttributeType, Geometry, Group } from "./Geometry";
 import TypedArray = NodeJS.TypedArray;
 
@@ -10,35 +10,30 @@ export namespace DefaultAttribute {
         buffer_index: 0,
         component_type: 5126, // FLOAT
     });
-
     export const Tex_Coord = (): Attribute => ({
         type: AttributeType.Tex_Coord,
         enabled: true,
         buffer_index: 0,
         component_type: 5126, // FLOAT
     });
-
     export const Normal = (): Attribute => ({
         type: AttributeType.Normal,
         enabled: true,
         buffer_index: 0,
         component_type: 5126, // FLOAT
     });
-
     export const Tangent = (): Attribute => ({
         type: AttributeType.Tangent,
         enabled: false,
         buffer_index: 0,
         component_type: 5126, // FLOAT
     });
-
     export const Bitangent = (): Attribute => ({
         type: AttributeType.Bitangent,
         enabled: false,
         buffer_index: 0,
         component_type: 5126, // FLOAT
     });
-
     export const SingleBufferApproach = (): Attributes => [
         DefaultAttribute.Vertex(),
         DefaultAttribute.Tex_Coord(),
@@ -55,6 +50,16 @@ export namespace DefaultAttribute {
     ];
 }
 
+// function createAttribute(name: string): Attribute {
+//     return {
+//         type: getAttributeType(name),
+//         enabled: true,
+//         buffer_index: 0,
+//         component_type: 5126,
+//         component_count: AttributeComponentCountMap[type],
+//     };
+// }
+
 export interface Attribute {
     type: AttributeType;
     enabled?: boolean;
@@ -63,14 +68,14 @@ export interface Attribute {
     byte_stride?: number;
     // eslint-disable-next-line prettier/prettier
     component_type: ComponentType;
-    // component_count: 1 | 2 | 3 | 4 | 9 | 16;
+    //component_count: number;
     // //SCALAR | VEC2 | VEC3 | VEC4 | MAT2 | MAT3 | MAT4
     // component_format_type: ComponentFormatType;
     normalized?: boolean;
 }
 
 type AttributeComponentCount = { readonly [TKey in AttributeType]: number };
-type AttributeAccessorType = { readonly [TKey in AttributeType]: ComponentFormatType };
+//type AttributeAccessorType = { readonly [TKey in AttributeType]: ComponentFormatType };
 
 export const AttributeComponentCountMap: AttributeComponentCount = {
     [AttributeType.Vertex]: 3,
@@ -80,13 +85,18 @@ export const AttributeComponentCountMap: AttributeComponentCount = {
     [AttributeType.Bitangent]: 3,
 };
 
-export const AttributeAccessorTypeMap: AttributeAccessorType = {
-    [AttributeType.Vertex]: "VEC3",
-    [AttributeType.Tex_Coord]: "VEC2",
-    [AttributeType.Normal]: "VEC3",
-    [AttributeType.Tangent]: "VEC3",
-    [AttributeType.Bitangent]: "VEC3",
-};
+// export const AttributeAccessorTypeMap: AttributeAccessorType = {
+//     [StandardAttributeType.Vertex]: "VEC3",
+//     [StandardAttributeType.Tex_Coord]: "VEC2",
+//     [StandardAttributeType.Normal]: "VEC3",
+//     [StandardAttributeType.Tangent]: "VEC3",
+//     [StandardAttributeType.Bitangent]: "VEC3",
+//     [LineAttributeType.Position]: "VEC3",
+//     [LineAttributeType.Point_A]: "VEC3",
+//     [LineAttributeType.Point_B]: "VEC3",
+//     [LineAttributeType.Color_A]: "VEC3",
+//     [LineAttributeType.Color_B]: "VEC3",
+// };
 
 export type Attributes = readonly [Attribute, Attribute, Attribute, Attribute, Attribute];
 
@@ -116,6 +126,7 @@ export class BufferedGeometry {
     public index_buffer?: GeometryBuffer;
     public buffers: GeometryBuffer[];
     public groups?: Group[];
+    public draw_mode: DrawMode = DrawMode.TRIANGLES;
 
     public constructor() {
         this.attributes = DefaultAttribute.SingleBufferApproach();
@@ -127,12 +138,13 @@ export class BufferedGeometry {
         b.attributes = DefaultAttribute.SingleBufferApproach();
         b.buffers = [];
         b.groups = geom.groups;
-        b.index_buffer = geom.indices ? { buffer: geom.indices, target: 34963 } : undefined;
+        b.index_buffer = geom.indices ? { buffer: geom.indices, target: GL.ELEMENT_ARRAY_BUFFER } : undefined;
 
         b.setupAttributes(geom);
 
         if (options?.interleave_buffer === true) {
-            if (geom.interleaved_attributes) b.buffers.push({ buffer: geom.interleaved_attributes, target: 34962 });
+            if (geom.interleaved_attributes)
+                b.buffers.push({ buffer: geom.interleaved_attributes, target: GL.ARRAY_BUFFER });
             else {
                 throw new Error("Code does not yet exist to interleave a buffer for you");
                 //this.setupInterleavedBuffer(geom);
@@ -151,11 +163,11 @@ export class BufferedGeometry {
     }
 
     private setupAttributes(geom: Geometry): void {
-        this.attributes[0].enabled = geom.attributes.has(AttributeType.Vertex);
-        this.attributes[1].enabled = geom.attributes.has(AttributeType.Tex_Coord);
-        this.attributes[2].enabled = geom.attributes.has(AttributeType.Normal);
-        this.attributes[3].enabled = geom.attributes.has(AttributeType.Tangent);
-        this.attributes[4].enabled = geom.attributes.has(AttributeType.Bitangent);
+        this.attributes[0].enabled = geom.attributes.has(0);
+        this.attributes[1].enabled = geom.attributes.has(1);
+        this.attributes[2].enabled = geom.attributes.has(2);
+        this.attributes[3].enabled = geom.attributes.has(3);
+        this.attributes[4].enabled = geom.attributes.has(4);
 
         // for (const i of AttributeTypeValues) {
         //     this.attributes[i].enabled = geom.attributes.has(i);
@@ -208,7 +220,7 @@ export class BufferedGeometry {
             concat_buffer.set(arr, previous_buffers_length);
         }
 
-        this.buffers.push({ buffer: concat_buffer, target: 34962 });
+        this.buffers.push({ buffer: concat_buffer, target: GL.ARRAY_BUFFER });
     }
 
     private getTotalBufferLength(geom: Geometry): number {

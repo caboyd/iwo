@@ -1,7 +1,7 @@
-import { Geometry } from "geometry/Geometry";
+import { BufferedGeometry, GeometryBuffer } from "geometry/BufferedGeometry";
 import { ReferenceCounter } from "helpers/ReferenceCounter";
+import { TypedArray } from "types/types";
 import { WebGL } from "./WebglHelper";
-import { BufferedGeometry } from "geometry/BufferedGeometry";
 
 export class IndexBuffer {
     public readonly EBO: WebGLBuffer;
@@ -13,9 +13,18 @@ export class IndexBuffer {
             throw new Error("Cannot create IndexBuffer. Geometry.index_buffer is undefined.");
 
         const b = geometry.index_buffer.buffer;
+
         this.indices = b.BYTES_PER_ELEMENT == 2 ? (b as Uint16Array) : (b as Uint32Array);
         this.EBO = stop ? gl.createBuffer()! : WebGL.buildBuffer(gl, gl.ELEMENT_ARRAY_BUFFER, b);
         this.references = new ReferenceCounter();
+    }
+
+    public bufferData(gl: WebGL2RenderingContext, geom_buffer: GeometryBuffer) {
+        const buffer = geom_buffer.buffer;
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.EBO);
+        if (buffer.byteLength === this.indices.byteLength)
+            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, buffer, gl.STATIC_DRAW, 0);
+        else gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, buffer, gl.STATIC_DRAW, 0);
     }
 
     public bind(gl: WebGL2RenderingContext): void {

@@ -1,5 +1,6 @@
 import { AttributeType, Geometry, Group } from "./Geometry";
 import { BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
+import {GL} from "graphics/WebglConstants";
 
 enum Order {
     x = 0,
@@ -203,7 +204,7 @@ export class PlaneGeometry extends Geometry {
 
     public getBufferedGeometry(): BufferedGeometry {
         const attrib = DefaultAttribute.SingleBufferApproach();
-        const index_buffer = { buffer: this.indices, target: 34963 };
+        const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
 
         for (const a of attrib) a.byte_stride = 56; //12 + 8 + 12 + 12 + 12;
         attrib[0].byte_offset = 0;
@@ -215,7 +216,7 @@ export class PlaneGeometry extends Geometry {
         return {
             attributes: attrib,
             index_buffer: index_buffer,
-            buffers: [{ buffer: this.interleaved_attributes, target: 34962 }],
+            buffers: [{ buffer: this.interleaved_attributes, target: GL.ARRAY_BUFFER }],
             groups: this.groups,
         } as BufferedGeometry;
     }
