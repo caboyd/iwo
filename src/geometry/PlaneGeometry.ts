@@ -1,6 +1,7 @@
-import { AttributeType, Geometry, Group } from "./Geometry";
-import { BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
-import {GL} from "graphics/WebglConstants";
+import { StandardAttribute } from "geometry/attribute/StandardAttribute";
+import { BufferedGeometry } from "geometry/BufferedGeometry";
+import { GL } from "graphics/WebglConstants";
+import { Geometry, Group } from "./Geometry";
 
 enum Order {
     x = 0,
@@ -59,11 +60,11 @@ export class PlaneGeometry extends Geometry {
             buildSide(Order.x, Order.z, Order.y, width, width_segs, depth, depth_segs, 0, 1, -1, 0);
         }
 
-        this.attributes.set(AttributeType.Vertex, verts);
-        this.attributes.set(AttributeType.Normal, normals);
-        this.attributes.set(AttributeType.Tex_Coord, tex_coords);
-        this.attributes.set(AttributeType.Tangent, tangents);
-        this.attributes.set(AttributeType.Bitangent, bitangents);
+        this.attributes.set(StandardAttribute.Type.Vertex, verts);
+        this.attributes.set(StandardAttribute.Type.Normal, normals);
+        this.attributes.set(StandardAttribute.Type.Tex_Coord, tex_coords);
+        this.attributes.set(StandardAttribute.Type.Tangent, tangents);
+        this.attributes.set(StandardAttribute.Type.Bitangent, bitangents);
         this.interleaved_attributes = interleaved;
         this.groups = groups;
 
@@ -203,7 +204,7 @@ export class PlaneGeometry extends Geometry {
     }
 
     public getBufferedGeometry(): BufferedGeometry {
-        const attrib = DefaultAttribute.SingleBufferApproach();
+        const attrib = StandardAttribute.SingleBufferApproach();
         const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
 
         for (const a of attrib) a.byte_stride = 56; //12 + 8 + 12 + 12 + 12;

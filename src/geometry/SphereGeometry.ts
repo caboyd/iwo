@@ -1,6 +1,7 @@
-import { BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
+import { StandardAttribute } from "geometry/attribute/StandardAttribute";
+import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { GL } from "graphics/WebglConstants";
-import { AttributeType, Geometry } from "./Geometry";
+import { Geometry } from "./Geometry";
 
 export class SphereGeometry extends Geometry {
     public constructor(
@@ -84,9 +85,9 @@ export class SphereGeometry extends Geometry {
         }
 
         const vert_buff = new Float32Array(verts);
-        this.attributes.set(AttributeType.Vertex, vert_buff);
-        this.attributes.set(AttributeType.Normal, vert_buff);
-        this.attributes.set(AttributeType.Tex_Coord, new Float32Array(tex_coords));
+        this.attributes.set(StandardAttribute.Type.Vertex, vert_buff);
+        this.attributes.set(StandardAttribute.Type.Normal, vert_buff);
+        this.attributes.set(StandardAttribute.Type.Tex_Coord, new Float32Array(tex_coords));
         if (verts.length >= 65536) this.indices = new Uint32Array(indices);
         else this.indices = new Uint16Array(indices);
 
@@ -94,9 +95,9 @@ export class SphereGeometry extends Geometry {
     }
 
     public getBufferedGeometry(): BufferedGeometry {
-        const attrib = DefaultAttribute.SingleBufferApproach();
-        const verts = this.attributes.get(AttributeType.Vertex)!;
-        const tex_coords = this.attributes.get(AttributeType.Tex_Coord)!;
+        const attrib = StandardAttribute.SingleBufferApproach();
+        const verts = this.attributes.get(StandardAttribute.Type.Vertex)!;
+        const tex_coords = this.attributes.get(StandardAttribute.Type.Tex_Coord)!;
         const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
 
         const v_buf = new Float32Array(verts.length + tex_coords.length);

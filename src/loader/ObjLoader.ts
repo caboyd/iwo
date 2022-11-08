@@ -1,9 +1,9 @@
 import { BufferedGeometry } from "geometry/BufferedGeometry";
-import { AttributeType, Geometry, Group } from "geometry/Geometry";
+import { Geometry, Group } from "geometry/Geometry";
 import { Material } from "materials/Material";
 import { FileLoader } from "./FileLoader";
 import { MtlData, MtlLoader, MtlOptions } from "./MtlLoader";
-
+import { StandardAttribute } from "geometry/attribute/StandardAttribute";
 
 export interface ObjData {
     objects: { name: string; buffered_geometry: BufferedGeometry }[];
@@ -53,10 +53,14 @@ type Face = {
     vn_indices: number[];
 };
 
-export type ObjOptions = MtlOptions
+export type ObjOptions = MtlOptions;
 
 export class ObjLoader extends FileLoader {
-    public static async promise(file_name: string, base_url: string = this.Default_Base_URL, obj_options?: ObjOptions): Promise<ObjData> {
+    public static async promise(
+        file_name: string,
+        base_url: string = this.Default_Base_URL,
+        obj_options?: ObjOptions
+    ): Promise<ObjData> {
         return new Promise<ObjData>((resolve) => {
             super.promise(file_name, base_url).then((response: Response) => {
                 response.text().then((s: string) => {
@@ -68,7 +72,11 @@ export class ObjLoader extends FileLoader {
         });
     }
 
-    private static async fromObjString(s: string, base_url: string = this.Default_Base_URL, obj_options?: ObjOptions): Promise<ObjData> {
+    private static async fromObjString(
+        s: string,
+        base_url: string = this.Default_Base_URL,
+        obj_options?: ObjOptions
+    ): Promise<ObjData> {
         const lines = s.split(/\r?\n/);
 
         const raw_obj_data_array: RawObjDataArray = [createEmptyObject("Default")];
@@ -241,9 +249,9 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
             geom.groups.push(geom_group);
         }
         //build geom
-        geom.attributes.set(AttributeType.Vertex, new Float32Array(v_arr));
-        if (vt_check) geom.attributes.set(AttributeType.Tex_Coord, new Float32Array(vt_arr));
-        if (vn_check) geom.attributes.set(AttributeType.Normal, new Float32Array(vn_arr));
+        geom.attributes.set(StandardAttribute.Vertex.type, new Float32Array(v_arr));
+        if (vt_check) geom.attributes.set(StandardAttribute.Tex_Coord.type, new Float32Array(vt_arr));
+        if (vn_check) geom.attributes.set(StandardAttribute.Normal.type, new Float32Array(vn_arr));
         result.objects.push({
             name: raw_obj_data.name,
             buffered_geometry: BufferedGeometry.fromGeometry(geom),

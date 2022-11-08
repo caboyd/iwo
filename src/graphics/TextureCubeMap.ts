@@ -7,8 +7,10 @@ import { Mesh } from "meshes/Mesh";
 import { ShaderSource } from "./shader/ShaderSources";
 import { CubeCamera } from "cameras/CubeCamera";
 import { TextureHelper } from "./TextureHelper";
-import { AttributeType, Geometry } from "geometry/Geometry";
+import { Geometry } from "geometry/Geometry";
 import { TypedArray } from "types/types";
+import { AttributeType } from "geometry/attribute/Attribute";
+import { StandardAttribute } from "geometry/attribute/StandardAttribute";
 
 export interface TextureCubeMapOptions extends TextureOptions {
     wrap_R: number;
@@ -395,10 +397,10 @@ export class TextureCubeMap {
             const quad_geom = new Geometry();
             quad_geom.attributes = new Map<AttributeType, TypedArray>()
                 .set(
-                    AttributeType.Vertex,
+                    StandardAttribute.Vertex.type,
                     new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0])
                 )
-                .set(AttributeType.Tex_Coord, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
+                .set(StandardAttribute.Tex_Coord.type, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
             quad_geom.groups = [];
 
             const quad_mesh = new Mesh(gl, quad_geom);

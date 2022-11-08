@@ -1,15 +1,9 @@
-/*
-    Base Mesh Class
-    A Mesh Contains:
-            
- */
-
-import { AttributeType, Geometry, Group } from "geometry/Geometry";
-import { DrawMode } from "graphics/WebglConstants";
+import { BufferedGeometry } from "geometry/BufferedGeometry";
+import { Geometry } from "geometry/Geometry";
 import { IndexBuffer } from "graphics/IndexBuffer";
 import { VertexBuffer } from "graphics/VertexBuffer";
+import { DrawMode } from "graphics/WebglConstants";
 import { SubMesh } from "./SubMesh";
-import { BufferedGeometry, GeometryBuffer } from "geometry/BufferedGeometry";
 
 export class Mesh {
     public readonly index_buffer: IndexBuffer | undefined;
@@ -43,7 +37,7 @@ export class Mesh {
             this.count =
                 buf_geom.index_buffer !== undefined
                     ? buf_geom.index_buffer.buffer.length
-                    : buf_geom.buffers[buf_geom.attributes[AttributeType.Vertex].buffer_index].buffer.length / 3;
+                    : buf_geom.buffers[0].buffer.length / 3;
             this.sub_meshes.push(new SubMesh(0, 0, this.count, this.vertex_buffer, this.index_buffer));
         } else {
             for (const group of buf_geom.groups) {
@@ -55,6 +49,7 @@ export class Mesh {
         }
     }
 
+    //TODO: Complete this
     updateGeometryBuffer(gl:WebGL2RenderingContext, buf_geom:BufferedGeometry): void {
         // if (buf_geom.index_buffer !== undefined) {
         //     this.index_buffer?.bufferData(gl,buf_geom.index_buffer);

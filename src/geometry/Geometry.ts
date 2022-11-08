@@ -1,36 +1,9 @@
-import { TypedArray } from "types/types";
-import { BufferedGeometry } from "./BufferedGeometry";
 import { DrawMode } from "graphics/WebglConstants";
-
-//TODO: Change to match glTF https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#meshes
-export enum AttributeType {
-    Vertex = 0,
-    Tex_Coord = 1,
-    Normal = 2,
-    Tangent = 3,
-    Bitangent = 4,
-}
-
-export enum LineAttributeType {
-    position = 0,
-    point_a = 1,
-    point_b = 2,
-    color_a = 3,
-    color_b = 4,
-}
+import { TypedArray } from "types/types";
+import { AttributeType, Attribute } from "./attribute/Attribute";
+import { BufferedGeometry } from "./BufferedGeometry";
 
 
-
-
-
-// export const AttributeTypeValues: ReadonlyArray<number> = Object.keys(AttributeType)
-//     .filter((value) => !isNaN(Number(value)))
-//     .map((value) => Number(value));
-
-/*
-    A Group is a subset of a Mesh that
-    wants to be drawn separately because it uses a different material
- */
 export interface Group {
     offset: number;
     count: number;

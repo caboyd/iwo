@@ -1,7 +1,7 @@
-import { Mesh } from "./Mesh";
+import { mat4 } from "gl-matrix";
 import { Material } from "materials/Material";
-import { mat3, mat4 } from "gl-matrix";
 import { Renderer } from "../graphics/Renderer";
+import { Mesh } from "./Mesh";
 
 export class MeshInstance {
     public mesh: Mesh;
@@ -17,6 +17,10 @@ export class MeshInstance {
     }
 
     public render(renderer: Renderer, view_matrix: mat4, proj_matrix: mat4): void {
+
+        //TODO: refactor code: this is where I should compile shaders and setup VAOs.
+
+
         renderer.setPerModelUniforms(this.model_matrix, view_matrix, proj_matrix);
 
         //TODO: Fix this cause you may have submeshes with only one material

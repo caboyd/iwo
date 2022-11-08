@@ -1,7 +1,9 @@
-import { Geometry, AttributeType } from "geometry/Geometry";
+import { Geometry } from "geometry/Geometry";
 import { vec3 } from "gl-matrix";
 import { DrawMode, GL } from "graphics/WebglConstants";
-import { BufferedGeometry, DefaultAttribute } from "./BufferedGeometry";
+import { LineAttribute } from "./attribute/LineAttribute";
+import { StandardAttribute } from "./attribute/StandardAttribute";
+import { BufferedGeometry } from "./BufferedGeometry";
 
 export interface LineOptions {
     type: "lines" | "line strip";
@@ -33,19 +35,21 @@ export class LineGeometry extends Geometry {
         this.draw_mode = DrawMode.LINES;
         const flat = points.flat() as number[];
         const vert_buff = new Float32Array(flat);
-        this.attributes.set(AttributeType.Vertex, vert_buff);
+        this.attributes.set(LineAttribute.Type.position, vert_buff);
     }
 
     public getBufferedGeometry(): BufferedGeometry {
-        const attrib = DefaultAttribute.SingleBufferApproach();
-        const v_buf = this.attributes.get(AttributeType.Vertex);
+        const v_buf = this.attributes.get(LineAttribute.Type.position)!;
+
+        const attrs = LineAttribute.SingleBufferApproach();
 
         return {
-            attributes: attrib,
+            attributes: attrs,
             index_buffer: undefined,
             buffers: [{ buffer: v_buf, target: GL.ARRAY_BUFFER }],
             groups: this.groups,
             draw_mode: this.draw_mode,
+            buffer_format: "concatenated",
         } as BufferedGeometry;
     }
 }

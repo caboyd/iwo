@@ -1,10 +1,10 @@
 import { WebGL } from "./WebglHelper";
 import { ReferenceCounter } from "helpers/ReferenceCounter";
-import { AttributeComponentCountMap, Attributes, BufferedGeometry, Attribute } from "geometry/BufferedGeometry";
-import { AttributeType } from "geometry/Geometry";
+import { BufferedGeometry } from "geometry/BufferedGeometry";
+import { Attribute } from "geometry/attribute/Attribute";
 
 export class VertexBuffer {
-    public attributes: Attributes;
+    public attributes: Attribute[];
     public buffers: WebGLBuffer[];
     public VAO!: WebGLVertexArrayObject;
     public readonly references: ReferenceCounter;
@@ -39,6 +39,7 @@ export class VertexBuffer {
 
     public setupVAOBuffers(gl: WebGL2RenderingContext): void {
         let bound_buffer = undefined;
+        let i = 0;
         for (const attrib of this.attributes) {
             if (!attrib.enabled) continue;
             //Bind correct buffer
@@ -47,15 +48,16 @@ export class VertexBuffer {
                 bound_buffer = this.buffers[attrib.buffer_index];
             }
 
-            gl.enableVertexAttribArray(attrib.type);
+            gl.enableVertexAttribArray(i);
             gl.vertexAttribPointer(
-                attrib.type,
-                AttributeComponentCountMap[attrib.type],
+                i,
+                attrib.component_count,
                 attrib.component_type,
                 attrib.normalized ?? false,
                 attrib.byte_stride ?? 0,
                 attrib.byte_offset ?? 0
             );
+            i++;
         }
     }
 

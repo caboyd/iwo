@@ -1,4 +1,5 @@
-import { AttributeType, Geometry, Group } from "./Geometry";
+import { StandardAttribute } from "./attribute/StandardAttribute";
+import { Geometry, Group } from "./Geometry";
 
 enum Order {
     x = 0,
@@ -81,11 +82,11 @@ export class BoxGeometry extends Geometry {
             buildSide(Order.x, Order.z, Order.y, width, width_segs, depth, depth_segs, -half_height, 1, 1, 5);
         }
 
-        this.attributes.set(AttributeType.Vertex, verts);
-        this.attributes.set(AttributeType.Normal, normals);
-        this.attributes.set(AttributeType.Tex_Coord, tex_coords);
-        this.attributes.set(AttributeType.Tangent, tangents);
-        this.attributes.set(AttributeType.Bitangent, bitangents);
+        this.attributes.set(StandardAttribute.Type.Vertex, verts);
+        this.attributes.set(StandardAttribute.Type.Normal, normals);
+        this.attributes.set(StandardAttribute.Type.Tex_Coord, tex_coords);
+        this.attributes.set(StandardAttribute.Type.Tangent, tangents);
+        this.attributes.set(StandardAttribute.Type.Bitangent, bitangents);
         this.interleaved_attributes = interleaved;
         this.groups = groups;
 

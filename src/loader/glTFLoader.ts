@@ -1,15 +1,15 @@
 import { FileLoader } from "./FileLoader";
-import { AttributeType } from "geometry/Geometry";
 //https://www.npmjs.com/package/gltf-typescript-generator
-import { Accessor, glTF, MeshPrimitive } from "loader/spec/glTF";
-import { Attribute, BufferedGeometry, DefaultAttribute } from "geometry/BufferedGeometry";
-import { Material } from "materials/Material";
-import { ImageLoader } from "loader/ImageLoader";
-import { ComponentType } from "graphics/WebglConstants";
-import { TypedArray } from "types/types";
-import { PBRMaterial } from "materials/PBRMaterial";
+import { Attribute, AttributeType } from "geometry/attribute/Attribute";
+import { StandardAttribute } from "geometry/attribute/StandardAttribute";
+import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { vec3 } from "gl-matrix";
-import { Texture2D } from "graphics/Texture2D";
+import { ComponentType } from "graphics/WebglConstants";
+import { ImageLoader } from "loader/ImageLoader";
+import { Accessor, glTF, MeshPrimitive } from "loader/spec/glTF";
+import { Material } from "materials/Material";
+import { PBRMaterial } from "materials/PBRMaterial";
+import { TypedArray } from "types/types";
 
 export interface glTFData {
     buffered_geometries: BufferedGeometry[];
@@ -45,7 +45,7 @@ class Color {
 
 export class glTFLoader {
     public static async promise(file_name: string, base_url: string = FileLoader.Default_Base_URL): Promise<glTFData> {
-        return new Promise<glTFData>(resolve => {
+        return new Promise<glTFData>((resolve) => {
             FileLoader.promise(file_name, base_url).then((response: Response) => {
                 response.json().then(async (o: glTF) => {
                     //Validate toplevel
@@ -55,11 +55,11 @@ export class glTFLoader {
                     if (o.accessors === undefined) glTFLoaderError(o.accessors);
 
                     const buffers = (await FileLoader.promiseAll(
-                        o.buffers.map(v => v.uri!),
+                        o.buffers.map((v) => v.uri!),
                         base_url
                     )) as Response[];
 
-                    const array_buffers = await Promise.all(buffers.map(v => v.arrayBuffer()));
+                    const array_buffers = await Promise.all(buffers.map((v) => v.arrayBuffer()));
 
                     // const typed_buffer_view = new Map<[number, ComponentType], TypedArray>();
 
@@ -85,7 +85,7 @@ export class glTFLoader {
                     let images: HTMLImageElement[] = [];
                     if (o.images) {
                         images = ImageLoader.loadAllBackground(
-                            o.images.map(v => v.uri!),
+                            o.images.map((v) => v.uri!),
                             base_url
                         );
                     }
@@ -116,7 +116,7 @@ export class glTFLoader {
                             const accessor = o.accessors[prim.indices];
                             const buffer_view = o.bufferViews[accessor.bufferView!];
                             const count = accessor.count;
-                            const componentType = accessor.componentType;
+                            const componentType = accessor.componentType as ComponentType;
                             const buffer_index = buffer_view.buffer;
                             const offset = buffer_view.byteOffset;
                             const bytes = count > 66536 ? 4 : 2;
@@ -139,64 +139,68 @@ export class glTFLoader {
                             //        } as GeometryBuffer
                         }
 
-                        let my_buffer_index = 0;
-                        x.attributes = DefaultAttribute.SingleBufferApproach();
+                        let buf_index = 0;
+                        let cur_attr = StandardAttribute.Vertex;
+                        x.attributes = StandardAttribute.SingleBufferApproach();
                         let attrib_index: number | undefined;
-                        let a = x.attributes[AttributeType.Vertex];
+                        let a = x.attributes[cur_attr.index];
                         if ((attrib_index = prim.attributes["POSITION"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,
-                                AttributeType.Vertex,
+                                cur_attr.type,
                                 o.accessors![attrib_index]!,
                                 x,
                                 array_buffers,
                                 a,
-                                my_buffer_index++
+                                buf_index++
                             );
                         } else {
                             a.enabled = false;
                         }
 
-                        a = x.attributes[AttributeType.Tex_Coord];
+                        cur_attr = StandardAttribute.Tex_Coord;
+                        a = x.attributes[cur_attr.index];
                         if ((attrib_index = prim.attributes["TEXCOORD_0"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,
-                                AttributeType.Tex_Coord,
+                                cur_attr.type,
                                 o.accessors![attrib_index]!,
                                 x,
                                 array_buffers,
                                 a,
-                                my_buffer_index++
+                                buf_index++
                             );
                         } else {
                             a.enabled = false;
                         }
 
-                        a = x.attributes[AttributeType.Normal];
+                        cur_attr = StandardAttribute.Normal;
+                        a = x.attributes[cur_attr.index];
                         if ((attrib_index = prim.attributes["NORMAL"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,
-                                AttributeType.Normal,
+                                cur_attr.type,
                                 o.accessors![attrib_index]!,
                                 x,
                                 array_buffers,
                                 a,
-                                my_buffer_index++
+                                buf_index++
                             );
                         } else {
                             a.enabled = false;
                         }
 
-                        a = x.attributes[AttributeType.Tangent];
+                        cur_attr = StandardAttribute.Tangent;
+                        a = x.attributes[cur_attr.index];
                         if ((attrib_index = prim.attributes["TANGENT"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,
-                                AttributeType.Tangent,
+                                cur_attr.type,
                                 o.accessors![attrib_index]!,
                                 x,
                                 array_buffers,
                                 a,
-                                my_buffer_index++
+                                buf_index++
                             );
                         } else {
                             a.enabled = false;
@@ -241,7 +245,7 @@ export class glTFLoader {
         my_buffer_index: number
     ): void {
         const buffer_view = o.bufferViews![accessor.bufferView!];
-        const componentType = accessor.componentType;
+        const componentType = accessor.componentType as ComponentType;
         const buffer_index = buffer_view.buffer;
         const offset = buffer_view.byteOffset;
         const length = buffer_view.byteLength / 4;
@@ -253,7 +257,7 @@ export class glTFLoader {
         a.type = type;
         a.enabled = true;
         a.buffer_index = my_buffer_index;
-        a.component_type = accessor.componentType;
+        a.component_type = accessor.componentType as ComponentType;
     }
 
     // private static fromString(s: string, float32Array = Float32Array): MeshInstance {
