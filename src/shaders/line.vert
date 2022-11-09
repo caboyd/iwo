@@ -1,7 +1,7 @@
 #version 300 es
 precision highp float;
 
-layout (location = 0) in vec3 a_vertex;
+layout (location = 0) in vec3 position;
 layout (location = 1) in vec3 point_a;
 layout (location = 2) in vec3 point_b;
 layout (location = 3) in vec3 color_a;
@@ -29,5 +29,5 @@ out vec3 color;
 void main() {
     vec2 x_basis = vec2(point_a) - vec2(point_a);
     vec2 y_basis = normalize(vec2(-x_basis.y, x_basis.x));
-    gl_Position = projection * vec4(a_vertex, 1);
+    gl_Position = projection * vec4(position, 1);
 }

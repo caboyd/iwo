@@ -1,6 +1,6 @@
 //Base Material Class
+import { ShaderSource } from "graphics/shader/ShaderSources";
 import { Shader } from "../graphics/shader/Shader";
-import { Texture2D } from "graphics/Texture2D";
 
 export type MaterialOptions = {
     flip_image_y?: boolean;
@@ -10,10 +10,8 @@ export type MaterialOptions = {
 export abstract class Material {
     protected constructor() {}
 
-    public abstract activate(gl: WebGL2RenderingContext): void;
+    public abstract activate(gl: WebGL2RenderingContext, shader:Shader): void;
     public cleanupGLState?(gl: WebGL2RenderingContext): void;
-    public abstract get shader(): Shader;
-    public static get Shader(): Shader {
-        return {} as Shader;
-    }
+    public abstract get shaderSource(): ShaderSource;
+
 }

@@ -1,34 +1,33 @@
-import { ComponentType } from "graphics/WebglConstants";
-import { StandardAttribute } from "./StandardAttribute";
-import { LineAttribute } from "./LineAttribute";
+import { ComponentType, GL } from "graphics/WebglConstants";
 import { TypedArray } from "types/types";
+import { LineAttribute } from "./LineAttribute";
+import { StandardAttribute } from "./StandardAttribute";
 
-export type AttributeType = StandardAttribute.Type | LineAttribute.Type;
+export type AttributeName = StandardAttribute.Name | LineAttribute.Name;
 
 export type AttributeFormat = {
-    type: AttributeType
-    index: number;
-    createAttribute: (attr?: Partial<Attribute>) => (Attribute)
-}
+    name: AttributeName;
+    createAttribute: (attr?: Partial<Attribute>) => Attribute;
+};
 
-export function createAttribute(type: AttributeType, attr?: Partial<Attribute>): Attribute {
+export function createAttribute(name: AttributeName, attr?: Partial<Attribute>): Attribute {
     return {
         ...{
-            type: type,
+            name: name,
             enabled: true,
             buffer_index: 0,
-            component_type: 5126, //FLOAT
+            component_type: GL.FLOAT,
+            component_count: 3,
             normalized: false,
             byte_offset: 0,
             byte_stride: 0,
-            component_count: 3, //VEC3
         },
         ...attr,
     };
 }
 
 export interface Attribute {
-    type: AttributeType;
+    name: AttributeName;
     enabled: boolean;
     buffer_index: number;
     byte_offset: number;
@@ -37,4 +36,32 @@ export interface Attribute {
     component_count: 1 | 2 | 3 | 4 | 9 | 16;
     normalized: boolean;
     buffer?: TypedArray;
+}
+
+export type Attributes = {
+    [key: string]: Attribute;
+};
+
+export function typeToComponentCount(type: GLenum) {
+    switch (type) {
+        case GL.FLOAT_VEC2:
+        case GL.INT_VEC2:
+        case GL.BOOL_VEC2:
+            return 2;
+        case GL.FLOAT_VEC3:
+        case GL.INT_VEC3:
+        case GL.BOOL_VEC3:
+            return 3;
+        case GL.FLOAT_VEC4:
+        case GL.INT_VEC4:
+        case GL.BOOL_VEC4:
+        case GL.FLOAT_MAT2:
+            return 4;
+        case GL.FLOAT_MAT3:
+            return 9;
+        case GL.FLOAT_MAT4:
+            return 16;
+        default:
+            return 1;
+    }
 }

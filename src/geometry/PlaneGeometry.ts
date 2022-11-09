@@ -60,11 +60,11 @@ export class PlaneGeometry extends Geometry {
             buildSide(Order.x, Order.z, Order.y, width, width_segs, depth, depth_segs, 0, 1, -1, 0);
         }
 
-        this.attributes.set(StandardAttribute.Type.Vertex, verts);
-        this.attributes.set(StandardAttribute.Type.Normal, normals);
-        this.attributes.set(StandardAttribute.Type.Tex_Coord, tex_coords);
-        this.attributes.set(StandardAttribute.Type.Tangent, tangents);
-        this.attributes.set(StandardAttribute.Type.Bitangent, bitangents);
+        this.attributes.set(StandardAttribute.Name.Vertex, verts);
+        this.attributes.set(StandardAttribute.Name.Normal, normals);
+        this.attributes.set(StandardAttribute.Name.Tex_Coord, tex_coords);
+        this.attributes.set(StandardAttribute.Name.Tangent, tangents);
+        this.attributes.set(StandardAttribute.Name.Bitangent, bitangents);
         this.interleaved_attributes = interleaved;
         this.groups = groups;
 
@@ -207,12 +207,12 @@ export class PlaneGeometry extends Geometry {
         const attrib = StandardAttribute.SingleBufferApproach();
         const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
 
-        for (const a of attrib) a.byte_stride = 56; //12 + 8 + 12 + 12 + 12;
-        attrib[0].byte_offset = 0;
-        attrib[1].byte_offset = 12;
-        attrib[2].byte_offset = 20;
-        attrib[3].byte_offset = 32;
-        attrib[4].byte_offset = 44;
+        for (const name in attrib) attrib[name].byte_stride = 56; //12 + 8 + 12 + 12 + 12;
+        attrib[StandardAttribute.Vertex.name].byte_offset = 0;
+        attrib[StandardAttribute.Tex_Coord.name].byte_offset = 12;
+        attrib[StandardAttribute.Normal.name].byte_offset = 20;
+        attrib[StandardAttribute.Tangent.name].byte_offset = 32;
+        attrib[StandardAttribute.Bitangent.name].byte_offset = 44;
 
         return {
             attributes: attrib,

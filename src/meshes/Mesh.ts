@@ -1,6 +1,7 @@
 import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { Geometry } from "geometry/Geometry";
 import { IndexBuffer } from "graphics/IndexBuffer";
+import { Shader } from "graphics/shader/Shader";
 import { VertexBuffer } from "graphics/VertexBuffer";
 import { DrawMode } from "graphics/WebglConstants";
 import { SubMesh } from "./SubMesh";
@@ -12,6 +13,11 @@ export class Mesh {
     public draw_mode: DrawMode;
     public sub_meshes: SubMesh[];
     public count: number;
+
+    #inititalized = false;
+    public get initialized(): boolean {
+        return this.#inititalized;
+    }
 
     public constructor(gl: WebGL2RenderingContext, geometry: Geometry | BufferedGeometry) {
         let buf_geom: BufferedGeometry = geometry as BufferedGeometry;
@@ -49,13 +55,17 @@ export class Mesh {
         }
     }
 
+    public setupVAO(gl:WebGL2RenderingContext, program: Shader){
+        this.#inititalized = true;
+        this.vertex_buffer.setupVAO(gl, program);
+    }
+
     //TODO: Complete this
-    updateGeometryBuffer(gl:WebGL2RenderingContext, buf_geom:BufferedGeometry): void {
+    updateGeometryBuffer(gl: WebGL2RenderingContext, buf_geom: BufferedGeometry): void {
         // if (buf_geom.index_buffer !== undefined) {
         //     this.index_buffer?.bufferData(gl,buf_geom.index_buffer);
         // }
-        this.vertex_buffer.updateBufferData(gl, buf_geom)
-        
+        this.vertex_buffer.updateBufferData(gl, buf_geom);
 
         // this.sub_meshes = [];
         // this.draw_mode = buf_geom.draw_mode ?? DrawMode.TRIANGLES;

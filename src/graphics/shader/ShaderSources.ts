@@ -4,15 +4,15 @@
  * Shader Source Files
  */
 import { BasicShader } from "./BasicShader";
-import { Shader } from "./Shader";
-import { PBRShader } from "./PBRShader";
-import { EquiToCubemapShader } from "./EquiToCubemapShader";
-import { CubemapToIrradianceShader } from "./CubemapToIrradianceShader";
 import { CubemapSpecularPrefilterShader } from "./CubemapSpecularPrefilterShader";
+import { CubemapToIrradianceShader } from "./CubemapToIrradianceShader";
+import { EquiToCubemapShader } from "./EquiToCubemapShader";
 import { LineShader } from "./LineShader";
+import { PBRShader } from "./PBRShader";
+import { Shader } from "./Shader";
 
 //Shaders may have a subclass defined for custom shader setup
-interface ShaderSource {
+export interface ShaderSource {
     name: string;
     vert: string;
     frag: string;

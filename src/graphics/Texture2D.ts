@@ -29,6 +29,18 @@ export const DefaultTextureOptions = {
     flip: false,
 };
 
+const CheckerBoardOptions = {
+    ...DefaultTextureOptions,
+    ...{
+        width: 8,
+        height: 8,
+        wrap_S: GL.REPEAT,
+        wrap_T: GL.MIRRORED_REPEAT,
+        mag_filter: GL.NEAREST,
+        min_filter: GL.NEAREST,
+    },
+};
+
 export class Texture2D {
     public texture_id: WebGLTexture;
 
@@ -43,6 +55,7 @@ export class Texture2D {
         if (source instanceof HTMLImageElement && source) {
             if (source.complete && source.src) this.setImage(gl, source, o);
             else {
+                this.setImageByBuffer(gl, TextureHelper.PINK_BLACK_CHECKERBOARD, CheckerBoardOptions);
                 //prettier-ignore
                 source.addEventListener("load", () => {
                     this.setImage(gl, source,o);
@@ -61,18 +74,7 @@ export class Texture2D {
         } else {
             //No image or buffer exists. so we set texture to pink black checkerboard
             //This should probably happen at the material loading level and not during texture setting
-            const o2 = {
-                ...DefaultTextureOptions,
-                ...{
-                    width: 8,
-                    height: 8,
-                    wrap_S: gl.REPEAT,
-                    wrap_T: gl.MIRRORED_REPEAT,
-                    mag_filter: gl.NEAREST,
-                    min_filter: gl.NEAREST,
-                },
-            };
-            this.setImageByBuffer(gl, TextureHelper.PINK_BLACK_CHECKERBOARD, o2);
+            this.setImageByBuffer(gl, TextureHelper.PINK_BLACK_CHECKERBOARD, CheckerBoardOptions);
         }
     }
 

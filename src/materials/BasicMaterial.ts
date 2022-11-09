@@ -1,9 +1,9 @@
-import { Material } from "./Material";
-import { Shader } from "../graphics/shader/Shader";
-import { Renderer } from "../graphics/Renderer";
-import { Texture2D } from "../graphics/Texture2D";
 import { vec3 } from "gl-matrix";
+import { ShaderSource } from "graphics/shader/ShaderSources";
+import { Shader } from "../graphics/shader/Shader";
+import { Texture2D } from "../graphics/Texture2D";
 import { TextureCubeMap } from "../graphics/TextureCubeMap";
+import { Material } from "./Material";
 
 export class BasicMaterial extends Material {
     private equirectangular_albedo: boolean = false;
@@ -17,8 +17,7 @@ export class BasicMaterial extends Material {
         this.albedo = vec3.clone(color);
     }
 
-    public activate(gl: WebGL2RenderingContext): void {
-        const shader = this.shader;
+    public activate(gl: WebGL2RenderingContext, shader: Shader): void {
         const active_textures = [false, false];
 
         if (this.albedo_texture === undefined && this.albedo_image?.complete) {
@@ -51,11 +50,7 @@ export class BasicMaterial extends Material {
         this.albedo_cube_texture = tex;
     }
 
-    public get shader(): Shader {
-        return Renderer.GetShader("BasicShader")!;
-    }
-
-    public static get Shader(): Shader {
-        return Renderer.GetShader("BasicShader")!;
+    public get shaderSource(): ShaderSource {
+        return ShaderSource.Basic;
     }
 }

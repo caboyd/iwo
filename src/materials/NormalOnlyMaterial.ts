@@ -1,6 +1,6 @@
-import { Material } from "./Material";
-import { Renderer } from "graphics/Renderer";
 import { Shader } from "graphics/shader/Shader";
+import { ShaderSource } from "graphics/shader/ShaderSources";
+import { Material } from "./Material";
 
 export class NormalOnlyMaterial extends Material {
     public constructor() {
@@ -8,13 +8,9 @@ export class NormalOnlyMaterial extends Material {
         super();
     }
 
-    public activate(gl: WebGL2RenderingContext): void {}
+    public activate(gl: WebGL2RenderingContext, shader: Shader): void {}
 
-    public get shader(): Shader {
-        return Renderer.GetShader("NormalOnlyShader")!;
-    }
-
-    public static get Shader(): Shader {
-        return Renderer.GetShader("NormalOnlyShader")!;
+    public get shaderSource(): ShaderSource {
+        return ShaderSource.NormalOnly;
     }
 }

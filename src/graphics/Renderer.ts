@@ -1,13 +1,13 @@
-import { IndexBuffer } from "./IndexBuffer";
-import { VertexBuffer } from "./VertexBuffer";
-import { Shader } from "./shader/Shader";
 import { mat3, mat4 } from "gl-matrix";
-import { Texture2D } from "./Texture2D";
-import { UniformBuffer } from "./UniformBuffer";
 import { Material } from "materials/Material";
+import { IndexBuffer } from "./IndexBuffer";
 import { RendererStats } from "./RendererStats";
+import { Shader } from "./shader/Shader";
+import { ShaderSource } from "./shader/ShaderSources";
+import { Texture2D } from "./Texture2D";
 import { TextureCubeMap } from "./TextureCubeMap";
-import { ShaderSource, ShaderSources } from "./shader/ShaderSources";
+import { UniformBuffer } from "./UniformBuffer";
+import { VertexBuffer } from "./VertexBuffer";
 
 const temp: mat4 = mat4.create();
 
@@ -32,7 +32,7 @@ export class Renderer {
     private static _EMPTY_TEXTURE: WebGLTexture;
     private static _EMPTY_CUBE_TEXTURE: WebGLTexture;
     private static _BRDF_LUT_TEXTURE: WebGLTexture | undefined;
-    private static _Shaders: Map<string, Shader>;
+    private __Shaders: Map<string, Shader>;
 
     private readonly PerFrameBinding = 0;
     private readonly PerModelBinding = 1;
@@ -46,31 +46,17 @@ export class Renderer {
     public constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
         this.stats = new RendererStats();
+        this.__Shaders = new Map<string, Shader>();
 
         Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
         Renderer._EMPTY_CUBE_TEXTURE = new TextureCubeMap(gl).texture_id;
 
-        Renderer._Shaders = new Map<string, Shader>();
-
-        for (const shader_source of ShaderSources) {
-            if (shader_source.subclass !== undefined) {
-                Renderer._Shaders.set(
-                    shader_source.name,
-                    new shader_source.subclass(gl, shader_source.vert, shader_source.frag)
-                );
-            } else {
-                Renderer._Shaders.set(shader_source.name, new Shader(gl, shader_source.vert, shader_source.frag));
-            }
-        }
-
-        const shader = Renderer.GetShader(ShaderSource.PBR.name)!;
+        const shader = this.getorCreateShader(ShaderSource.PBR);
         //Requires shader that has these uniform buffers present
         this.uboPerFrameBlock = new UniformBuffer(shader, "ubo_per_frame");
         this.uboPerModelBlock = new UniformBuffer(shader, "ubo_per_model");
-        for (const shader of Renderer._Shaders.values()) {
-            this.uboPerFrameBlock.bindShader(shader, this.PerFrameBinding);
-            this.uboPerModelBlock.bindShader(shader, this.PerModelBinding);
-        }
+        this.uboPerFrameBlock.bindShader(shader, this.PerFrameBinding);
+        this.uboPerModelBlock.bindShader(shader, this.PerModelBinding);
     }
 
     public setPerFrameUniforms(view: mat4, proj: mat4): void {
@@ -99,6 +85,41 @@ export class Renderer {
         this.uboPerModelBlock.update(this.gl);
     }
 
+    public prepareMaterialShaders(materials: Material[]) {
+        for (const mat of materials) {
+            if (this.__Shaders.has(mat.shaderSource.name)) continue;
+            else this.initShader(mat.shaderSource);
+        }
+    }
+
+    public setAndActivateShader(shader: Shader) {
+        this.current_shader = shader;
+        this.current_shader.use();
+        this.stats.shader_bind_count++;
+    }
+
+    public getorCreateShader(src: ShaderSource): Shader {
+        let shader = this.__Shaders.get(src.name)!;
+        if (shader === undefined) shader = this.initShader(src);
+        return shader;
+    }
+
+    private initShader(src: ShaderSource): Shader {
+        let current_shader;
+        if (src.subclass !== undefined) {
+            current_shader = new src.subclass(this.gl, src.vert, src.frag);
+            this.__Shaders.set(src.name, current_shader);
+        } else {
+            current_shader = new Shader(this.gl, src.vert, src.frag);
+            this.__Shaders.set(src.name, current_shader);
+        }
+        if (this.uboPerFrameBlock && this.uboPerModelBlock) {
+            this.uboPerFrameBlock.bindShader(current_shader, this.PerFrameBinding);
+            this.uboPerModelBlock.bindShader(current_shader, this.PerModelBinding);
+        }
+        return current_shader;
+    }
+
     public setViewport(x: number, y: number, width: number, height: number): void {
         this.viewport = { x, y, width, height };
         this.gl.viewport(x, y, width, height);
@@ -123,8 +144,10 @@ export class Renderer {
         vertex_buffer: VertexBuffer,
         mat: Material | undefined = undefined
     ): void {
-        if (mat && mat.shader != this.current_shader) {
-            this.current_shader = mat.shader;
+        const shader = mat && this.getorCreateShader(mat?.shaderSource);
+
+        if (shader && shader != this.current_shader) {
+            this.current_shader = shader;
             this.current_shader.use();
             this.stats.shader_bind_count++;
         }
@@ -132,7 +155,8 @@ export class Renderer {
         if (mat && mat != this.current_material) {
             if (mat.cleanupGLState) mat.cleanupGLState(this.gl);
             this.current_material = mat;
-            this.current_material.activate(this.gl);
+            if (this.current_shader === undefined) throw "No shader bound with material";
+            this.current_material.activate(this.gl, this.current_shader);
             this.stats.material_bind_count++;
         }
 
@@ -183,9 +207,5 @@ export class Renderer {
 
     public static set BRDF_LUT_TEXTURE(tex: WebGLTexture | undefined) {
         this._BRDF_LUT_TEXTURE = tex;
-    }
-
-    public static GetShader(name: string): Shader | undefined {
-        return this._Shaders.get(name);
     }
 }

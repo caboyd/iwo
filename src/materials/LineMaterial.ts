@@ -1,7 +1,7 @@
-import { Material } from "./Material";
-import { Shader } from "../graphics/shader/Shader";
-import { Renderer } from "../graphics/Renderer";
 import { vec4 } from "gl-matrix";
+import { ShaderSource } from "graphics/shader/ShaderSources";
+import { Shader } from "../graphics/shader/Shader";
+import { Material } from "./Material";
 
 export class LineMaterial extends Material {
     public color: vec4;
@@ -13,8 +13,7 @@ export class LineMaterial extends Material {
         this.color = vec4.clone(color);
     }
 
-    public activate(gl: WebGL2RenderingContext): void {
-        const shader = this.shader;
+    public activate(gl: WebGL2RenderingContext, shader: Shader): void {
         shader.setUniform("color", this.color);
         this.cull_face = gl.getParameter(gl.CULL_FACE);
         gl.disable(gl.CULL_FACE);
@@ -24,11 +23,7 @@ export class LineMaterial extends Material {
         if (this.cull_face) gl.enable(gl.CULL_FACE);
     }
 
-    public get shader(): Shader {
-        return Renderer.GetShader("LineShader")!;
-    }
-
-    public static get Shader(): Shader {
-        return Renderer.GetShader("LineShader")!;
+    public get shaderSource(): ShaderSource {
+        return ShaderSource.Line;
     }
 }

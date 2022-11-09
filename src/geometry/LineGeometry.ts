@@ -2,7 +2,6 @@ import { Geometry } from "geometry/Geometry";
 import { vec3 } from "gl-matrix";
 import { DrawMode, GL } from "graphics/WebglConstants";
 import { LineAttribute } from "./attribute/LineAttribute";
-import { StandardAttribute } from "./attribute/StandardAttribute";
 import { BufferedGeometry } from "./BufferedGeometry";
 
 export interface LineOptions {
@@ -35,11 +34,11 @@ export class LineGeometry extends Geometry {
         this.draw_mode = DrawMode.LINES;
         const flat = points.flat() as number[];
         const vert_buff = new Float32Array(flat);
-        this.attributes.set(LineAttribute.Type.position, vert_buff);
+        this.attributes.set(LineAttribute.Name.position, vert_buff);
     }
 
     public getBufferedGeometry(): BufferedGeometry {
-        const v_buf = this.attributes.get(LineAttribute.Type.position)!;
+        const v_buf = this.attributes.get(LineAttribute.Name.position)!;
 
         const attrs = LineAttribute.SingleBufferApproach();
 

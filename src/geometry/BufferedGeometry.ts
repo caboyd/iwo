@@ -1,13 +1,12 @@
 import { DrawMode, GL } from "graphics/WebglConstants";
-import { Attribute } from "./attribute/Attribute";
-import { Geometry, Group } from "./Geometry";
+import { Attributes } from "./attribute/Attribute";
 import { StandardAttribute } from "./attribute/StandardAttribute";
+import { Geometry, Group } from "./Geometry";
 import TypedArray = NodeJS.TypedArray;
 
 export interface GeometryBuffer {
     buffer: TypedArray;
-    //ARRAY_BUFFER | ELEMENT_ARRAY_BUFFER
-    target: 34962 | 34963 | number;
+    target: typeof GL.ARRAY_BUFFER | typeof GL.ELEMENT_ARRAY_BUFFER | number;
 }
 
 export type BufferFormat = "per_attribute" | "concatenated" | "interleaved";
@@ -16,8 +15,12 @@ export interface BufferedGeometryOptions {
     buffer_format: BufferFormat;
 }
 
+export function getIndexBufferType(buffer: TypedArray) {
+    return buffer.BYTES_PER_ELEMENT === 2 ? GL.UNSIGNED_SHORT : GL.UNSIGNED_INT;
+}
+
 export class BufferedGeometry {
-    public attributes: Attribute[];
+    public attributes: Attributes;
     public index_buffer?: GeometryBuffer;
     public buffers: GeometryBuffer[];
     public buffer_format: BufferFormat;
@@ -36,10 +39,12 @@ export class BufferedGeometry {
         b.buffer_format = options?.buffer_format ?? b.buffer_format;
         b.buffers = [];
         b.groups = geom.groups;
-        b.index_buffer = geom.indices ? { buffer: geom.indices, target: GL.ELEMENT_ARRAY_BUFFER } : undefined;
+        b.index_buffer = geom.indices
+            ? { buffer: geom.indices, target: GL.ELEMENT_ARRAY_BUFFER }
+            : undefined;
 
-        for (const [type, array] of geom.attributes) {
-            const attr = b.attributes.find((a) => a.type === type);
+        for (const [name, array] of geom.attributes) {
+            const attr = b.attributes[name];
             if (attr) {
                 attr.enabled = true;
             }
@@ -75,8 +80,8 @@ export class BufferedGeometry {
         let byte_offset = 0;
         let offset = 0;
 
-        for (const [type, array] of geom.attributes) {
-            const attr = this.attributes.find((a) => a.type === type);
+        for (const [name, array] of geom.attributes) {
+            const attr = this.attributes[name];
             if (attr) attr.byte_offset = byte_offset;
             concat_buffer.set(array, offset);
             byte_offset += array.byteLength;
@@ -95,14 +100,14 @@ export class BufferedGeometry {
     private setupStrideOffset(geom: Geometry): void {
         let stride = 0;
         //loop and check for enabled
-        for (const attr of this.attributes) {
-            attr.byte_offset = stride;
+        for (const attr in this.attributes) {
+            this.attributes[attr].byte_offset = stride;
             //Note: this should check number of bytes in component
-            stride += attr.component_count * 4;
+            stride += this.attributes[attr].component_count * 4;
         }
 
-        for (const attr of this.attributes) {
-            attr.byte_stride = stride;
+        for (const attr in this.attributes) {
+            this.attributes[attr].byte_stride = stride;
         }
     }
 }

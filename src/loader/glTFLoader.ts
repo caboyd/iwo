@@ -1,10 +1,10 @@
 import { FileLoader } from "./FileLoader";
 //https://www.npmjs.com/package/gltf-typescript-generator
-import { Attribute, AttributeType } from "geometry/attribute/Attribute";
+import { Attribute } from "geometry/attribute/Attribute";
 import { StandardAttribute } from "geometry/attribute/StandardAttribute";
 import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { vec3 } from "gl-matrix";
-import { ComponentType } from "graphics/WebglConstants";
+import { ComponentType, GL } from "graphics/WebglConstants";
 import { ImageLoader } from "loader/ImageLoader";
 import { Accessor, glTF, MeshPrimitive } from "loader/spec/glTF";
 import { Material } from "materials/Material";
@@ -129,6 +129,7 @@ export class glTFLoader {
                                     length
                                 ),
                                 target: 34963,
+                              
                             };
                             //  x.index_buffer =
                             //        {
@@ -140,66 +141,58 @@ export class glTFLoader {
                         }
 
                         let buf_index = 0;
-                        let cur_attr = StandardAttribute.Vertex;
                         x.attributes = StandardAttribute.SingleBufferApproach();
                         let attrib_index: number | undefined;
-                        let a = x.attributes[cur_attr.index];
+                        let a = x.attributes[StandardAttribute.Vertex.name];
                         if ((attrib_index = prim.attributes["POSITION"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,
-                                cur_attr.type,
+                                a,
                                 o.accessors![attrib_index]!,
                                 x,
                                 array_buffers,
-                                a,
                                 buf_index++
                             );
                         } else {
                             a.enabled = false;
                         }
 
-                        cur_attr = StandardAttribute.Tex_Coord;
-                        a = x.attributes[cur_attr.index];
+                        a = x.attributes[StandardAttribute.Tex_Coord.name];
                         if ((attrib_index = prim.attributes["TEXCOORD_0"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,
-                                cur_attr.type,
+                                a,
                                 o.accessors![attrib_index]!,
                                 x,
                                 array_buffers,
-                                a,
                                 buf_index++
                             );
                         } else {
                             a.enabled = false;
                         }
 
-                        cur_attr = StandardAttribute.Normal;
-                        a = x.attributes[cur_attr.index];
+                        a = x.attributes[StandardAttribute.Normal.name];
                         if ((attrib_index = prim.attributes["NORMAL"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,
-                                cur_attr.type,
+                                a,
                                 o.accessors![attrib_index]!,
                                 x,
                                 array_buffers,
-                                a,
                                 buf_index++
                             );
                         } else {
                             a.enabled = false;
                         }
 
-                        cur_attr = StandardAttribute.Tangent;
-                        a = x.attributes[cur_attr.index];
+                        a = x.attributes[StandardAttribute.Tangent.name];
                         if ((attrib_index = prim.attributes["TANGENT"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,
-                                cur_attr.type,
+                                a,
                                 o.accessors![attrib_index]!,
                                 x,
                                 array_buffers,
-                                a,
                                 buf_index++
                             );
                         } else {
@@ -237,11 +230,10 @@ export class glTFLoader {
     //TODO: CLEANUP
     private static buildAttributeAndTypedBuffer(
         o: glTF,
-        type: AttributeType,
+        attr: Attribute,
         accessor: Accessor,
         x: BufferedGeometry,
         array_buffers: ArrayBuffer[],
-        a: Attribute,
         my_buffer_index: number
     ): void {
         const buffer_view = o.bufferViews![accessor.bufferView!];
@@ -252,12 +244,12 @@ export class glTFLoader {
         x.buffers.push({
             buffer: ArrayBufferToTypedArray(componentType, array_buffers[buffer_index], offset, length),
             target: 34962,
+       
         });
 
-        a.type = type;
-        a.enabled = true;
-        a.buffer_index = my_buffer_index;
-        a.component_type = accessor.componentType as ComponentType;
+        attr.enabled = true;
+        attr.buffer_index = my_buffer_index;
+        attr.component_type = componentType;
     }
 
     // private static fromString(s: string, float32Array = Float32Array): MeshInstance {
@@ -283,18 +275,18 @@ function ArrayBufferToTypedArray(
     length?: number
 ): TypedArray {
     switch (component_type) {
-        case 5120:
-        case 5121:
+        case GL.UNSIGNED_BYTE:
+        case GL.BYTE:
             return new Uint8Array(view, offset, length);
-        case 5122:
+        case GL.SHORT:
             return new Int16Array(view, offset, length);
-        case 5123:
+        case GL.UNSIGNED_SHORT:
             return new Uint16Array(view, offset, length);
-        case 5124:
+        case GL.INT:
             return new Int32Array(view, offset, length);
-        case 5125:
+        case GL.UNSIGNED_INT:
             return new Uint32Array(view, offset, length);
-        case 5126:
+        case GL.FLOAT:
             return new Float32Array(view, offset, length);
         default:
             throw new Error(`Bad ComponentType ${component_type}`);

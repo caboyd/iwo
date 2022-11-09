@@ -1,9 +1,9 @@
+import { StandardAttribute } from "geometry/attribute/StandardAttribute";
 import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { Geometry, Group } from "geometry/Geometry";
 import { Material } from "materials/Material";
 import { FileLoader } from "./FileLoader";
 import { MtlData, MtlLoader, MtlOptions } from "./MtlLoader";
-import { StandardAttribute } from "geometry/attribute/StandardAttribute";
 
 export interface ObjData {
     objects: { name: string; buffered_geometry: BufferedGeometry }[];
@@ -249,9 +249,9 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
             geom.groups.push(geom_group);
         }
         //build geom
-        geom.attributes.set(StandardAttribute.Vertex.type, new Float32Array(v_arr));
-        if (vt_check) geom.attributes.set(StandardAttribute.Tex_Coord.type, new Float32Array(vt_arr));
-        if (vn_check) geom.attributes.set(StandardAttribute.Normal.type, new Float32Array(vn_arr));
+        geom.attributes.set(StandardAttribute.Vertex.name, new Float32Array(v_arr));
+        if (vt_check) geom.attributes.set(StandardAttribute.Tex_Coord.name, new Float32Array(vt_arr));
+        if (vn_check) geom.attributes.set(StandardAttribute.Normal.name, new Float32Array(vn_arr));
         result.objects.push({
             name: raw_obj_data.name,
             buffered_geometry: BufferedGeometry.fromGeometry(geom),

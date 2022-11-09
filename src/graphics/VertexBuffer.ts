@@ -1,10 +1,11 @@
-import { WebGL } from "./WebglHelper";
-import { ReferenceCounter } from "helpers/ReferenceCounter";
+import { Attributes, typeToComponentCount } from "geometry/attribute/Attribute";
 import { BufferedGeometry } from "geometry/BufferedGeometry";
-import { Attribute } from "geometry/attribute/Attribute";
+import { ReferenceCounter } from "helpers/ReferenceCounter";
+import { Shader } from "./shader/Shader";
+import { WebGL } from "./WebglHelper";
 
 export class VertexBuffer {
-    public attributes: Attribute[];
+    public attributes: Attributes;
     public buffers: WebGLBuffer[];
     public VAO!: WebGLVertexArrayObject;
     public readonly references: ReferenceCounter;
@@ -23,42 +24,40 @@ export class VertexBuffer {
 
         //Turn the geometry buffer into WebGLBuffers
         for (const buffer of geometry.buffers) {
-            //NOTE: commented out because I think its dead code
-            //Need to add buffer for index_buffer to not mess up indexing
-            // if (buffer.target === gl.ELEMENT_ARRAY_BUFFER && geometry.index_buffer !== undefined) {
-            //     this.buffers.push(gl.createBuffer()!);
-            //     continue;
-            // }
             const b = WebGL.buildBuffer(gl, buffer.target, buffer.buffer);
             this.buffers.push(b);
         }
-
-        this.setupVAOBuffers(gl);
         gl.bindVertexArray(null);
     }
 
-    public setupVAOBuffers(gl: WebGL2RenderingContext): void {
+    public setupVAO(gl: WebGL2RenderingContext, program: Shader): void {
+        gl.bindVertexArray(this.VAO);
+
         let bound_buffer = undefined;
         let i = 0;
-        for (const attrib of this.attributes) {
-            if (!attrib.enabled) continue;
-            //Bind correct buffer
+
+        const num_attribs = gl.getProgramParameter(program.ID, gl.ACTIVE_ATTRIBUTES);
+        for (let i = 0; i < num_attribs; ++i) {
+            const info = gl.getActiveAttrib(program.ID, i)!;
+            const attrib = this.attributes[info.name];
+            if (!attrib || !attrib.enabled) continue;
+            const index = gl.getAttribLocation(program.ID, info.name);
             if (this.buffers[attrib.buffer_index] !== bound_buffer) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers[attrib.buffer_index]);
                 bound_buffer = this.buffers[attrib.buffer_index];
             }
 
-            gl.enableVertexAttribArray(i);
+            gl.enableVertexAttribArray(index);
             gl.vertexAttribPointer(
-                i,
-                attrib.component_count,
+                index,
+                typeToComponentCount(info.type),
                 attrib.component_type,
-                attrib.normalized ?? false,
-                attrib.byte_stride ?? 0,
-                attrib.byte_offset ?? 0
+                attrib.normalized,
+                attrib.byte_stride,
+                attrib.byte_offset
             );
-            i++;
         }
+        gl.bindVertexArray(null);
     }
 
     public updateBufferData(gl: WebGL2RenderingContext, geometry: BufferedGeometry): void {

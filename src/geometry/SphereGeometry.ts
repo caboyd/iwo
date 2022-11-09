@@ -85,9 +85,9 @@ export class SphereGeometry extends Geometry {
         }
 
         const vert_buff = new Float32Array(verts);
-        this.attributes.set(StandardAttribute.Type.Vertex, vert_buff);
-        this.attributes.set(StandardAttribute.Type.Normal, vert_buff);
-        this.attributes.set(StandardAttribute.Type.Tex_Coord, new Float32Array(tex_coords));
+        this.attributes.set(StandardAttribute.Name.Vertex, vert_buff);
+        this.attributes.set(StandardAttribute.Name.Normal, vert_buff);
+        this.attributes.set(StandardAttribute.Name.Tex_Coord, new Float32Array(tex_coords));
         if (verts.length >= 65536) this.indices = new Uint32Array(indices);
         else this.indices = new Uint16Array(indices);
 
@@ -96,15 +96,15 @@ export class SphereGeometry extends Geometry {
 
     public getBufferedGeometry(): BufferedGeometry {
         const attrib = StandardAttribute.SingleBufferApproach();
-        const verts = this.attributes.get(StandardAttribute.Type.Vertex)!;
-        const tex_coords = this.attributes.get(StandardAttribute.Type.Tex_Coord)!;
+        const verts = this.attributes.get(StandardAttribute.Name.Vertex)!;
+        const tex_coords = this.attributes.get(StandardAttribute.Name.Tex_Coord)!;
         const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
 
         const v_buf = new Float32Array(verts.length + tex_coords.length);
         v_buf.set(verts);
         v_buf.set(tex_coords, verts.length);
 
-        attrib[1].byte_offset = verts.length * 4;
+        attrib[StandardAttribute.Tex_Coord.name].byte_offset = verts.length * 4;
 
         return {
             attributes: attrib,

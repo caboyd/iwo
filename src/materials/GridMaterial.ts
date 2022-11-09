@@ -1,6 +1,6 @@
-import { Material } from "./Material";
 import { Shader } from "graphics/shader/Shader";
-import { Renderer } from "graphics/Renderer";
+import { ShaderSource } from "graphics/shader/ShaderSources";
+import { Material } from "./Material";
 
 export class GridMaterial extends Material {
     public distance: number;
@@ -16,8 +16,7 @@ export class GridMaterial extends Material {
         this.highlight_frequency = highlight_frequency;
     }
 
-    public activate(gl: WebGL2RenderingContext): void {
-        const shader = this.shader;
+    public activate(gl: WebGL2RenderingContext, shader: Shader): void {
         shader.setUniform("distance", this.distance);
         shader.setUniform("frequency", this.frequency);
         shader.setUniform("highlight_frequency", this.highlight_frequency);
@@ -31,10 +30,7 @@ export class GridMaterial extends Material {
         gl.disable(gl.BLEND);
     }
 
-    public get shader(): Shader {
-        return Renderer.GetShader("GridShader")!;
-    }
-    public static get Shader(): Shader {
-        return Renderer.GetShader("GridShader")!;
+    public get shaderSource(): ShaderSource {
+        return ShaderSource.Grid;
     }
 }

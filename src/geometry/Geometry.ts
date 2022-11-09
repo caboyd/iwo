@@ -1,8 +1,7 @@
 import { DrawMode } from "graphics/WebglConstants";
 import { TypedArray } from "types/types";
-import { AttributeType, Attribute } from "./attribute/Attribute";
+import { AttributeName } from "./attribute/Attribute";
 import { BufferedGeometry } from "./BufferedGeometry";
-
 
 export interface Group {
     offset: number;
@@ -12,13 +11,13 @@ export interface Group {
 
 export class Geometry {
     public indices: Uint16Array | Uint32Array | undefined;
-    public attributes: Map<AttributeType, TypedArray>;
+    public attributes: Map<AttributeName, TypedArray>;
     public groups?: Group[];
     public interleaved_attributes: Float32Array | undefined;
     public draw_mode: DrawMode = DrawMode.TRIANGLES;
 
     public constructor() {
-        this.attributes = new Map<AttributeType, TypedArray>();
+        this.attributes = new Map<AttributeName, TypedArray>();
         this.groups = [];
     }
 

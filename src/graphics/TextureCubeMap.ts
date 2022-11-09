@@ -1,16 +1,16 @@
-import { Renderer } from "./Renderer";
-import { mat4 } from "gl-matrix";
-import { DefaultTextureOptions, Texture2D, TextureOptions } from "./Texture2D";
-import { HDRBuffer, instanceOfHDRBuffer } from "loader/HDRImageLoader";
-import { BoxGeometry } from "geometry/BoxGeometry";
-import { Mesh } from "meshes/Mesh";
-import { ShaderSource } from "./shader/ShaderSources";
 import { CubeCamera } from "cameras/CubeCamera";
-import { TextureHelper } from "./TextureHelper";
-import { Geometry } from "geometry/Geometry";
-import { TypedArray } from "types/types";
-import { AttributeType } from "geometry/attribute/Attribute";
+import { AttributeName } from "geometry/attribute/Attribute";
 import { StandardAttribute } from "geometry/attribute/StandardAttribute";
+import { BoxGeometry } from "geometry/BoxGeometry";
+import { Geometry } from "geometry/Geometry";
+import { mat4 } from "gl-matrix";
+import { HDRBuffer, instanceOfHDRBuffer } from "loader/HDRImageLoader";
+import { Mesh } from "meshes/Mesh";
+import { TypedArray } from "types/types";
+import { Renderer } from "./Renderer";
+import { ShaderSource } from "./shader/ShaderSources";
+import { DefaultTextureOptions, Texture2D, TextureOptions } from "./Texture2D";
+import { TextureHelper } from "./TextureHelper";
 
 export interface TextureCubeMapOptions extends TextureOptions {
     wrap_R: number;
@@ -143,8 +143,9 @@ export class TextureCubeMap {
         const cam = new CubeCamera();
 
         // convert Environment cubemap to irradiance cubemap
-        const shader = Renderer.GetShader(ShaderSource.CubemapSpecularPrefilter.name)!;
-        shader.use();
+        const shader = renderer.getorCreateShader(ShaderSource.CubemapSpecularPrefilter);
+        renderer.setAndActivateShader(shader);
+        box_mesh.setupVAO(gl, shader);
         env_cubemap.bind(gl, 0);
 
         gl.bindFramebuffer(gl.FRAMEBUFFER, captureFBO);
@@ -235,8 +236,9 @@ export class TextureCubeMap {
         const cam = new CubeCamera();
 
         // convert Environment cubemap to irradiance cubemap
-        const shader = Renderer.GetShader(ShaderSource.CubemapToIrradiance.name)!;
-        shader.use();
+        const shader = renderer.getorCreateShader(ShaderSource.CubemapToIrradiance);
+        renderer.setAndActivateShader(shader);
+        box_mesh.setupVAO(gl, shader);
         env_cubemap.bind(gl, 0);
 
         gl.viewport(0, 0, res, res);
@@ -344,8 +346,9 @@ export class TextureCubeMap {
         const cam = new CubeCamera();
 
         // convert HDR equirectangular environment map to cubemap equivalent
-        const shader = Renderer.GetShader("EquiToCubemapShader")!;
-        shader.use();
+        const shader = renderer.getorCreateShader(ShaderSource.EquiToCubemap);
+        renderer.setAndActivateShader(shader);
+        box_mesh.setupVAO(gl, shader);
         texture.bind(gl, 0);
 
         gl.activeTexture(gl.TEXTURE1);
@@ -395,12 +398,12 @@ export class TextureCubeMap {
         if (Renderer.BRDF_LUT_TEXTURE === undefined) {
             //Generate brdf LUT if it doesnt exist as its required for IBL
             const quad_geom = new Geometry();
-            quad_geom.attributes = new Map<AttributeType, TypedArray>()
+            quad_geom.attributes = new Map<AttributeName, TypedArray>()
                 .set(
-                    StandardAttribute.Vertex.type,
+                    StandardAttribute.Vertex.name,
                     new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0])
                 )
-                .set(StandardAttribute.Tex_Coord.type, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
+                .set(StandardAttribute.Tex_Coord.name, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
             quad_geom.groups = [];
 
             const quad_mesh = new Mesh(gl, quad_geom);
@@ -427,8 +430,9 @@ export class TextureCubeMap {
             gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, 512, 512);
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, lut_tex.texture_id, 0);
             gl.viewport(0, 0, 512, 512);
-            const shader = Renderer.GetShader(ShaderSource.BRDF.name)!;
-            shader.use();
+            const shader = renderer.getorCreateShader(ShaderSource.BRDF);
+            renderer.setAndActivateShader(shader);
+            quad_mesh.setupVAO(gl, shader);
             gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
             renderer.draw(quad_mesh.draw_mode, quad_mesh.count, 0, quad_mesh.index_buffer, quad_mesh.vertex_buffer);
             Renderer.BRDF_LUT_TEXTURE = lut_tex.texture_id;

@@ -1,6 +1,7 @@
 import { vec3 } from "gl-matrix";
 import { Renderer } from "graphics/Renderer";
 import { Shader } from "graphics/shader/Shader";
+import { ShaderSource } from "graphics/shader/ShaderSources";
 import { Texture2D } from "graphics/Texture2D";
 import { TextureCubeMap } from "graphics/TextureCubeMap";
 import { Material, MaterialOptions } from "./Material";
@@ -24,7 +25,7 @@ export class PBRMaterial extends Material {
     public irradiance_texture: TextureCubeMap | undefined;
     public specular_env: TextureCubeMap | undefined;
 
-    private material_options?: MaterialOptions
+    private material_options?: MaterialOptions;
 
     public constructor(
         color: vec3,
@@ -44,13 +45,12 @@ export class PBRMaterial extends Material {
         this.material_options = material_options;
     }
 
-    public activate(gl: WebGL2RenderingContext): void {
-        const shader = this.shader;
+    public activate(gl: WebGL2RenderingContext, shader: Shader): void {
         const active_textures = [false, false, false, false, false, false];
         if (this.albedo_texture === undefined && this.albedo_image && this.albedo_image.complete) {
             this.albedo_texture = new Texture2D(gl, this.albedo_image, {
                 flip: this.material_options?.flip_image_y || false,
-                internal_format: this.material_options?.disable_srgb ?  gl.RGBA : gl.SRGB8_ALPHA8,
+                internal_format: this.material_options?.disable_srgb ? gl.RGBA : gl.SRGB8_ALPHA8,
                 format: gl.RGBA,
             });
         }
@@ -102,7 +102,7 @@ export class PBRMaterial extends Material {
         if (this.emissive_texture === undefined && this.emissive_image?.complete) {
             this.emissive_texture = new Texture2D(gl, this.emissive_image, {
                 flip: this.material_options?.flip_image_y || false,
-                internal_format: this.material_options?.disable_srgb ?  gl.RGBA : gl.SRGB8_ALPHA8,
+                internal_format: this.material_options?.disable_srgb ? gl.RGBA : gl.SRGB8_ALPHA8,
                 format: gl.RGBA,
             });
         }
@@ -124,18 +124,7 @@ export class PBRMaterial extends Material {
         shader.setUniform("u_material.emissive_factor", this.emissive_factor);
     }
 
-    public get shader(): Shader {
-        return Renderer.GetShader("PBRShader")!;
-    }
-
-    public static get Shader(): Shader {
-        return Renderer.GetShader("PBRShader")!;
-    }
-
-    private static generateBRDFLUT(gl: WebGL2RenderingContext): Texture2D {
-        const tex = {} as Texture2D;
-        tex.texture_id = gl.createTexture()!;
-
-        return tex;
+    public get shaderSource(): ShaderSource {
+        return ShaderSource.PBR;
     }
 }
