@@ -1,4 +1,5 @@
 
+
 export { WebGL } from "./graphics/WebglHelper";
 export { ReferenceCounter } from "./helpers/ReferenceCounter";
 
@@ -23,6 +24,8 @@ export { Texture2D } from "./graphics/Texture2D";
 export { TextureCubeMap } from "./graphics/TextureCubeMap";
 export { TextureHelper } from "./graphics/TextureHelper";
 export { Uniform } from "./graphics/Uniform";
+
+export {ShaderSource} from "graphics/shader/ShaderSources";
 
 export { Material } from "./materials/Material";
 export { BasicMaterial } from "./materials/BasicMaterial";
