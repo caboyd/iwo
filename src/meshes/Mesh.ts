@@ -13,6 +13,7 @@ export class Mesh {
     public draw_mode: DrawMode;
     public sub_meshes: SubMesh[];
     public count: number;
+    public instances?: number;
 
     #inititalized = false;
     public get initialized(): boolean {
@@ -33,17 +34,15 @@ export class Mesh {
 
         this.sub_meshes = [];
         this.draw_mode = buf_geom.draw_mode ?? DrawMode.TRIANGLES;
-        this.count = 0;
+
+        if (this.index_buffer) this.count = buf_geom.index_buffer!.buffer.length;
+        else
+            this.count =
+                buf_geom.buffers[buf_geom.attributes[Object.keys(buf_geom.attributes)[0]].buffer_index].buffer.length /
+                3;
+        this.instances = buf_geom.instances;
 
         if (buf_geom.groups === undefined || buf_geom.groups.length == 0) {
-            //If a geometry has no groups we can assume:
-            //  count is indices count or vertices count /3
-            //  material is 0
-            //  offset is 0
-            this.count =
-                buf_geom.index_buffer !== undefined
-                    ? buf_geom.index_buffer.buffer.length
-                    : buf_geom.buffers[0].buffer.length / 3;
             this.sub_meshes.push(new SubMesh(0, 0, this.count, this.vertex_buffer, this.index_buffer));
         } else {
             for (const group of buf_geom.groups) {
@@ -55,7 +54,7 @@ export class Mesh {
         }
     }
 
-    public setupVAO(gl:WebGL2RenderingContext, program: Shader){
+    public setupVAO(gl: WebGL2RenderingContext, program: Shader) {
         this.#inititalized = true;
         this.vertex_buffer.setupVAO(gl, program);
     }

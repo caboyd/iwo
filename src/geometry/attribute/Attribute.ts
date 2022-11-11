@@ -21,6 +21,7 @@ export function createAttribute(name: AttributeName, attr?: Partial<Attribute>):
             normalized: false,
             byte_offset: 0,
             byte_stride: 0,
+            divisor: undefined
         },
         ...attr,
     };
@@ -35,6 +36,7 @@ export interface Attribute {
     component_type: ComponentType;
     component_count: 1 | 2 | 3 | 4 | 9 | 16;
     normalized: boolean;
+    divisor?: number
     buffer?: TypedArray;
 }
 

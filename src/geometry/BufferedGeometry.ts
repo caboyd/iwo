@@ -25,6 +25,7 @@ export class BufferedGeometry {
     public buffers: GeometryBuffer[];
     public buffer_format: BufferFormat;
     public groups?: Group[];
+    public instances?: number;
     public draw_mode: DrawMode = DrawMode.TRIANGLES;
 
     public constructor() {
@@ -39,9 +40,7 @@ export class BufferedGeometry {
         b.buffer_format = options?.buffer_format ?? b.buffer_format;
         b.buffers = [];
         b.groups = geom.groups;
-        b.index_buffer = geom.indices
-            ? { buffer: geom.indices, target: GL.ELEMENT_ARRAY_BUFFER }
-            : undefined;
+        b.index_buffer = geom.indices ? { buffer: geom.indices, target: GL.ELEMENT_ARRAY_BUFFER } : undefined;
 
         for (const [name, array] of geom.attributes) {
             const attr = b.attributes[name];

@@ -7,21 +7,43 @@ enum Order {
     z = 2,
 }
 
-export class BoxGeometry extends Geometry {
-    public constructor(
-        width: number = 1,
-        height: number = 1,
-        depth: number = 1,
-        width_segments: number = 1,
-        height_segments: number = 1,
-        depth_segments: number = 1,
-        stretch_texture: boolean = true
-    ) {
-        super();
+export type BoxGeometryOptions = {
+    width: number;
+    height: number;
+    depth: number;
+    width_segments: number;
+    height_segments: number;
+    depth_segments: number;
+    stretch_texture: boolean;
+    unique_materials_per_face: boolean;
+};
 
-        const width_segs = Math.floor(width_segments) || 1;
-        const height_segs = Math.floor(height_segments) || 1;
-        const depth_segs = Math.floor(depth_segments) || 1;
+const DefaultBoxGeometryOptions = {
+    width: 1,
+    height: 1,
+    depth: 1,
+    width_segments: 1,
+    height_segments: 1,
+    depth_segments: 1,
+    stretch_texture: true,
+    unique_materials_per_face: false,
+};
+
+export class BoxGeometry extends Geometry {
+    opt: BoxGeometryOptions;
+
+    public constructor(options?: Partial<BoxGeometryOptions>) {
+        super();
+        this.opt = { ...DefaultBoxGeometryOptions, ...options };
+        const height = this.opt.height;
+        const width = this.opt.width;
+        const depth = this.opt.depth;
+        const stretch_texture = this.opt.stretch_texture;
+        const unique_materials_per_face = this.opt.unique_materials_per_face;
+
+        const width_segs = Math.floor(this.opt.width_segments) || 1;
+        const height_segs = Math.floor(this.opt.height_segments) || 1;
+        const depth_segs = Math.floor(this.opt.depth_segments) || 1;
 
         let front_back = width > 0 && height > 0 ? 2 * (width_segs + 1) * (height_segs + 1) : 0;
         let left_right = depth > 0 && height > 0 ? 2 * (height_segs + 1) * (depth_segs + 1) : 0;
@@ -217,11 +239,12 @@ export class BoxGeometry extends Geometry {
                 }
             }
             //Each side is a seperate group so they can be rendered with different materials
-            groups.push({
-                count: index_count,
-                offset: (i_ptr - index_count) * index_size,
-                material_index: mat_index,
-            } as Group);
+            if (unique_materials_per_face)
+                groups.push({
+                    count: index_count,
+                    offset: (i_ptr - index_count) * index_size,
+                    material_index: mat_index,
+                } as Group);
         }
     }
 }

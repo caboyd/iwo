@@ -144,6 +144,40 @@ export class Renderer {
         vertex_buffer: VertexBuffer,
         mat: Material | undefined = undefined
     ): void {
+        this.prepareDraw(mat, vertex_buffer, index_buffer);
+
+        if (index_buffer && index_buffer.indices.BYTES_PER_ELEMENT === 2)
+            this.gl.drawElements(draw_mode, count, this.gl.UNSIGNED_SHORT, offset);
+        else if (index_buffer && index_buffer.indices.BYTES_PER_ELEMENT === 4)
+            this.gl.drawElements(draw_mode, count, this.gl.UNSIGNED_INT, offset);
+        else this.gl.drawArrays(draw_mode, offset, count);
+
+        this.stats.vertex_draw_count += count;
+        this.stats.draw_calls++;
+    }
+
+    public drawInstanced(
+        draw_mode: number,
+        count: number,
+        offset: number,
+        instance_count: number,
+        index_buffer: IndexBuffer | undefined,
+        vertex_buffer: VertexBuffer,
+        mat: Material | undefined = undefined
+    ): void {
+        this.prepareDraw(mat, vertex_buffer, index_buffer);
+
+        if (index_buffer && index_buffer.indices.BYTES_PER_ELEMENT === 2)
+            this.gl.drawElementsInstanced(draw_mode, count, this.gl.UNSIGNED_SHORT, offset, instance_count);
+        else if (index_buffer && index_buffer.indices.BYTES_PER_ELEMENT === 4)
+            this.gl.drawElementsInstanced(draw_mode, count, this.gl.UNSIGNED_INT, offset, instance_count);
+        else this.gl.drawArraysInstanced(draw_mode, offset, count, instance_count);
+
+        this.stats.vertex_draw_count += count;
+        this.stats.draw_calls++;
+    }
+
+    private prepareDraw(mat: Material | undefined, vertex_buffer: VertexBuffer, index_buffer: IndexBuffer | undefined) {
         const shader = mat && this.getorCreateShader(mat?.shaderSource);
 
         if (shader && shader != this.current_shader) {
@@ -171,19 +205,6 @@ export class Renderer {
             this.current_index_buffer.bind(this.gl);
             this.stats.index_buffer_bind_count++;
         }
-
-        if (index_buffer) {
-            if (index_buffer.indices.BYTES_PER_ELEMENT === 2)
-                this.gl.drawElements(draw_mode, count, this.gl.UNSIGNED_SHORT, offset);
-            else if (index_buffer.indices.BYTES_PER_ELEMENT === 4)
-                this.gl.drawElements(draw_mode, count, this.gl.UNSIGNED_INT, offset);
-            else throw new Error("Unknown index buffer type");
-            this.stats.index_draw_count += count;
-        } else {
-            this.gl.drawArrays(draw_mode, offset, count);
-            this.stats.vertex_draw_count += count;
-        }
-        this.stats.draw_calls++;
     }
 
     public resetStats(): void {

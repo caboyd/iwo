@@ -1,5 +1,4 @@
 
-
 export { WebGL } from "./graphics/WebglHelper";
 export { ReferenceCounter } from "./helpers/ReferenceCounter";
 
@@ -13,7 +12,7 @@ export { BufferedGeometry } from "./geometry/BufferedGeometry";
 export { BoxGeometry } from "./geometry/BoxGeometry";
 export { PlaneGeometry } from "./geometry/PlaneGeometry";
 export { SphereGeometry } from "./geometry/SphereGeometry";
-export { LineGeometry} from "./geometry/LineGeometry"
+export { LineGeometry } from "./geometry/LineGeometry";
 
 export { AttributeBuffer } from "./graphics/AttributeBuffer";
 export { IndexBuffer } from "./graphics/IndexBuffer";
@@ -25,14 +24,14 @@ export { TextureCubeMap } from "./graphics/TextureCubeMap";
 export { TextureHelper } from "./graphics/TextureHelper";
 export { Uniform } from "./graphics/Uniform";
 
-export {ShaderSource} from "graphics/shader/ShaderSources";
+export { ShaderSource } from "graphics/shader/ShaderSources";
 
 export { Material } from "./materials/Material";
 export { BasicMaterial } from "./materials/BasicMaterial";
 export { GridMaterial } from "./materials/GridMaterial";
 export { NormalOnlyMaterial } from "./materials/NormalOnlyMaterial";
 export { PBRMaterial } from "./materials/PBRMaterial";
-export { LineMaterial} from "./materials/LineMaterial"
+export { LineMaterial } from "./materials/LineMaterial";
 
 export { SubMesh } from "./meshes/SubMesh";
 export { Mesh } from "./meshes/Mesh";

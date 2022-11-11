@@ -125,7 +125,7 @@ export class TextureCubeMap {
 
         const specular_cubemap = dest_cubemap || ({ texture_id: gl.createTexture() } as TextureCubeMap);
 
-        const box_geom = new BoxGeometry(2.0, 2.0, 2.0, 1, 1, 1, false);
+        const box_geom = new BoxGeometry({ width: 2.0, height: 2.0, depth: 2.0, stretch_texture: false });
         const box_mesh = new Mesh(gl, box_geom);
 
         gl.bindTexture(gl.TEXTURE_CUBE_MAP, specular_cubemap.texture_id);
@@ -216,7 +216,7 @@ export class TextureCubeMap {
             },
         };
 
-        const box_geom = new BoxGeometry(2.0, 2.0, 2.0, 1, 1, 1, false);
+        const box_geom = new BoxGeometry({ width: 2.0, height: 2.0, depth: 2.0, stretch_texture: false });
         const box_mesh = new Mesh(gl, box_geom);
 
         const irr_cubemap = dest_cubemap || ({ texture_id: gl.createTexture()! } as TextureCubeMap);
@@ -305,7 +305,7 @@ export class TextureCubeMap {
             },
         };
 
-        const box_geom = new BoxGeometry(2.0, 2.0, 2.0, 1, 1, 1, false);
+        const box_geom = new BoxGeometry({ width: 2.0, height: 2.0, depth: 2.0, stretch_texture: false });
         const box_mesh = new Mesh(gl, box_geom);
 
         let texture: Texture2D;

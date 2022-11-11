@@ -56,6 +56,10 @@ export class VertexBuffer {
                 attrib.byte_stride,
                 attrib.byte_offset
             );
+
+            if (attrib.divisor) {
+                gl.vertexAttribDivisor(index, attrib.divisor);
+            }
         }
         gl.bindVertexArray(null);
     }
@@ -65,7 +69,7 @@ export class VertexBuffer {
 
         for (const [index, buffer] of geometry.buffers.entries()) {
             gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers[index]);
-            gl.bufferData(buffer.target, buffer.buffer, gl.STATIC_DRAW);
+            gl.bufferSubData(buffer.target, 0, buffer.buffer);
         }
         // this.setupVAOBuffers(gl);
         gl.bindVertexArray(null);

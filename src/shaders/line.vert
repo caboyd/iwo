@@ -23,11 +23,30 @@ layout (std140) uniform ubo_per_model{
 };
 
 uniform float width;
-
-out vec3 color;
+uniform vec2 resolution;
+out vec3 o_color;
 
 void main() {
-    vec2 x_basis = vec2(point_a) - vec2(point_a);
-    vec2 y_basis = normalize(vec2(-x_basis.y, x_basis.x));
-    gl_Position = projection * vec4(position, 1);
+
+    vec4 clip0 = mvp * vec4(point_a, 1.0);
+    vec4 clip1 = mvp * vec4(point_b, 1.0);
+
+    //loat w = (model_view * vec4(width,0,0,1)).x;
+
+    vec2 screen0 = resolution * (0.5 * clip0.xy/clip0.w + 0.5);
+    vec2 screen1 = resolution * (0.5 * clip1.xy/clip1.w + 0.5);
+
+    vec2 x_basis = normalize(screen1 - screen0);
+    vec2 y_basis = vec2(-x_basis.y, x_basis.x);
+
+    vec2 pt0 = screen0 + width * (position.x * x_basis + position.y * y_basis);
+    vec2 pt1 = screen1 + width * (position.x * x_basis + position.y * y_basis);
+    vec2 pt = mix(pt0, pt1, position.z);
+
+    vec4 clip = mix(clip0, clip1, position.z);
+
+    gl_Position = vec4(clip.w * ((2.0 * pt) / resolution - 1.0), clip.z, clip.w);
+
+   // o_color = mix(color_a, color_b, position.z);
+
 }

@@ -90,8 +90,6 @@ export class SphereGeometry extends Geometry {
         this.attributes.set(StandardAttribute.Name.Tex_Coord, new Float32Array(tex_coords));
         if (verts.length >= 65536) this.indices = new Uint32Array(indices);
         else this.indices = new Uint16Array(indices);
-
-        //this.groups?.push({ count: indices.length, offset: 0, material_index: 0 } as Group);
     }
 
     public getBufferedGeometry(): BufferedGeometry {
@@ -110,7 +108,6 @@ export class SphereGeometry extends Geometry {
             attributes: attrib,
             index_buffer: index_buffer,
             buffers: [{ buffer: v_buf, target: GL.ARRAY_BUFFER }],
-            groups: this.groups,
         } as BufferedGeometry;
     }
 }
