@@ -53,6 +53,8 @@ export class OrbitControl {
     public reset_orbit_point: vec3;
     public readonly opt: OrbitControlOptions;
 
+    private is_mouse_down: boolean = false;
+
     public readonly active_keys: ActiveKeys = Object.fromEntries(
         Object.entries(DefaultOrbitControlBinds).map(([k, v]) => [v, false])
     );
@@ -67,8 +69,18 @@ export class OrbitControl {
         document.addEventListener("keydown", this.keydownEventCallback);
         document.addEventListener("keyup", this.keyupEventCallback);
         document.addEventListener("mousemove", this.mousemoveCallback, false);
+        document.addEventListener("mousedown", this.mouseDownCallback, false);
+        document.addEventListener("mouseup", this.mouseUpCallback, false);
         document.addEventListener("wheel", this.mousewheelCallback);
     }
+
+    private mouseDownCallback = (e: MouseEvent) => {
+        if (e.button === 0) this.is_mouse_down = true;
+    };
+
+    private mouseUpCallback = (e: MouseEvent) => {
+        if (e.button === 0) this.is_mouse_down = false;
+    };
 
     private keydownEventCallback = (e: KeyboardEvent) => {
         this.active_keys[e.code] = true;
@@ -85,7 +97,7 @@ export class OrbitControl {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         const movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
-        if (e.which == 1) {
+        if (this.is_mouse_down) {
             this.mouse_y_total += movementY;
             this.mouse_x_total += movementX;
         }
@@ -107,6 +119,8 @@ export class OrbitControl {
         document.removeEventListener("keyup", this.keyupEventCallback);
         document.removeEventListener("mousemove", this.mousemoveCallback);
         document.removeEventListener("wheel", this.mousewheelCallback);
+        document.removeEventListener("mousedown", this.mouseDownCallback);
+        document.removeEventListener("mouseup", this.mouseUpCallback);
     }
 
     public processKeyboard(delta_ms: number): void {

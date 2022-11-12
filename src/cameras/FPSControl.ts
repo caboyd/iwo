@@ -44,6 +44,7 @@ export class FPSControl {
 
     private mouse_x_total: number = 0;
     private mouse_y_total: number = 0;
+    private is_mouse_down: boolean = false;
 
     public readonly opt: FPSControlOptions;
     public readonly active_keys: ActiveKeys = Object.fromEntries(
@@ -54,9 +55,11 @@ export class FPSControl {
         this.camera = camera;
         this.opt = { ...DefaultFPSControlOptions, ...options };
 
-        window.addEventListener("keydown", this.keydownEventCallback);
-        window.addEventListener("keyup", this.keyupEventCallback);
-        window.addEventListener("mousemove", this.mousemoveCallback, false);
+        document.addEventListener("keydown", this.keydownEventCallback);
+        document.addEventListener("keyup", this.keyupEventCallback);
+        document.addEventListener("mousemove", this.mousemoveCallback);
+        document.addEventListener("mousedown", this.mouseDownCallback);
+        document.addEventListener("mouseup", this.mouseUpCallback);
     }
 
     private keydownEventCallback = (e: KeyboardEvent) => {
@@ -67,15 +70,22 @@ export class FPSControl {
         this.active_keys[e.code] = false;
     };
 
+    private mouseDownCallback = (e: MouseEvent) => {
+        if (e.button === 0) this.is_mouse_down = true;
+    };
+
+    private mouseUpCallback = (e: MouseEvent) => {
+        if (e.button === 0) this.is_mouse_down = false;
+    };
+
     private mousemoveCallback = (e: MouseEvent): void => {
         // @ts-ignore
         const movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
         // @ts-ignore
         const movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
-        if (e.which == 1) {
+        if (this.is_mouse_down) {
             this.mouse_y_total += movementY;
             this.mouse_x_total += movementX;
-        } else {
         }
     };
 
@@ -87,7 +97,9 @@ export class FPSControl {
     public destroy(): void {
         document.removeEventListener("keydown", this.keydownEventCallback);
         document.removeEventListener("keyup", this.keyupEventCallback);
-        document.removeEventListener("mousemove", this.mousemoveCallback);
+        document.removeEventListener("mousemove", this.mousemoveCallback, false);
+        document.removeEventListener("mousedown", this.mouseDownCallback, false);
+        document.removeEventListener("mouseup", this.mouseUpCallback, false);
     }
 
     private processKeyboard(delta_ms: number): void {
