@@ -104,7 +104,7 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float perceptual_roughness
     return Fr * fresnel + F0;
 }
 
-bool isnan( float val )
+bool isnan2( float val )
 {
     return ( val < 0.0 || 0.0 < val || val == 0.0 ) ? false : true;
     // important: some nVidias failed to cope with version below.
