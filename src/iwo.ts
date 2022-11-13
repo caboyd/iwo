@@ -7,6 +7,9 @@ export { OrbitControl } from "./cameras/OrbitControl";
 export { FPSControl } from "./cameras/FPSControl";
 export { Frustum } from "cameras/Frustum";
 
+export { StandardAttribute } from "geometry/attribute/StandardAttribute";
+export { Attribute } from "geometry/attribute/Attribute";
+
 export { Geometry } from "./geometry/Geometry";
 export { BufferedGeometry } from "./geometry/BufferedGeometry";
 export { BoxGeometry } from "./geometry/BoxGeometry";
@@ -32,6 +35,7 @@ export { GridMaterial } from "./materials/GridMaterial";
 export { NormalOnlyMaterial } from "./materials/NormalOnlyMaterial";
 export { PBRMaterial } from "./materials/PBRMaterial";
 export { LineMaterial } from "./materials/LineMaterial";
+export { EmptyMaterial } from "./materials/EmptyMaterial";
 
 export { SubMesh } from "./meshes/SubMesh";
 export { Mesh } from "./meshes/Mesh";

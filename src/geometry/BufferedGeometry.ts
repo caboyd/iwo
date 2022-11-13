@@ -23,7 +23,7 @@ export class BufferedGeometry {
     public attributes: Attributes;
     public index_buffer?: GeometryBuffer;
     public buffers: GeometryBuffer[];
-    public buffer_format: BufferFormat;
+    public buffer_format?: BufferFormat;
     public groups?: Group[];
     public instances?: number;
     public draw_mode: DrawMode = DrawMode.TRIANGLES;
@@ -33,7 +33,6 @@ export class BufferedGeometry {
         this.buffers = [];
         this.buffer_format = "concatenated";
     }
-
     public static fromGeometry(geom: Geometry, options?: Partial<BufferedGeometryOptions>): BufferedGeometry {
         const b = new BufferedGeometry();
         b.attributes = StandardAttribute.SingleBufferApproach();

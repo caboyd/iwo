@@ -89,8 +89,13 @@ export namespace TextureHelper {
                 gl.NEAREST_MIPMAP_LINEAR,
                 gl.NEAREST_MIPMAP_NEAREST,
             ].includes(options.min_filter)
-        )
+        ) {
             gl.generateMipmap(texture_type);
+        }
+        if (options.texture_compare_func)
+            gl.texParameteri(texture_type, gl.TEXTURE_COMPARE_FUNC, options.texture_compare_func);
+        if (options.texture_compare_mode)
+            gl.texParameteri(texture_type, gl.TEXTURE_COMPARE_MODE, options.texture_compare_mode);
     }
 
     export function isArrayBufferView(value: any): value is ArrayBufferView {

@@ -13,9 +13,11 @@ export interface TextureOptions {
     format: number;
     type: number;
     flip: boolean;
+    texture_compare_func?: number;
+    texture_compare_mode?: number;
 }
 
-export const DefaultTextureOptions = {
+export const DefaultTextureOptions: TextureOptions = {
     width: 0,
     height: 0,
     wrap_S: GL.REPEAT,
@@ -29,7 +31,7 @@ export const DefaultTextureOptions = {
     flip: false,
 };
 
-const CheckerBoardOptions = {
+const CheckerBoardOptions: TextureOptions = {
     ...DefaultTextureOptions,
     ...{
         width: 8,

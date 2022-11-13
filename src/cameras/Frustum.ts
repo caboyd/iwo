@@ -8,29 +8,71 @@ export type FrustumOptions = {
 
 export const DefaultFrustumOptions = {
     clip_near: 1,
-    clip_far: 45,
-    fov: 90,
+    clip_far: 20,
+    fov: 60,
 } as const;
 
 export class Frustum {
     private opt: FrustumOptions;
-
-    private readonly view_matrix: mat4;
 
     private far_height!: number;
     private far_width!: number;
     private near_height!: number;
     private near_width!: number;
 
-    constructor(gl: WebGL2RenderingContext, inverse_view_matrix: mat4, options?: Partial<FrustumOptions>) {
-        this.view_matrix = mat4.clone(inverse_view_matrix);
+    private min_x: number = 0;
+    private max_x: number = 0;
+    private min_y: number = 0;
+    private max_y: number = 0;
+    private min_z: number = 0;
+    private max_z: number = 0;
+
+    constructor(gl: WebGL2RenderingContext, options?: Partial<FrustumOptions>) {
         this.opt = { ...DefaultFrustumOptions, ...options };
         this.calculateWidthsAndHeights(gl);
     }
 
     /**
+     *
+     * @param spacial_transform_matrix - This should be inverse_view_matrix
+     */
+    public update(spacial_transform_matrix: mat4) {
+        const points = this.calculateFrustumCorners(spacial_transform_matrix);
+
+        let first = true;
+        for (let i = 0; i < 8; i++) {
+            if (first) {
+                this.min_x = points[i][0];
+                this.max_x = points[i][0];
+                this.min_y = points[i][1];
+                this.max_y = points[i][1];
+                this.min_z = points[i][2];
+                this.max_z = points[i][2];
+                first = false;
+                continue;
+            }
+            if (points[i][0] > this.max_x) {
+                this.max_x = points[i][0];
+            } else if (points[i][0] < this.min_x) {
+                this.min_x = points[i][0];
+            }
+            if (points[i][1] > this.max_y) {
+                this.max_y = points[i][1];
+            } else if (points[i][1] < this.min_y) {
+                this.min_y = points[i][1];
+            }
+            if (points[i][2] > this.max_z) {
+                this.max_z = points[i][2];
+            } else if (points[i][2] < this.min_z) {
+                this.min_z = points[i][2];
+            }
+        }
+        //this.max_z += 7;
+    }
+
+    /**
      * Return the corners of the frustum first generated in camera space then multiplied by supplied spacial_transform_matrix
-     * @param {mat4} spacial_transform_matrix - The matrix space you want the corners to be return in. ex. light_view_matrix for lighspace or inverse_view_matrix for world space
+     * @param {mat4} spacial_transform_matrix - The matrix space you want the corners to be return in. ex. inverse_view_matrix for world space
      */
     public calculateFrustumCorners(spacial_transform_matrix: mat4): number[][] {
         const far_top_left = [-this.far_width / 2, this.far_height / 2, -this.opt.clip_far];
@@ -73,5 +115,43 @@ export class Frustum {
 
         this.far_height = this.opt.clip_far * 2 * Math.tan(glMatrix.toRadian(this.opt.fov) / 2);
         this.far_width = this.far_height * (gl.drawingBufferWidth / gl.drawingBufferHeight);
+    }
+
+    /**
+     * @return The width of the "view cuboid" (orthographic projection area).
+     */
+    public getWidth(): number {
+        return this.max_x - this.min_x;
+    }
+
+    /**
+     * @return The height of the "view cuboid" (orthographic projection area).
+     */
+    public getHeight(): number {
+        return this.max_y - this.min_y;
+    }
+
+    /**
+     * @return The length of the "view cuboid" (orthographic projection area).
+     */
+    public getLength(): number {
+        return this.max_z - this.min_z;
+    }
+
+    /**
+     *
+     * @return The center of the "view cuboid" in world space.
+     */
+    public getCenter(): vec3 {
+        const x = (this.min_x + this.max_x) / 2.0;
+        const y = (this.min_y + this.max_y) / 2.0;
+        const z = (this.min_z + this.max_z) / 2.0;
+        const cen: vec3 = vec3.fromValues(x, y, z);
+        return cen;
+    }
+
+    public getOrth(out: mat4): mat4 {
+        mat4.ortho(out, this.min_x, this.max_x, this.min_y, this.max_y, this.min_z, this.max_z);
+        return out;
     }
 }

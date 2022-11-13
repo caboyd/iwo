@@ -56,6 +56,35 @@ export class MeshInstance {
         }
     }
 
+    public renderWithMaterial(renderer: Renderer, view_matrix: mat4, proj_matrix: mat4, mat: Material) {
+        this.prepareMesh(renderer);
+
+        renderer.setPerModelUniforms(this.model_matrix, view_matrix, proj_matrix);
+
+        for (const submesh of this.mesh.sub_meshes) {
+            if (this.mesh.instances) {
+                renderer.drawInstanced(
+                    this.mesh.draw_mode,
+                    submesh.count,
+                    submesh.offset,
+                    this.mesh.instances,
+                    submesh.index_buffer,
+                    submesh.vertex_buffer,
+                    mat
+                );
+            } else {
+                renderer.draw(
+                    this.mesh.draw_mode,
+                    submesh.count,
+                    submesh.offset,
+                    submesh.index_buffer,
+                    submesh.vertex_buffer,
+                    mat
+                );
+            }
+        }
+    }
+
     private prepareMesh(renderer: Renderer) {
         renderer.prepareMaterialShaders(this.materials);
         if (!this.mesh.initialized) {

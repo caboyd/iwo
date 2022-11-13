@@ -46,7 +46,14 @@ import brdfFrag from "../../shaders/brdf.frag";
 import lineFrag from "../../shaders/line.frag";
 // @ts-ignore
 import lineVert from "../../shaders/line.vert";
-
+// @ts-ignore
+import depthFrag from "../../shaders/depth_RTT.frag";
+// @ts-ignore
+import depthVert from "../../shaders/depth_RTT.vert";
+// @ts-ignore
+import quadFrag from "../../shaders/quad.frag";
+// @ts-ignore
+import quadVert from "../../shaders/quad.vert";
 
 export namespace ShaderSource {
     export const Basic: ShaderSource = {
@@ -110,6 +117,20 @@ export namespace ShaderSource {
         vert: lineVert,
         frag: lineFrag,
         subclass: LineShader,
+    };
+
+    export const Depth: ShaderSource = {
+        name: "DepthShader",
+        vert: depthVert,
+        frag: depthFrag,
+        subclass: undefined,
+    };
+
+    export const Quad: ShaderSource = {
+        name: "QuadShader",
+        vert: quadVert,
+        frag: quadFrag,
+        subclass: undefined,
     };
 }
 

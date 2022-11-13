@@ -60,6 +60,10 @@ export class UniformBuffer {
     public bindShader(shader: Shader, binding: number): void {
         const gl = shader.gl;
         const block_index = gl.getUniformBlockIndex(shader.ID, this.name);
+
+        //block_index doesnt exist in this shader
+        if (block_index == 4294967295) return;
+
         gl.uniformBlockBinding(shader.ID, block_index, binding);
         gl.bindBufferBase(gl.UNIFORM_BUFFER, binding, this.id);
     }
