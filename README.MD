@@ -19,17 +19,18 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 ### File Loading / Importing
 - [x] [Asynchronous File Loading](https://github.com/caboyd/iwo/blob/master/src/loader/FileLoader.ts)
 - [x] [HDR Image Loader](https://github.com/caboyd/iwor/blob/master/src/loader/HDRImageLoader.ts)  
-:construction: GLTF Importer
+- :construction: GLTF Importer
+- :construction: OBJ Importer
 
 
 ### Geometry Generation
 - [x] [Plane](https://github.com/caboyd/iwo/blob/master/src/geometry/PlaneGeometry.ts)
 - [x] [Box](https://github.com/caboyd/iwo/blob/master/src/geometry/BoxGeometry.ts)
 - [x] [Sphere](https://github.com/caboyd/iwo/blob/master/src/geometry/SphereGeometry.ts)
+- [x] [Lines](https://github.com/caboyd/iwo/blob/master/src/geometry/LineGeometry.ts)
 - [ ] Cylinder
 - [ ] Toroid
 - [ ] Pyramid
-- [ ] Lines
 - [ ] Splines
 
 ### Rendering
@@ -51,7 +52,7 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 
 ### Rendering Other
 - [ ] Mouse Picking
-- [ ] Line Rendering
+- [x] Line Rendering
 - [ ] Font Rendering
 - [ ] Fog
 - [ ] Motion Blur
@@ -63,7 +64,7 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 
 ### Cameras
 - [x] [First Person Camera](https://github.com/caboyd/iwo/blob/master/src/cameras/Camera.ts)
-- [ ] Third Person (Arcball/Orbit) Camera
+- [x] Third Person (Arcball/Orbit) Camera
 - [x] Cubemap Camera
 
 ### Animation
