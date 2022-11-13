@@ -1,4 +1,3 @@
-
 export { WebGL } from "./graphics/WebglHelper";
 export { ReferenceCounter } from "./helpers/ReferenceCounter";
 
@@ -6,6 +5,7 @@ export { Camera } from "./cameras/Camera";
 export { CubeCamera } from "./cameras/CubeCamera";
 export { OrbitControl } from "./cameras/OrbitControl";
 export { FPSControl } from "./cameras/FPSControl";
+export { Frustum } from "cameras/Frustum";
 
 export { Geometry } from "./geometry/Geometry";
 export { BufferedGeometry } from "./geometry/BufferedGeometry";

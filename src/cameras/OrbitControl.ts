@@ -64,6 +64,11 @@ export class OrbitControl {
 
         this.opt = { ...DefaultOrbitControlOptions, ...options };
         this.reset_orbit_point = vec3.clone(this.opt.orbit_point);
+        if (vec3.squaredDistance(this.camera.position, this.opt.orbit_point) <= 0.0001) {
+            //move camera 0.001z away from orbit point
+            this.camera.position[2] += 0.001;
+        }
+
         this.camera.lookAt(this.opt.orbit_point);
 
         document.addEventListener("keydown", this.keydownEventCallback);
