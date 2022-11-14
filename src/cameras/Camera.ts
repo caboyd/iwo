@@ -43,6 +43,13 @@ export class Camera {
         return out;
     }
 
+    public getUp(out: vec3 = vec3.create()): vec3 {
+        quat.conjugate(temp_quat, this.orientation);
+        vec3.set(out, 0, 1, 0);
+        vec3.transformQuat(out, out, temp_quat);
+        return out;
+    }
+
     public lookAt(target: vec3): void {
         const forward = vec3.sub(vec3.create(), target, this.position);
         vec3.normalize(forward, forward);
