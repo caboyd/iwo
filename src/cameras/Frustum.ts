@@ -150,7 +150,7 @@ export class Frustum {
         return cen;
     }
 
-    public getOrth(out: mat4): mat4 {
+    public getOrtho(out: mat4): mat4 {
         mat4.ortho(out, this.min_x, this.max_x, this.min_y, this.max_y, this.min_z, this.max_z);
         return out;
     }
