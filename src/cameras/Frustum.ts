@@ -143,14 +143,17 @@ export class Frustum {
         const near_bottom: vec3 = vec3.scaleAndAdd(vec3.create(), center_near, down_vector, this.near_height);
 
         let points: vec3[] = Array<vec3>(8);
-        points[0] = this.calculateFrustumCorner(spatial_transform, far_top, right_vector, this.far_width);
-        points[1] = this.calculateFrustumCorner(spatial_transform, far_top, left_vector, this.far_width);
-        points[2] = this.calculateFrustumCorner(spatial_transform, far_bottom, right_vector, this.far_width);
-        points[3] = this.calculateFrustumCorner(spatial_transform, far_bottom, left_vector, this.far_width);
-        points[4] = this.calculateFrustumCorner(spatial_transform, near_top, right_vector, this.near_width);
-        points[5] = this.calculateFrustumCorner(spatial_transform, near_top, left_vector, this.near_width);
-        points[6] = this.calculateFrustumCorner(spatial_transform, near_bottom, right_vector, this.near_width);
-        points[7] = this.calculateFrustumCorner(spatial_transform, near_bottom, left_vector, this.near_width);
+        points[0] = this.calculateFrustumCorner(spatial_transform, far_top, left_vector, this.far_width);
+        points[1] = this.calculateFrustumCorner(spatial_transform, far_top, right_vector, this.far_width);
+        points[2] = this.calculateFrustumCorner(spatial_transform, far_bottom, left_vector, this.far_width);
+        points[3] = this.calculateFrustumCorner(spatial_transform, far_bottom, right_vector, this.far_width);
+
+        //Note: for some reason these need to fliped horizontally and vertically to match the above
+        // so p[0] is top left far and p[4] is top left near
+        points[4] = this.calculateFrustumCorner(spatial_transform, near_bottom, right_vector, this.near_width);
+        points[5] = this.calculateFrustumCorner(spatial_transform, near_bottom, left_vector, this.near_width);
+        points[6] = this.calculateFrustumCorner(spatial_transform, near_top, right_vector, this.near_width);
+        points[7] = this.calculateFrustumCorner(spatial_transform, near_top, left_vector, this.near_width);
         return points;
     }
 
