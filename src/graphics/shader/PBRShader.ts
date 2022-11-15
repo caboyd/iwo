@@ -18,7 +18,9 @@ export class PBRShader extends Shader {
         this.setUniform("u_material.occlusion_sampler", 4);
         this.setUniform("u_material.metal_roughness_sampler", 5);
         this.setUniform("u_material.emissive_sampler", 6);
-        this.setUniform("u_material.brdf_LUT_sampler", 7);
+        this.setUniform("u_material.shadow_map_sampler", 7);
+
+        this.setUniform("u_material.brdf_LUT_sampler", 8);
     }
 
     public use(): void {
@@ -38,7 +40,10 @@ export class PBRShader extends Shader {
         gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
         gl.activeTexture(gl.TEXTURE6);
         gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
-        gl.activeTexture(gl.TEXTURE7);
+        //gl.activeTexture(gl.TEXTURE7);
+        //cant bind this to shadow map spot
+        //gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
+        gl.activeTexture(gl.TEXTURE8);
         gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
     }
 }

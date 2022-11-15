@@ -10,5 +10,5 @@ in vec2 tex_coord;
 void main()
 {
 	float depth = texture(texture1, tex_coord).r;
-	color = vec4(depth, depth, depth, 1.0);
+	color = texture(texture1, tex_coord);
 }

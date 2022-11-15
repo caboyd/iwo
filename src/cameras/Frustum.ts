@@ -9,7 +9,7 @@ export type FrustumOptions = {
 
 export const DefaultFrustumOptions = {
     clip_near: 1,
-    clip_far: 20,
+    clip_far: 25,
     fov: 60,
 } as const;
 
@@ -200,5 +200,27 @@ export class Frustum {
     public getOrtho(out: mat4): mat4 {
         mat4.ortho(out, this.min_x, this.max_x, this.min_y, this.max_y, this.min_z, this.max_z);
         return out;
+    }
+
+    public getOrthoVertices(spatial_transform: mat4 = mat4.create()): vec3[] {
+        let points: vec3[] = Array<vec3>(8);
+
+        points[0] = [this.min_x, this.max_y, this.max_z];
+        points[1] = [this.max_x, this.max_y, this.max_z];
+        points[2] = [this.min_x, this.min_y, this.max_z];
+        points[3] = [this.max_x, this.min_y, this.max_z];
+        points[4] = [this.min_x, this.max_y, this.min_z];
+        points[5] = [this.max_x, this.max_y, this.min_z];
+        points[6] = [this.min_x, this.min_y, this.min_z];
+        points[7] = [this.max_x, this.min_y, this.min_z];
+
+        for (const point of points) {
+            let point4f: vec4 = vec4.fromValues(point[0], point[1], point[2], 1.0);
+            point4f = vec4.transformMat4(point4f, point4f, spatial_transform);
+            point[0] = point4f[0] / point4f[3];
+            point[1] = point4f[1] / point4f[3];
+            point[2] = point4f[2] / point4f[3];
+        }
+        return points;
     }
 }

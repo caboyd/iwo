@@ -24,6 +24,7 @@ export class PBRMaterial extends Material {
     public emissive_image: HTMLImageElement | undefined;
     public irradiance_texture: TextureCubeMap | undefined;
     public specular_env: TextureCubeMap | undefined;
+    public shadow_texture: Texture2D | undefined;
 
     private material_options?: MaterialOptions;
 
@@ -46,7 +47,7 @@ export class PBRMaterial extends Material {
     }
 
     public activate(gl: WebGL2RenderingContext, shader: Shader): void {
-        const active_textures = [false, false, false, false, false, false];
+        const active_textures = [false, false, false, false, false, false, false, false];
         if (this.albedo_texture === undefined && this.albedo_image && this.albedo_image.complete) {
             this.albedo_texture = new Texture2D(gl, this.albedo_image, {
                 flip: this.material_options?.flip_image_y || false,
@@ -111,8 +112,13 @@ export class PBRMaterial extends Material {
             active_textures[6] = true;
         }
 
+        if (this.shadow_texture) {
+            this.shadow_texture.bind(gl, 7);
+            active_textures[7] = true;
+        }
+
         if (Renderer.BRDF_LUT_TEXTURE) {
-            gl.activeTexture(gl.TEXTURE7);
+            gl.activeTexture(gl.TEXTURE8);
             gl.bindTexture(gl.TEXTURE_2D, Renderer.BRDF_LUT_TEXTURE);
         }
 

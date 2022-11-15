@@ -9,11 +9,12 @@ in vec2 tex_coord;
 in vec3 view_normal;
 
 layout (std140) uniform ubo_per_frame{
-// base alignment   // aligned offset
+                          // base alignment   // aligned offset
     mat4 view;            // 64               // 0
     mat4 view_inverse;    // 64               // 64
     mat4 projection;      // 64               // 128
     mat4 view_projection; // 64               // 192
+    mat4 shadow_map_space;// 64               // 256
 
 };
 

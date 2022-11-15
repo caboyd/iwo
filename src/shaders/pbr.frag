@@ -1,5 +1,6 @@
 #version 300 es
 precision highp float;
+precision lowp sampler2DShadow;
 
 #define PI 3.14159265358979
 #define MIN_PERCEPTUAL_ROUGHNESS 0.045
@@ -14,16 +15,17 @@ in vec3 normal;
 in vec3 view_normal;
 in vec3 world_normal;
 in vec3 camera_pos;
+in vec4 shadow_coord;
 
 layout (std140) uniform ubo_per_frame{
-// base alignment   // aligned offset
-    mat4 view;// 64               // 0
-    mat4 view_inverse;// 64               // 64
-    mat4 projection;// 64               // 128
-    mat4 view_projection;// 64               // 192
+                          // base alignment   // aligned offset
+    mat4 view;            // 64               // 0
+    mat4 view_inverse;    // 64               // 64
+    mat4 projection;      // 64               // 128
+    mat4 view_projection; // 64               // 192
+    mat4 shadow_map_space;// 64               // 256
 
 };
-
 struct Material {
     vec3 albedo;
     float roughness;
@@ -38,8 +40,10 @@ struct Material {
     sampler2D occlusion_sampler;
     sampler2D metal_roughness_sampler;
     sampler2D emissive_sampler;
+    sampler2DShadow shadow_map_sampler;
+    bool active_textures[8];
+
     sampler2D brdf_LUT_sampler;
-    bool active_textures[7];
 };
 
 struct Light {
@@ -52,6 +56,8 @@ uniform Light u_lights[16];
 uniform Material u_material;
 uniform vec3 light_ambient;
 uniform float gamma;
+uniform float shadow_map_size;
+
 
 float saturate(float a){
     return clamp(a, 0.0, 1.0);
@@ -184,8 +190,6 @@ void main() {
     perceptual_roughness = clamp(perceptual_roughness,MIN_PERCEPTUAL_ROUGHNESS, perceptual_roughness);
 
 
-    // Old Broken Normal Formula
-
     vec3 N = normalize(world_normal);
     if(u_material.active_textures[3]){
        vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - vec3(1.0);
@@ -209,7 +213,7 @@ void main() {
     if(u_material.active_textures[4])
         AO = u_material.ao * texture(u_material.occlusion_sampler, tex_coord).r;
 
-    for (int i = 0; i < u_light_count; i++){
+    for (int i = 0; i < u_light_count; i++) {
 
         // calculate per-light radiance
 
@@ -240,8 +244,28 @@ void main() {
 
         // add to outgoing radiance Lo
         float NdotL = saturate(dot(N, L));
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        
 
+
+        //only light 0 has shadows
+        if(u_material.active_textures[7]) {
+            //Objects not in shadow have full light
+            float light_factor = 1.0;
+
+            //16 Samples of Percentage Closer Filtering
+            for(float y = -1.5; y <= 1.5; y += 1.0){    
+                for(float x = -1.5; x <= 1.5; x += 1.0) {
+                    float vis = 1.0 - texture(u_material.shadow_map_sampler, vec3(shadow_coord.xy + vec2(x/shadow_map_size,y/shadow_map_size) ,  (shadow_coord.z)));
+                    light_factor -= (shadow_coord.w) *  vis * (1.0/16.0);
+                }
+            }
+            bool inRange = shadow_coord.x >= 0.0 && shadow_coord.x <= 1.0 && shadow_coord.y >= 0.0 && shadow_coord.y <= 1.0 && shadow_coord.z <= 1.0 && shadow_coord.z >= 0.0;
+            //radiance *= inRange ? shadow_coord.w * light_factor : 1.0 ; 
+            radiance *= shadow_coord.w;
+        }
+
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+   
     }
 
     vec3 ambient;
@@ -283,7 +307,6 @@ void main() {
     
     color = Lo + (emission + ambient) * PI_light;
 
-    
     //HDR correction
     color = color / (color + vec3(1.0));
     //Gamma correction

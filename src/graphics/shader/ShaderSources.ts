@@ -100,7 +100,7 @@ export namespace ShaderSource {
 
     export const Grid: ShaderSource = {
         name: "GridShader",
-        vert: gridVert,
+        vert: standardVert,
         frag: gridFrag,
         subclass: undefined,
     };

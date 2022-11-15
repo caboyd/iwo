@@ -213,6 +213,8 @@ export class PlaneGeometry extends Geometry {
         attrib[StandardAttribute.Normal.name].byte_offset = 20;
         attrib[StandardAttribute.Tangent.name].byte_offset = 32;
         attrib[StandardAttribute.Bitangent.name].byte_offset = 44;
+        attrib[StandardAttribute.Tangent.name].enabled = true;
+        attrib[StandardAttribute.Bitangent.name].enabled = true;
 
         return {
             attributes: attrib,

@@ -59,11 +59,12 @@ export class Renderer {
         this.uboPerModelBlock.bindShader(shader, this.PerModelBinding);
     }
 
-    public setPerFrameUniforms(view: mat4, proj: mat4): void {
+    public setPerFrameUniforms(view: mat4, proj: mat4, shadow_map: mat4 = mat4.create()): void {
         this.uboPerFrameBlock.set("view", view);
         this.uboPerFrameBlock.set("view_inverse", mat4.invert(temp, view)!);
         this.uboPerFrameBlock.set("projection", proj);
         this.uboPerFrameBlock.set("view_projection", mat4.mul(temp, proj, view));
+        this.uboPerFrameBlock.set("shadow_map_space", shadow_map);
         this.uboPerFrameBlock.update(this.gl);
 
         //console.dir(this.stats);
@@ -74,10 +75,12 @@ export class Renderer {
     //A single uniform block for all objects to be drawn should be used and set once per frame.
     public setPerModelUniforms(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4): void {
         this.uboPerModelBlock.set("model", model_matrix);
-        this.uboPerModelBlock.set("model_view", mat4.mul(modelview_matrix, view_matrix, model_matrix));
 
         //NOTE: Does this bug if normalFromMat4 returns null?
-        normalview_matrix = mat3.normalFromMat4(normalview_matrix!, modelview_matrix);
+        normalview_matrix = mat3.normalFromMat4(
+            normalview_matrix!,
+            mat4.multiply(modelview_matrix, view_matrix, model_matrix)
+        );
         if (normalview_matrix) this.uboPerModelBlock.set("normal_view", normalview_matrix);
         else throw new Error("Determinant could not be calculated for normalview_matrix");
 
