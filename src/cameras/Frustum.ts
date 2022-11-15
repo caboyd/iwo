@@ -95,7 +95,6 @@ export class Frustum {
 
         const inverted_light: mat4 = mat4.invert(mat4.create(), this.light_view_matrix);
         let result = vec3.transformMat4(vec3.create(), cen, inverted_light);
-
         return result;
     }
 
@@ -125,7 +124,7 @@ export class Frustum {
      * in world space transformed to spatial_transofrm space (8 vertices in total, so this returns 8 positions).
      *
      * @param spatial_transform - the transform space to multiply the world space points
-     * @return The positions of the vertices of the frustum in light space.
+     *
      */
     public calculateFrustumVertices(spatial_transform: mat4 = mat4.create()): vec3[] {
         let forward_vector: vec3 = vec3.clone(this.camera.getForward());
@@ -192,7 +191,7 @@ export class Frustum {
      */
     public calculateWidthsAndHeights(gl: WebGL2RenderingContext): void {
         this.far_width = this.opt.clip_far * Math.tan(glMatrix.toRadian(this.opt.fov));
-        this.near_width = this.opt.clip_near * Math.tan(glMatrix.toRadian(this.opt.fov));
+        this.near_width = -this.opt.clip_near * Math.tan(glMatrix.toRadian(this.opt.fov));
         this.far_height = this.far_width / (gl.drawingBufferWidth / gl.drawingBufferHeight);
         this.near_height = this.near_width / (gl.drawingBufferWidth / gl.drawingBufferHeight);
     }

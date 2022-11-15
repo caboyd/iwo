@@ -41,23 +41,13 @@ out vec3 view_normal;
 out vec3 world_normal;
 out vec3 camera_pos;
 out vec4 shadow_coord;
-//out mat3 TBN;
 
 uniform float shadow_distance;
 uniform float transition_distance;
 
+
 vec3 inverseTransformDirection(in vec3 normal, in mat4 matrix) {
     return normalize( (vec4(normal,0.0) * matrix).xyz );
-}
-
-vec3 calculate_tangent(vec3 n) {
-    vec3 v = vec3(1.0, 0.0, 0.0);
-    float d = dot(v, n);
-    if (abs(d) < 1.0e-3) {
-        v = vec3(0.0, 1.0, 0.0);
-        d = dot(v, n);
-    }
-    return normalize(v - d * n);
 }
 
 void main() {
@@ -85,7 +75,7 @@ void main() {
     //shadow_coord = shadow_map_space * wp;
 
     //Shadow_coord.w will be used to fade in and out shadows softly when they are far from camera
-    //vec4 to_camera_view_space = view_matrix * world_position;
+    //doing this per vertex doesnt work well for objects with one vertex inside and one outside when they are large
     float distance1 = length(camera_pos - world_pos);
 
     distance1 = distance1 - (shadow_distance - transition_distance);

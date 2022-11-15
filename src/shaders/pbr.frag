@@ -57,7 +57,8 @@ uniform Material u_material;
 uniform vec3 light_ambient;
 uniform float gamma;
 uniform float shadow_map_size;
-
+uniform float shadow_distance;
+uniform float transition_distance;
 
 float saturate(float a){
     return clamp(a, 0.0, 1.0);
@@ -252,16 +253,19 @@ void main() {
             //Objects not in shadow have full light
             float light_factor = 1.0;
 
+            float distance1 = length(camera_pos - world_pos);
+            distance1 = distance1 - (shadow_distance - transition_distance);
+            distance1 = distance1 / transition_distance;
+            float w = clamp(1.0 - distance1, 0.0, 1.0);
+
             //16 Samples of Percentage Closer Filtering
             for(float y = -1.5; y <= 1.5; y += 1.0){    
                 for(float x = -1.5; x <= 1.5; x += 1.0) {
                     float vis = 1.0 - texture(u_material.shadow_map_sampler, vec3(shadow_coord.xy + vec2(x/shadow_map_size,y/shadow_map_size) ,  (shadow_coord.z)));
-                    light_factor -= (shadow_coord.w) *  vis * (1.0/16.0);
+                    light_factor -= w *  vis * (1.0/16.0);
                 }
             }
-            bool inRange = shadow_coord.x >= 0.0 && shadow_coord.x <= 1.0 && shadow_coord.y >= 0.0 && shadow_coord.y <= 1.0 && shadow_coord.z <= 1.0 && shadow_coord.z >= 0.0;
-            //radiance *= inRange ? shadow_coord.w * light_factor : 1.0 ; 
-            radiance *= shadow_coord.w;
+            radiance *= light_factor;
         }
 
         Lo += (kD * albedo / PI + specular) * radiance * NdotL;
