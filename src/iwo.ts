@@ -5,10 +5,10 @@ export { Camera } from "./cameras/Camera";
 export { CubeCamera } from "./cameras/CubeCamera";
 export { OrbitControl } from "./cameras/OrbitControl";
 export { FPSControl } from "./cameras/FPSControl";
-export { Frustum } from "cameras/Frustum";
+export { Frustum } from "./cameras/Frustum";
 
-export { StandardAttribute } from "geometry/attribute/StandardAttribute";
-export { Attribute } from "geometry/attribute/Attribute";
+export { StandardAttribute } from "./geometry/attribute/StandardAttribute";
+export { Attribute } from "./geometry/attribute/Attribute";
 
 export { Geometry } from "./geometry/Geometry";
 export { BufferedGeometry } from "./geometry/BufferedGeometry";
@@ -27,7 +27,7 @@ export { TextureCubeMap } from "./graphics/TextureCubeMap";
 export { TextureHelper } from "./graphics/TextureHelper";
 export { Uniform } from "./graphics/Uniform";
 
-export { ShaderSource } from "graphics/shader/ShaderSources";
+export { ShaderSource } from "./graphics/shader/ShaderSources";
 
 export { Material } from "./materials/Material";
 export { BasicMaterial } from "./materials/BasicMaterial";
