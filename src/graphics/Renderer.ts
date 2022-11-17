@@ -12,8 +12,9 @@ import { VertexBuffer } from "./VertexBuffer";
 const temp: mat4 = mat4.create();
 
 const modelview_matrix: mat4 = mat4.create();
-let normalview_matrix: mat3 | null = mat3.create();
+const normalview_matrix: mat3 = mat3.create();
 const mvp_matrix: mat4 = mat4.create();
+const BIAS_MATRIX = mat4.fromValues(0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0.5, 0.5, 0.5, 1);
 
 export class ViewportDimensions {
     public x: number = 0;
@@ -59,12 +60,12 @@ export class Renderer {
         this.uboPerModelBlock.bindShader(shader, this.PerModelBinding);
     }
 
-    public setPerFrameUniforms(view: mat4, proj: mat4, shadow_map: mat4 = mat4.create()): void {
+    public setPerFrameUniforms(view: mat4, proj: mat4, shadow_map?: mat4): void {
         this.uboPerFrameBlock.set("view", view);
-        this.uboPerFrameBlock.set("view_inverse", mat4.invert(temp, view)!);
+        this.uboPerFrameBlock.set("view_inverse", mat4.invert(temp, view));
         this.uboPerFrameBlock.set("projection", proj);
         this.uboPerFrameBlock.set("view_projection", mat4.mul(temp, proj, view));
-        this.uboPerFrameBlock.set("shadow_map_space", shadow_map);
+        if (shadow_map) this.uboPerFrameBlock.set("shadow_map_space", mat4.mul(temp, BIAS_MATRIX, shadow_map));
         this.uboPerFrameBlock.update(this.gl);
 
         //console.dir(this.stats);
@@ -75,15 +76,8 @@ export class Renderer {
     //A single uniform block for all objects to be drawn should be used and set once per frame.
     public setPerModelUniforms(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4): void {
         this.uboPerModelBlock.set("model", model_matrix);
-
-        //NOTE: Does this bug if normalFromMat4 returns null?
-        normalview_matrix = mat3.normalFromMat4(
-            normalview_matrix!,
-            mat4.multiply(modelview_matrix, view_matrix, model_matrix)
-        );
-        if (normalview_matrix) this.uboPerModelBlock.set("normal_view", normalview_matrix);
-        else throw new Error("Determinant could not be calculated for normalview_matrix");
-
+        mat3.normalFromMat4(normalview_matrix, mat4.multiply(modelview_matrix, view_matrix, model_matrix));
+        this.uboPerModelBlock.set("normal_view", normalview_matrix);
         this.uboPerModelBlock.set("mvp", mat4.mul(mvp_matrix, proj_matrix, modelview_matrix));
         this.uboPerModelBlock.update(this.gl);
     }
