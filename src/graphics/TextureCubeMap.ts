@@ -6,7 +6,7 @@ import { Geometry } from "@geometry/Geometry";
 import { mat4 } from "gl-matrix";
 import { HDRBuffer, instanceOfHDRBuffer } from "@loader/HDRImageLoader";
 import { Mesh } from "@meshes/Mesh";
-import { TypedArray } from "src/types/types"
+import { TypedArray } from "@customtypes/types";
 import { Renderer } from "./Renderer";
 import { ShaderSource } from "./shader/ShaderSources";
 import { DefaultTextureOptions, Texture2D, TextureOptions } from "./Texture2D";

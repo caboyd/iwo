@@ -9,7 +9,7 @@ import { ImageLoader } from "@loader/ImageLoader";
 import { Accessor, glTF, MeshPrimitive } from "@loader/spec/glTF";
 import { Material } from "@materials/Material";
 import { PBRMaterial } from "@materials/PBRMaterial";
-import { TypedArray } from "src/types/types";
+import { TypedArray } from "@customtypes/types";
 
 export interface glTFData {
     buffered_geometries: BufferedGeometry[];
@@ -129,7 +129,6 @@ export class glTFLoader {
                                     length
                                 ),
                                 target: 34963,
-                              
                             };
                             //  x.index_buffer =
                             //        {
@@ -244,7 +243,6 @@ export class glTFLoader {
         x.buffers.push({
             buffer: ArrayBufferToTypedArray(componentType, array_buffers[buffer_index], offset, length),
             target: 34962,
-       
         });
 
         attr.enabled = true;
