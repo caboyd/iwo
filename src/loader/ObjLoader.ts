@@ -7,7 +7,7 @@ import { MtlData, MtlLoader, MtlOptions } from "./MtlLoader";
 
 export interface ObjData {
     objects: { name: string; buffered_geometry: BufferedGeometry }[];
-    materials?: Material | Material[] | undefined;
+    materials: Material[];
 }
 
 enum VertexDataTraits {
@@ -258,10 +258,7 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
     }
 
     //add only used materials to result
-    let mats: Material | Material[] | undefined = used_mtl_data
-        ? Object.values(used_mtl_data).map((mat) => mat.material)
-        : undefined;
-    if (mats && mats.length === 1) mats = mats[0];
+    let mats = Object.values(used_mtl_data).map((mat) => mat.material);
     result.materials = mats;
 
     return result;

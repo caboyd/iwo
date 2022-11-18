@@ -11,7 +11,7 @@ export class MeshInstance {
 
     public constructor(mesh: Mesh, materials: Material[] | Material) {
         this.mesh = mesh;
-        this.materials = [materials].flat();
+        this.materials = [materials].flat(2);
         if (this.materials.length === 0) throw "MeshInstance requires material";
 
         this.model_matrix = mat4.create();
