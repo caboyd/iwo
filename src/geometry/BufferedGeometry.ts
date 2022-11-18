@@ -1,8 +1,8 @@
 import { DrawMode, GL } from "@graphics/WebglConstants";
+import { TypedArray } from "src/types/types";
 import { Attributes } from "./attribute/Attribute";
 import { StandardAttribute } from "./attribute/StandardAttribute";
 import { Geometry, Group } from "./Geometry";
-import TypedArray = NodeJS.TypedArray;
 
 export interface GeometryBuffer {
     buffer: TypedArray;
