@@ -255,8 +255,8 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
     }
 
     //add only used materials to result
-    let mats: Material | Material[] | undefined = materials
-        ? Object.values(materials).map((mat) => mat.material)
+    let mats: Material | Material[] | undefined = used_mtl_data
+        ? Object.values(used_mtl_data).map((mat) => mat.material)
         : undefined;
     if (mats && mats.length === 1) mats = mats[0];
     result.materials = mats;
