@@ -1,5 +1,5 @@
 import { ComponentType, GL } from "@graphics/WebglConstants";
-import { TypedArray } from "src/types/Types";
+import { TypedArray } from "@customtypes/types";
 import { LineAttribute } from "./LineAttribute";
 import { StandardAttribute } from "./StandardAttribute";
 
