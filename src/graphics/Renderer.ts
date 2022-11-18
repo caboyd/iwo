@@ -1,5 +1,5 @@
 import { mat3, mat4 } from "gl-matrix";
-import { Material } from "materials/Material";
+import { Material } from "@materials/Material";
 import { IndexBuffer } from "./IndexBuffer";
 import { RendererStats } from "./RendererStats";
 import { Shader } from "./shader/Shader";

@@ -1,7 +1,7 @@
 {
   "name": "iwo-renderer",
   "sideEffects": false,
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Typescript Webgl2 Physically Based Renderer",
   "main": "dist/iwo.umd.js",
   "module": "dist/iwo.es5.js",
@@ -10,7 +10,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c rollup.config.ts"
+    "build": "rollup -c rollup.config.ts && npx tscpaths -p tsconfig.json -s ./src -o ./dist"
   },
   "author": "caboyd",
   "license": "MIT",
@@ -37,6 +37,7 @@
     "@types/node": "^18.11.9",
     "@typescript-eslint/eslint-plugin": "^5.43.0",
     "@typescript-eslint/parser": "^5.43.0",
+    "@zerollup/ts-transform-paths": "^1.7.18",
     "eslint": "^8.27.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-prettier": "^4.2.1",
@@ -45,6 +46,8 @@
     "rollup-plugin-glslify": "^1.3.1",
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-typescript2": "^0.34.1",
+    "tscpaths": "^0.0.9",
+    "ttypescript": "^1.5.13",
     "typescript": "^4.9.3"
   }
 }

@@ -1,6 +1,6 @@
 //Base Material Class
-import { ShaderSource } from "graphics/shader/ShaderSources";
-import { Shader } from "../graphics/shader/Shader";
+import { ShaderSource } from "@graphics/shader/ShaderSources";
+import { Shader } from "@graphics/shader/Shader";
 
 export type MaterialOptions = {
     flip_image_y?: boolean;

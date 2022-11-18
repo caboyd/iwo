@@ -2,8 +2,8 @@
 /**
  * Created by Chris on May, 2019
  */
-import { TextureOptions } from "graphics/Texture2D";
-import { TextureCubeMapOptions } from "graphics/TextureCubeMap";
+import { TextureOptions } from "@graphics/Texture2D";
+import { TextureCubeMapOptions } from "@graphics/TextureCubeMap";
 
 type TextureType =
     | WebGL2RenderingContext["TEXTURE_2D"]

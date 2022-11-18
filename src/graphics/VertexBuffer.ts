@@ -1,6 +1,6 @@
-import { Attributes, typeToComponentCount } from "geometry/attribute/Attribute";
-import { BufferedGeometry } from "geometry/BufferedGeometry";
-import { ReferenceCounter } from "helpers/ReferenceCounter";
+import { Attributes, typeToComponentCount } from "@geometry/attribute/Attribute";
+import { BufferedGeometry } from "@geometry/BufferedGeometry";
+import { ReferenceCounter } from "@helpers/ReferenceCounter";
 import { Shader } from "./shader/Shader";
 import { WebGL } from "./WebglHelper";
 

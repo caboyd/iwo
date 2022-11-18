@@ -1,5 +1,5 @@
-import { DrawMode } from "graphics/WebglConstants";
-import { TypedArray } from "types/types";
+import { DrawMode } from "@graphics/WebglConstants";
+import { TypedArray } from "src/types/Types";
 import { AttributeName } from "./attribute/Attribute";
 import { BufferedGeometry } from "./BufferedGeometry";
 

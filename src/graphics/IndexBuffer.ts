@@ -1,5 +1,5 @@
-import { BufferedGeometry, GeometryBuffer } from "geometry/BufferedGeometry";
-import { ReferenceCounter } from "helpers/ReferenceCounter";
+import { BufferedGeometry, GeometryBuffer } from "@geometry/BufferedGeometry";
+import { ReferenceCounter } from "@helpers/ReferenceCounter";
 import { WebGL } from "./WebglHelper";
 
 export class IndexBuffer {

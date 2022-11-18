@@ -1,4 +1,4 @@
-import { TypedArray } from "types/types";
+import { TypedArray } from "src/types/types";
 import { Shader } from "./shader/Shader";
 import { UniformBlock } from "./Uniform";
 

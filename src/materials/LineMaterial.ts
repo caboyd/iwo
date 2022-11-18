@@ -1,6 +1,6 @@
 import { vec4 } from "gl-matrix";
-import { ShaderSource } from "graphics/shader/ShaderSources";
-import { Shader } from "../graphics/shader/Shader";
+import { ShaderSource } from "@graphics/shader/ShaderSources";
+import { Shader } from "@graphics/shader/Shader";
 import { Material } from "./Material";
 
 export class LineMaterial extends Material {

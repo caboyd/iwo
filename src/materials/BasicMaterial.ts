@@ -1,8 +1,8 @@
 import { vec3 } from "gl-matrix";
-import { ShaderSource } from "graphics/shader/ShaderSources";
-import { Shader } from "../graphics/shader/Shader";
-import { Texture2D } from "../graphics/Texture2D";
-import { TextureCubeMap } from "../graphics/TextureCubeMap";
+import { ShaderSource } from "@graphics/shader/ShaderSources";
+import { Shader } from "@graphics/shader/Shader";
+import { Texture2D } from "@graphics/Texture2D";
+import { TextureCubeMap } from "@graphics/TextureCubeMap";
 import { Material } from "./Material";
 
 export class BasicMaterial extends Material {

@@ -1,6 +1,6 @@
 import { vec4 } from "gl-matrix";
-import { Shader } from "graphics/shader/Shader";
-import { ShaderSource } from "graphics/shader/ShaderSources";
+import { Shader } from "@graphics/shader/Shader";
+import { ShaderSource } from "@graphics/shader/ShaderSources";
 import { Material } from "./Material";
 
 export type GridMaterialOptions = {

@@ -1,9 +1,9 @@
 import { vec3 } from "gl-matrix";
-import { Renderer } from "graphics/Renderer";
-import { Shader } from "graphics/shader/Shader";
-import { ShaderSource } from "graphics/shader/ShaderSources";
-import { Texture2D } from "graphics/Texture2D";
-import { TextureCubeMap } from "graphics/TextureCubeMap";
+import { Renderer } from "@graphics/Renderer";
+import { Shader } from "@graphics/shader/Shader";
+import { ShaderSource } from "@graphics/shader/ShaderSources";
+import { Texture2D } from "@graphics/Texture2D";
+import { TextureCubeMap } from "@graphics/TextureCubeMap";
 import { Material, MaterialOptions } from "./Material";
 
 export class PBRMaterial extends Material {

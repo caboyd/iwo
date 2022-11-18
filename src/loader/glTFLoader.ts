@@ -1,15 +1,15 @@
 import { FileLoader } from "./FileLoader";
 //https://www.npmjs.com/package/gltf-typescript-generator
-import { Attribute } from "geometry/attribute/Attribute";
-import { StandardAttribute } from "geometry/attribute/StandardAttribute";
-import { BufferedGeometry } from "geometry/BufferedGeometry";
+import { Attribute } from "@geometry/attribute/Attribute";
+import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
+import { BufferedGeometry } from "@geometry/BufferedGeometry";
 import { vec3 } from "gl-matrix";
-import { ComponentType, GL } from "graphics/WebglConstants";
-import { ImageLoader } from "loader/ImageLoader";
-import { Accessor, glTF, MeshPrimitive } from "loader/spec/glTF";
-import { Material } from "materials/Material";
-import { PBRMaterial } from "materials/PBRMaterial";
-import { TypedArray } from "types/types";
+import { ComponentType, GL } from "@graphics/WebglConstants";
+import { ImageLoader } from "@loader/ImageLoader";
+import { Accessor, glTF, MeshPrimitive } from "@loader/spec/glTF";
+import { Material } from "@materials/Material";
+import { PBRMaterial } from "@materials/PBRMaterial";
+import { TypedArray } from "src/types/types";
 
 export interface glTFData {
     buffered_geometries: BufferedGeometry[];

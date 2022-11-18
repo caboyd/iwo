@@ -1,6 +1,6 @@
 import { ImageLoader } from "./ImageLoader";
-import { Texture2D, TextureOptions } from "../graphics/Texture2D";
-import { FileLoader } from "loader/FileLoader";
+import { Texture2D, TextureOptions } from "@graphics/Texture2D";
+import { FileLoader } from "@loader/FileLoader";
 
 export class TextureLoader {
     public static load(

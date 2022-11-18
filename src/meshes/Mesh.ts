@@ -1,9 +1,9 @@
-import { BufferedGeometry } from "geometry/BufferedGeometry";
-import { Geometry } from "geometry/Geometry";
-import { IndexBuffer } from "graphics/IndexBuffer";
-import { Shader } from "graphics/shader/Shader";
-import { VertexBuffer } from "graphics/VertexBuffer";
-import { DrawMode } from "graphics/WebglConstants";
+import { BufferedGeometry } from "@geometry/BufferedGeometry";
+import { Geometry } from "@geometry/Geometry";
+import { IndexBuffer } from "@graphics/IndexBuffer";
+import { Shader } from "@graphics/shader/Shader";
+import { VertexBuffer } from "@graphics/VertexBuffer";
+import { DrawMode } from "@graphics/WebglConstants";
 import { SubMesh } from "./SubMesh";
 
 export class Mesh {

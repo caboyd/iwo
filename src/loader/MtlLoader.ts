@@ -1,8 +1,8 @@
 import { FileLoader } from "./FileLoader";
-import { Material, MaterialOptions } from "materials/Material";
+import { Material, MaterialOptions } from "@materials/Material";
 import { ImageLoader } from "./ImageLoader";
 import { vec3 } from "gl-matrix";
-import { PBRMaterial } from "/materials/PBRMaterial";
+import { PBRMaterial } from "@materials/PBRMaterial";
 
 type RawMtlData = {
     material_index: number;

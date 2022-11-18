@@ -1,5 +1,5 @@
 import { TextureHelper } from "./TextureHelper";
-import { GL } from "graphics/WebglConstants";
+import { GL } from "@graphics/WebglConstants";
 
 export interface TextureOptions {
     width: number;

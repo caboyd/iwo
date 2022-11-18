@@ -1,12 +1,12 @@
-import { CubeCamera } from "cameras/CubeCamera";
-import { AttributeName } from "geometry/attribute/Attribute";
-import { StandardAttribute } from "geometry/attribute/StandardAttribute";
-import { BoxGeometry } from "geometry/BoxGeometry";
-import { Geometry } from "geometry/Geometry";
+import { CubeCamera } from "@cameras/CubeCamera";
+import { AttributeName } from "@geometry/attribute/Attribute";
+import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
+import { BoxGeometry } from "@geometry/BoxGeometry";
+import { Geometry } from "@geometry/Geometry";
 import { mat4 } from "gl-matrix";
-import { HDRBuffer, instanceOfHDRBuffer } from "loader/HDRImageLoader";
-import { Mesh } from "meshes/Mesh";
-import { TypedArray } from "types/types";
+import { HDRBuffer, instanceOfHDRBuffer } from "@loader/HDRImageLoader";
+import { Mesh } from "@meshes/Mesh";
+import { TypedArray } from "src/types/types"
 import { Renderer } from "./Renderer";
 import { ShaderSource } from "./shader/ShaderSources";
 import { DefaultTextureOptions, Texture2D, TextureOptions } from "./Texture2D";

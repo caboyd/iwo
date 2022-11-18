@@ -1,5 +1,5 @@
-import { ComponentType, GL } from "graphics/WebglConstants";
-import { TypedArray } from "types/types";
+import { ComponentType, GL } from "@graphics/WebglConstants";
+import { TypedArray } from "src/types/Types";
 import { LineAttribute } from "./LineAttribute";
 import { StandardAttribute } from "./StandardAttribute";
 
@@ -21,7 +21,7 @@ export function createAttribute(name: AttributeName, attr?: Partial<Attribute>):
             normalized: false,
             byte_offset: 0,
             byte_stride: 0,
-            divisor: undefined
+            divisor: undefined,
         },
         ...attr,
     };
@@ -36,7 +36,7 @@ export interface Attribute {
     component_type: ComponentType;
     component_count: 1 | 2 | 3 | 4 | 9 | 16;
     normalized: boolean;
-    divisor?: number
+    divisor?: number;
     buffer?: TypedArray;
 }
 

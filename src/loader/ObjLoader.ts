@@ -1,8 +1,7 @@
-import { group } from "console";
-import { StandardAttribute } from "geometry/attribute/StandardAttribute";
-import { BufferedGeometry } from "geometry/BufferedGeometry";
-import { Geometry, Group } from "geometry/Geometry";
-import { Material } from "materials/Material";
+import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
+import { BufferedGeometry } from "@geometry/BufferedGeometry";
+import { Geometry, Group } from "@geometry/Geometry";
+import { Material } from "@materials/Material";
 import { FileLoader } from "./FileLoader";
 import { MtlData, MtlLoader, MtlOptions } from "./MtlLoader";
 

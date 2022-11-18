@@ -1,4 +1,4 @@
-import { DrawMode, GL } from "graphics/WebglConstants";
+import { DrawMode, GL } from "@graphics/WebglConstants";
 import { Attributes } from "./attribute/Attribute";
 import { StandardAttribute } from "./attribute/StandardAttribute";
 import { Geometry, Group } from "./Geometry";

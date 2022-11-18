@@ -1,5 +1,5 @@
-import { ShaderSource } from "graphics/shader/ShaderSources";
-import { Shader } from "../graphics/shader/Shader";
+import { ShaderSource } from "@graphics/shader/ShaderSources";
+import { Shader } from "@graphics/shader/Shader";
 import { Material } from "./Material";
 
 export class EmptyMaterial extends Material {

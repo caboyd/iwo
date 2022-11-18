@@ -1,5 +1,4 @@
 import { Shader } from "./Shader";
-import { Renderer } from "../Renderer";
 import { ShaderSource } from "./ShaderSources";
 
 export class LineShader extends Shader {

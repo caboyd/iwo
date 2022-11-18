@@ -1,5 +1,5 @@
 import { mat4 } from "gl-matrix";
-import { Material } from "materials/Material";
+import { Material } from "@materials/Material";
 import { Renderer } from "../graphics/Renderer";
 import { Mesh } from "./Mesh";
 

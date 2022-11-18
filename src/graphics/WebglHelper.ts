@@ -1,4 +1,4 @@
-import { TypedArray } from "types/types";
+import { TypedArray } from "src/types/types";
 
 export namespace WebGL {
     export function buildBuffer(

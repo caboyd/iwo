@@ -1,6 +1,6 @@
-import { StandardAttribute } from "geometry/attribute/StandardAttribute";
-import { BufferedGeometry } from "geometry/BufferedGeometry";
-import { GL } from "graphics/WebglConstants";
+import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
+import { BufferedGeometry } from "@geometry/BufferedGeometry";
+import { GL } from "@graphics/WebglConstants";
 import { Geometry, Group } from "./Geometry";
 
 enum Order {

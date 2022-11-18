@@ -1,6 +1,6 @@
-import { Geometry } from "geometry/Geometry";
+import { Geometry } from "@geometry/Geometry";
 import { vec3 } from "gl-matrix";
-import { DrawMode, GL } from "graphics/WebglConstants";
+import { DrawMode, GL } from "@graphics/WebglConstants";
 import { LineAttribute as LA } from "./attribute/LineAttribute";
 import { BufferedGeometry } from "./BufferedGeometry";
 
