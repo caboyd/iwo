@@ -96,14 +96,15 @@ export class ObjLoader extends FileLoader {
                 case "#": //comment
                     break;
                 case "o":
-                    if (current_obj.name === "Default" || current_group.faces.length === 0) current_obj.name = arr[1];
+                    if (current_obj.name === "Default") current_obj.name = arr[1];
                     else {
                         current_obj = createEmptyObject(arr[1]);
                         raw_obj_data_array.push(current_obj);
                     }
                     break;
                 case "g":
-                    if (current_group.name === "Default") current_group.name = arr[1];
+                    if (current_group.name === "Default" || current_group.faces.length === 0)
+                        current_group.name = arr[1];
                     else {
                         //new group
                         current_group = createEmptyGroup(arr[1]);
@@ -217,7 +218,7 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
             const geom_group: Group = {
                 offset: offset,
                 count: 0,
-                material_index: materials && group.material_name ? materials[group.material_name].index : 0,
+                material_index: group.material_name ? used_mtl_data[group.material_name].index : 0,
             };
             let elements = 0;
             for (const face of group.faces) {
