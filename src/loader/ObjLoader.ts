@@ -193,6 +193,7 @@ function createEmptyGroup(name: string): FaceGroup {
 
 function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlData): ObjData {
     let used_mtl_data: MtlData = {};
+    let used_mat_index = 0;
 
     const result: ObjData = {
         objects: [],
@@ -213,6 +214,7 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
             //add material to result if not yet added
             if (materials && group.material_name && used_mtl_data[group.material_name] === undefined) {
                 used_mtl_data[group.material_name] = materials[group.material_name];
+                used_mtl_data[group.material_name].index = used_mat_index++;
             }
 
             const geom_group: Group = {
