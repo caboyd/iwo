@@ -1,3 +1,4 @@
+import { group } from "console";
 import { StandardAttribute } from "geometry/attribute/StandardAttribute";
 import { BufferedGeometry } from "geometry/BufferedGeometry";
 import { Geometry, Group } from "geometry/Geometry";
@@ -30,15 +31,10 @@ type RawObjData = {
 
     groups: FaceGroup[];
     //used for calculating normals that are not provided
+    //index into groups.faces[]
     smoothing_groups: {
         [key: number]: number[];
     };
-};
-
-type SmoothingGroup = {
-    index: number;
-    //index into groups.faces[faces_array_indices]
-    faces_array_indices: number[];
 };
 
 type FaceGroup = {
@@ -101,7 +97,7 @@ export class ObjLoader extends FileLoader {
                 case "#": //comment
                     break;
                 case "o":
-                    if (current_obj.name === "Default") current_obj.name = arr[1];
+                    if (current_obj.name === "Default" || current_group.faces.length === 0) current_obj.name = arr[1];
                     else {
                         current_obj = createEmptyObject(arr[1]);
                         raw_obj_data_array.push(current_obj);
@@ -196,14 +192,11 @@ function createEmptyGroup(name: string): FaceGroup {
 }
 
 function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlData): ObjData {
-    let mats: Material | Material[] | undefined = materials
-        ? Object.values(materials).map((mat) => mat.material)
-        : undefined;
-    if (mats && mats.length === 1) mats = mats[0];
+    let used_mtl_data: MtlData = {};
 
     const result: ObjData = {
         objects: [],
-        materials: mats,
+        materials: [],
     };
 
     for (const raw_obj_data of raw_obj_data_array) {
@@ -217,13 +210,17 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
         let offset = 0;
 
         for (const group of raw_obj_data.groups) {
+            //add material to result if not yet added
+            if (materials && group.material_name && used_mtl_data[group.material_name] === undefined) {
+                used_mtl_data[group.material_name] = materials[group.material_name];
+            }
+
             const geom_group: Group = {
                 offset: offset,
                 count: 0,
                 material_index: materials && group.material_name ? materials[group.material_name].index : 0,
             };
             let elements = 0;
-            //TODO: Generate n-2 triangles
             for (const face of group.faces) {
                 for (let i = 0; i < face.v_indices.length - 2; i++) {
                     elements += 3;
@@ -257,6 +254,13 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
             buffered_geometry: BufferedGeometry.fromGeometry(geom),
         });
     }
+
+    //add only used materials to result
+    let mats: Material | Material[] | undefined = materials
+        ? Object.values(materials).map((mat) => mat.material)
+        : undefined;
+    if (mats && mats.length === 1) mats = mats[0];
+    result.materials = mats;
 
     return result;
 }
