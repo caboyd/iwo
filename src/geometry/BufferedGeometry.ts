@@ -36,6 +36,7 @@ export class BufferedGeometry {
     public static fromGeometry(geom: Geometry, options?: Partial<BufferedGeometryOptions>): BufferedGeometry {
         const b = new BufferedGeometry();
         b.attributes = StandardAttribute.SingleBufferApproach();
+        b.draw_mode = geom.draw_mode;
         b.buffer_format = options?.buffer_format ?? b.buffer_format;
         b.buffers = [];
         b.groups = geom.groups;
