@@ -21,7 +21,9 @@ export class MeshInstance {
         this.prepareMesh(renderer);
 
         renderer.setPerModelUniforms(this.model_matrix, view_matrix, proj_matrix);
-        for (const [i, mat] of this.materials.entries()) {
+
+        for (let i = 0; i < this.materials.length; i++) {
+            const mat = this.materials[i];
             let submeshes_rendered = 0;
 
             for (const submesh of this.mesh.sub_meshes) {
