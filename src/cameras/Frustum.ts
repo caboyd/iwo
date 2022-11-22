@@ -1,5 +1,5 @@
 import { glMatrix, mat4, vec3, vec4 } from "gl-matrix";
-import { Camera } from "./camera";
+import { Camera } from "./Camera";
 
 export type FrustumOptions = {
     clip_near: number;
