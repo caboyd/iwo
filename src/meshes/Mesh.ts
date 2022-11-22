@@ -6,6 +6,10 @@ import { VertexBuffer } from "@graphics/VertexBuffer";
 import { DrawMode } from "@graphics/WebglConstants";
 import { SubMesh } from "./SubMesh";
 
+export type MeshOptions = {
+    reuse_index_buffer: IndexBuffer;
+};
+
 export class Mesh {
     public readonly index_buffer: IndexBuffer | undefined;
     public readonly vertex_buffer: VertexBuffer;
@@ -20,7 +24,11 @@ export class Mesh {
         return this.#inititalized;
     }
 
-    public constructor(gl: WebGL2RenderingContext, geometry: Geometry | BufferedGeometry) {
+    public constructor(
+        gl: WebGL2RenderingContext,
+        geometry: Geometry | BufferedGeometry,
+        options?: Partial<MeshOptions>
+    ) {
         let buf_geom: BufferedGeometry = geometry as BufferedGeometry;
         if (geometry instanceof Geometry) {
             buf_geom =
@@ -29,14 +37,22 @@ export class Mesh {
                     : BufferedGeometry.fromGeometry(geometry);
         }
 
-        if (buf_geom.index_buffer !== undefined) this.index_buffer = new IndexBuffer(gl, buf_geom);
+        if (options && options.reuse_index_buffer) {
+            this.index_buffer = options.reuse_index_buffer;
+        } else {
+            if (buf_geom.index_buffer !== undefined) this.index_buffer = new IndexBuffer(gl, buf_geom);
+        }
+
         this.vertex_buffer = new VertexBuffer(gl, buf_geom);
+        this.vertex_buffer.references.increment();
 
         this.sub_meshes = [];
         this.draw_mode = buf_geom.draw_mode ?? DrawMode.TRIANGLES;
 
-        if (this.index_buffer) this.count = buf_geom.index_buffer!.buffer.length;
-        else
+        if (this.index_buffer) {
+            this.count = buf_geom.index_buffer!.buffer.length;
+            this.index_buffer.references.increment();
+        } else
             this.count =
                 buf_geom.buffers[buf_geom.attributes[Object.keys(buf_geom.attributes)[0]].buffer_index].buffer.length /
                 3;
@@ -99,7 +115,11 @@ export class Mesh {
             sub_mesh.destroy();
         }
 
-        if (this.index_buffer) this.index_buffer.destroy(gl);
+        if (this.index_buffer) {
+            this.index_buffer.references.decrement();
+            this.index_buffer.destroy(gl);
+        }
+        this.vertex_buffer.references.decrement();
         this.vertex_buffer.destroy(gl);
     }
 }
