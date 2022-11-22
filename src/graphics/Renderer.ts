@@ -26,7 +26,6 @@ export class ViewportDimensions {
 export class Renderer {
     public readonly gl: WebGL2RenderingContext;
     private current_vertex_buffer: VertexBuffer | undefined;
-    private current_index_buffer: IndexBuffer | undefined;
     private current_material: Material | undefined;
     private current_shader: Shader | undefined;
 
@@ -128,7 +127,6 @@ export class Renderer {
 
     public resetSaveBindings(): void {
         this.current_vertex_buffer = undefined;
-        this.current_index_buffer = undefined;
         this.current_material = undefined;
         this.current_shader = undefined;
     }
@@ -197,9 +195,9 @@ export class Renderer {
             this.stats.vertex_buffer_bind_count++;
         }
 
-        if (index_buffer && index_buffer != this.current_index_buffer) {
-            this.current_index_buffer = index_buffer;
-            this.current_index_buffer.bind(this.gl);
+        //always bind index buffer because it is not part of vertex buffers VAO
+        if (index_buffer) {
+            index_buffer.bind(this.gl);
             this.stats.index_buffer_bind_count++;
         }
     }
