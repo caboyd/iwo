@@ -1,59 +1,62 @@
-export { WebGL } from "./graphics/WebglHelper";
-export { ReferenceCounter } from "./helpers/ReferenceCounter";
+export * from "./cameras/Camera";
+export * from "./cameras/CubeCamera";
+export * from "./cameras/OrbitControl";
+export * from "./cameras/FPSControl";
+export * from "./cameras/Frustum";
 
-export { Camera } from "./cameras/Camera";
-export { CubeCamera } from "./cameras/CubeCamera";
-export { OrbitControl } from "./cameras/OrbitControl";
-export { FPSControl } from "./cameras/FPSControl";
-export { Frustum } from "./cameras/Frustum";
+export * from "./geometry/attribute/StandardAttribute";
+export * from "./geometry/attribute/Attribute";
 
-export { StandardAttribute } from "./geometry/attribute/StandardAttribute";
-export { Attribute } from "./geometry/attribute/Attribute";
+export * from "./geometry/Geometry";
+export * from "./geometry/BufferedGeometry";
+export * from "./geometry/BoxGeometry";
+export * from "./geometry/PlaneGeometry";
+export * from "./geometry/SphereGeometry";
+export * from "./geometry/LineGeometry";
 
-export { Geometry } from "./geometry/Geometry";
-export { BufferedGeometry } from "./geometry/BufferedGeometry";
-export { BoxGeometry } from "./geometry/BoxGeometry";
-export { PlaneGeometry } from "./geometry/PlaneGeometry";
-export { SphereGeometry } from "./geometry/SphereGeometry";
-export { LineGeometry } from "./geometry/LineGeometry";
-
-export { AttributeBuffer } from "./graphics/AttributeBuffer";
-export { IndexBuffer } from "./graphics/IndexBuffer";
-export { UniformBuffer } from "./graphics/UniformBuffer";
-export { VertexBuffer } from "./graphics/VertexBuffer";
-
-export { Texture2D } from "./graphics/Texture2D";
-export { TextureCubeMap } from "./graphics/TextureCubeMap";
-export { TextureHelper } from "./graphics/TextureHelper";
-export { Uniform } from "./graphics/Uniform";
-
-export { ShaderSource } from "./graphics/shader/ShaderSources";
-export { Shader } from "./graphics/shader/Shader";
-
-export { Material } from "./materials/Material";
-export { BasicMaterial } from "./materials/BasicMaterial";
-export { GridMaterial } from "./materials/GridMaterial";
-export { NormalOnlyMaterial } from "./materials/NormalOnlyMaterial";
-export { PBRMaterial } from "./materials/PBRMaterial";
-export { LineMaterial } from "./materials/LineMaterial";
-export { EmptyMaterial } from "./materials/EmptyMaterial";
-
-export { SubMesh } from "./meshes/SubMesh";
-export { Mesh } from "./meshes/Mesh";
-export { MeshInstance } from "./meshes/MeshInstance";
-
-export { FileLoader } from "./loader/FileLoader";
-export { HDRImageLoader, HDRBuffer } from "./loader/HDRImageLoader";
-export { glTFLoader, glTFData } from "./loader/glTFLoader";
-export { ObjLoader, ObjData, ObjOptions } from "./loader/ObjLoader";
-export { MtlLoader, MtlData } from "./loader/MtlLoader";
-export { ImageLoader } from "./loader/ImageLoader";
-export { TextureLoader } from "./loader/TextureLoader";
-
-export { RendererStats } from "./graphics/RendererStats";
-export { Renderer } from "./graphics/Renderer";
-
+export * from "./graphics/RendererStats";
+export * from "./graphics/Renderer";
 export * from "./graphics/WebglConstants";
+export * from "./graphics/WebglHelper";
+export * from "./graphics/Uniform";
+export * from "./graphics/AttributeBuffer";
+export * from "./graphics/IndexBuffer";
+export * from "./graphics/UniformBuffer";
+export * from "./graphics/VertexBuffer";
+
+export * from "./graphics/Texture2D";
+export * from "./graphics/TextureCubeMap";
+export * from "./graphics/TextureHelper";
+
+export * from "./graphics/shader/ShaderSources";
+export * from "./graphics/shader/Shader";
+export * from "./graphics/shader/PBRShader";
+export * from "./graphics/shader/BasicShader";
+export * from "./graphics/shader/CubemapSpecularPrefilterShader";
+export * from "./graphics/shader/EquiToCubemapShader";
+export * from "./graphics/shader/LineShader";
+
+export * from "./materials/Material";
+export * from "./materials/BasicMaterial";
+export * from "./materials/GridMaterial";
+export * from "./materials/NormalOnlyMaterial";
+export * from "./materials/PBRMaterial";
+export * from "./materials/LineMaterial";
+export * from "./materials/EmptyMaterial";
+
+export * from "./meshes/SubMesh";
+export * from "./meshes/Mesh";
+export * from "./meshes/MeshInstance";
+
+export * from "./loader/FileLoader";
+export * from "./loader/HDRImageLoader";
+export * from "./loader/glTFLoader";
+export * from "./loader/ObjLoader";
+export * from "./loader/MtlLoader";
+export * from "./loader/ImageLoader";
+export * from "./loader/TextureLoader";
+
+export * from "./helpers/ReferenceCounter";
 
 export function initGL(canvas: HTMLCanvasElement): WebGL2RenderingContext {
     try {
