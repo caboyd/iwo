@@ -203,16 +203,17 @@ export class glTFLoader {
                     const materials = [];
                     if (o.materials !== undefined)
                         for (const mat of o.materials) {
-                            const m = new PBRMaterial(
-                                new Color(mat.pbrMetallicRoughness?.baseColorFactor).rgb,
-                                mat.pbrMetallicRoughness?.metallicFactor ?? 1,
-                                mat.pbrMetallicRoughness?.roughnessFactor ?? 1
-                            );
-                            m.albedo_image = images[mat.pbrMetallicRoughness!.baseColorTexture!.index!];
-                            m.normal_image = images[mat.normalTexture!.index];
-                            m.occlusion_image = images[mat.occlusionTexture!.index];
-                            m.metal_roughness_image = images[mat.pbrMetallicRoughness!.metallicRoughnessTexture!.index];
-                            m.emissive_image = images[mat.emissiveTexture!.index];
+                            const m = new PBRMaterial({
+                                albedo_color: new Color(mat.pbrMetallicRoughness?.baseColorFactor).rgb,
+                                metallic: mat.pbrMetallicRoughness?.metallicFactor ?? 1,
+                                roughness: mat.pbrMetallicRoughness?.roughnessFactor ?? 1,
+                                albedo_image: images[mat.pbrMetallicRoughness!.baseColorTexture!.index!],
+                                normal_image: images[mat.normalTexture!.index],
+                                occlusion_image: images[mat.occlusionTexture!.index],
+                                metal_roughness_image:
+                                    images[mat.pbrMetallicRoughness!.metallicRoughnessTexture!.index],
+                                emissive_image: images[mat.emissiveTexture!.index],
+                            });
                             materials.push(m);
                         }
 

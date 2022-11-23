@@ -1,6 +1,6 @@
 #version 300 es
 precision highp float;
-precision lowp sampler2DShadow;
+precision highp sampler2DShadow;
 
 #define PI 3.14159265358979
 #define MIN_PERCEPTUAL_ROUGHNESS 0.045
@@ -27,7 +27,7 @@ layout (std140) uniform ubo_per_frame{
 
 };
 struct Material {
-    vec3 albedo;
+    vec3 albedo_color;
     float roughness;
     float metallic;
     float ao;
@@ -173,7 +173,7 @@ void main() {
     if (u_material.active_textures[0])
     albedo = texture(u_material.albedo_sampler, tex_coord).rgb;
     else
-    albedo = u_material.albedo.rgb;
+    albedo = u_material.albedo_color.rgb;
 
     vec3 emission;
     if(u_material.active_textures[6])

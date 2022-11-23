@@ -6,8 +6,38 @@ import { Texture2D } from "@graphics/Texture2D";
 import { TextureCubeMap } from "@graphics/TextureCubeMap";
 import { Material, MaterialOptions } from "./Material";
 
+export type PBRMaterialOptions = {
+    albedo_color: vec3;
+    metallic: number;
+    roughness: number;
+    ao: number;
+    emissive_factor: vec3;
+    albedo_texture?: Texture2D;
+    albedo_image?: HTMLImageElement;
+    normal_texture?: Texture2D;
+    normal_image?: HTMLImageElement;
+    occlusion_texture?: Texture2D;
+    occlusion_image?: HTMLImageElement;
+    metal_roughness_texture?: Texture2D;
+    metal_roughness_image?: HTMLImageElement;
+    emissive_texture?: Texture2D;
+    emissive_image?: HTMLImageElement;
+    irradiance_texture?: TextureCubeMap;
+    specular_env_texture?: TextureCubeMap;
+    shadow_texture?: Texture2D;
+    material_options?: Partial<MaterialOptions>;
+};
+
+const DefaultPBRMaterialOptions: PBRMaterialOptions = {
+    albedo_color: [1, 1, 1],
+    metallic: 0,
+    roughness: 1,
+    ao: 1,
+    emissive_factor: [1, 1, 1],
+};
+
 export class PBRMaterial extends Material {
-    public albedo: vec3;
+    public albedo_color: vec3;
     public metallic: number;
     public roughness: number;
     public ao: number = 1;
@@ -23,27 +53,32 @@ export class PBRMaterial extends Material {
     public emissive_texture: Texture2D | undefined;
     public emissive_image: HTMLImageElement | undefined;
     public irradiance_texture: TextureCubeMap | undefined;
-    public specular_env: TextureCubeMap | undefined;
+    public specular_env_texture: TextureCubeMap | undefined;
     public shadow_texture: Texture2D | undefined;
 
     private material_options?: MaterialOptions;
 
-    public constructor(
-        color: vec3,
-        metallic: number,
-        roughness: number,
-        ambient_occlusion?: number,
-        emissive_factor?: vec3,
-        material_options?: MaterialOptions
-    ) {
+    public constructor(options?: Partial<PBRMaterialOptions>) {
         super();
-
-        this.albedo = vec3.clone(color);
-        this.metallic = metallic;
-        this.roughness = roughness;
-        this.ao = ambient_occlusion || this.ao;
-        this.emissive_factor = emissive_factor || this.emissive_factor;
-        this.material_options = material_options;
+        const opt = { ...DefaultPBRMaterialOptions, ...options };
+        this.albedo_color = opt.albedo_color;
+        this.metallic = opt.metallic;
+        this.roughness = opt.roughness;
+        this.ao = opt.ao;
+        this.emissive_factor = opt.emissive_factor;
+        this.albedo_texture = opt.albedo_texture;
+        this.albedo_image = opt.albedo_image;
+        this.normal_texture = opt.normal_texture;
+        this.normal_image = opt.normal_image;
+        this.occlusion_texture = opt.occlusion_texture;
+        this.occlusion_image = opt.occlusion_image;
+        this.metal_roughness_texture = opt.metal_roughness_texture;
+        this.metal_roughness_image = opt.metal_roughness_image;
+        this.emissive_texture = opt.emissive_texture;
+        this.emissive_image = opt.emissive_image;
+        this.irradiance_texture = opt.irradiance_texture;
+        this.specular_env_texture = opt.specular_env_texture;
+        this.shadow_texture = opt.shadow_texture;
     }
 
     public activate(gl: WebGL2RenderingContext, shader: Shader): void {
@@ -65,8 +100,8 @@ export class PBRMaterial extends Material {
             active_textures[1] = true;
         }
 
-        if (this.specular_env) {
-            this.specular_env.bind(gl, 2);
+        if (this.specular_env_texture) {
+            this.specular_env_texture.bind(gl, 2);
             active_textures[2] = true;
         }
 
@@ -123,7 +158,7 @@ export class PBRMaterial extends Material {
         }
 
         shader.setUniform("u_material.active_textures[0]", active_textures);
-        shader.setUniform("u_material.albedo", this.albedo);
+        shader.setUniform("u_material.albedo_color", this.albedo_color);
         shader.setUniform("u_material.roughness", this.roughness);
         shader.setUniform("u_material.metallic", this.metallic);
         shader.setUniform("u_material.ao", this.ao);

@@ -19,7 +19,7 @@ layout (std140) uniform ubo_per_frame{
 };
 
 struct Material {
-    vec3 albedo;
+    vec3 albedo_color;
 
     sampler2D albedo_sampler;
     samplerCube albedo_cube_sampler;
@@ -49,7 +49,7 @@ void main()
         //color = pow(color, vec3(1.0/2.2));
     }
     else
-    color = u_material.albedo.rgb;
+    color = u_material.albedo_color.rgb;
 
     if (u_material.active_textures[1]){
         vec3 cube_color = texture(u_material.albedo_cube_sampler, local_pos).rgb;

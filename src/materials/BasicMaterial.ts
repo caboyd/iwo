@@ -3,18 +3,20 @@ import { ShaderSource } from "@graphics/shader/ShaderSources";
 import { Shader } from "@graphics/shader/Shader";
 import { Texture2D } from "@graphics/Texture2D";
 import { TextureCubeMap } from "@graphics/TextureCubeMap";
-import { Material } from "./Material";
+import { Material, MaterialOptions } from "./Material";
 
 export class BasicMaterial extends Material {
     private equirectangular_albedo: boolean = false;
-    public albedo: vec3;
+    public albedo_color: vec3;
     public albedo_image?: HTMLImageElement;
     public albedo_texture?: Texture2D;
     public albedo_cube_texture?: TextureCubeMap;
+    public material_options?: MaterialOptions;
 
-    public constructor(color: vec3) {
+    public constructor(color: vec3, options?: Partial<MaterialOptions>) {
         super();
-        this.albedo = vec3.clone(color);
+        this.albedo_color = vec3.clone(color);
+        this.material_options = options;
     }
 
     public activate(gl: WebGL2RenderingContext, shader: Shader): void {
@@ -22,7 +24,7 @@ export class BasicMaterial extends Material {
 
         if (this.albedo_texture === undefined && this.albedo_image?.complete) {
             this.albedo_texture = new Texture2D(gl, this.albedo_image, {
-                flip: false,
+                flip: this.material_options?.flip_image_y ?? false,
             });
         }
 
@@ -38,7 +40,7 @@ export class BasicMaterial extends Material {
         }
 
         shader.setUniform("u_material.active_textures[0]", active_textures);
-        shader.setUniform("u_material.albedo", this.albedo);
+        shader.setUniform("u_material.albedo_color", this.albedo_color);
     }
 
     public setAlbedoTexture(tex: Texture2D, equirectangular: boolean = false): void {

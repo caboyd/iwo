@@ -86,7 +86,13 @@ export class MtlLoader extends FileLoader {
             //use specular exponent as rougness
             const roughness = value.Ns ? 1 - Math.min(Math.pow(Math.log10(value.Ns), 2) / 9, 0.975) : 0;
 
-            const mat = new PBRMaterial(color, metallic, roughness, undefined, emmisive, mtl_options);
+            const mat = new PBRMaterial({
+                albedo_color: color,
+                metallic: metallic,
+                roughness: roughness,
+                emissive_factor: emmisive,
+                material_options: mtl_options,
+            });
             if (value.map_Kd_index !== undefined) mat.albedo_image = images[value.map_Kd_index];
             if (value.map_Ke_index !== undefined) mat.emissive_image = images[value.map_Ke_index];
             m[name] = { index: value.material_index, material: mat };
