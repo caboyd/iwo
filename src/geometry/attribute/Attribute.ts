@@ -1,16 +1,12 @@
-import { ComponentType, GL } from "@graphics/WebglConstants";
 import { TypedArray } from "@customtypes/types";
-import { LineAttribute } from "./LineAttribute";
-import { StandardAttribute } from "./StandardAttribute";
-
-export type AttributeName = StandardAttribute.Name | LineAttribute.Name;
+import { ComponentType, GL } from "@graphics/WebglConstants";
 
 export type AttributeFormat = {
-    name: AttributeName;
+    name: string;
     createAttribute: (attr?: Partial<Attribute>) => Attribute;
 };
 
-export function createAttribute(name: AttributeName, attr?: Partial<Attribute>): Attribute {
+export function createAttribute(name: string, attr?: Partial<Attribute>): Attribute {
     return {
         ...{
             name: name,
@@ -28,7 +24,7 @@ export function createAttribute(name: AttributeName, attr?: Partial<Attribute>):
 }
 
 export interface Attribute {
-    name: AttributeName;
+    name: string;
     enabled: boolean;
     buffer_index: number;
     byte_offset: number;

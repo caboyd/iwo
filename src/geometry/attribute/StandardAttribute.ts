@@ -1,10 +1,7 @@
 import { Attribute, AttributeFormat, createAttribute } from "./Attribute";
 
 //TODO: Change to match glTF https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#meshes
-
 export namespace StandardAttribute {
-    // const _type =  ["Vertex", "Tex_Coord" ,"Normal" ,"Tangent" , "Bitangent"] as const;
-    // export type Type = typeof _type[number];
     export enum Name {
         Vertex = "a_vertex",
         Tex_Coord = "a_tex_coord",

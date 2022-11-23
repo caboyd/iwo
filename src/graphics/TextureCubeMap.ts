@@ -1,5 +1,4 @@
 import { CubeCamera } from "@cameras/CubeCamera";
-import { AttributeName } from "@geometry/attribute/Attribute";
 import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
 import { BoxGeometry } from "@geometry/BoxGeometry";
 import { Geometry } from "@geometry/Geometry";
@@ -398,7 +397,7 @@ export class TextureCubeMap {
         if (Renderer.BRDF_LUT_TEXTURE === undefined) {
             //Generate brdf LUT if it doesnt exist as its required for IBL
             const quad_geom = new Geometry();
-            quad_geom.attributes = new Map<AttributeName, TypedArray>()
+            quad_geom.attributes = new Map<string, TypedArray>()
                 .set(
                     StandardAttribute.Vertex.name,
                     new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0])
