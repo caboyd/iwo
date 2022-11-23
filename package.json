@@ -1,7 +1,7 @@
 {
   "name": "iwo-renderer",
   "sideEffects": false,
-  "version": "0.4.12",
+  "version": "0.4.13",
   "description": "Typescript Webgl2 Physically Based Renderer",
   "main": "dist/iwo.umd.js",
   "module": "dist/iwo.es5.js",
