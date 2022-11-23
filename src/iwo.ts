@@ -28,6 +28,7 @@ export { TextureHelper } from "./graphics/TextureHelper";
 export { Uniform } from "./graphics/Uniform";
 
 export { ShaderSource } from "./graphics/shader/ShaderSources";
+export { Shader } from "./graphics/shader/Shader";
 
 export { Material } from "./materials/Material";
 export { BasicMaterial } from "./materials/BasicMaterial";
