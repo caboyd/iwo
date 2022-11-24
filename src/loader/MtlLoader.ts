@@ -78,9 +78,9 @@ export class MtlLoader extends FileLoader {
         //create materials
         for (let [name, value] of mtl_data) {
             //we dont have ambient so color is diffuse + ambient
-            const color = value.Kd || vec3.create();
+            const color = value.Kd ?? [0, 0, 0];
             if (value.Ka) vec3.add(color, color, value.Ka);
-            const emmisive = value.Ke;
+            const emmisive = value.Ke ?? [1, 1, 1];
             //use specular average color as metallic
             const metallic = value.Ks ? (value.Ks[0] + value.Ks[1] + value.Ks[2]) / 3 : 0;
             //use specular exponent as rougness
