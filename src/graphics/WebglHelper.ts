@@ -1,4 +1,5 @@
 import { TypedArray } from "@customtypes/types";
+import { _componentTypeInteger } from "./WebglConstants";
 
 export namespace WebGL {
     export function buildBuffer(
@@ -12,5 +13,9 @@ export namespace WebGL {
         gl.bindBuffer(type, buffer);
         gl.bufferData(type, data, gl.STATIC_DRAW, offset, length);
         return buffer;
+    }
+
+    export function isComponentTypeInteger(x: any): boolean {
+        return _componentTypeInteger.includes(x);
     }
 }

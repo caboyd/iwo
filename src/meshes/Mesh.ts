@@ -1,3 +1,4 @@
+import { TypedArray } from "@customtypes/types";
 import { BufferedGeometry } from "@geometry/BufferedGeometry";
 import { Geometry } from "@geometry/Geometry";
 import { IndexBuffer } from "@graphics/IndexBuffer";
@@ -52,10 +53,11 @@ export class Mesh {
         if (this.index_buffer) {
             this.count = buf_geom.index_buffer!.buffer.length;
             this.index_buffer.references.increment();
-        } else
-            this.count =
-                buf_geom.buffers[buf_geom.attributes[Object.keys(buf_geom.attributes)[0]].buffer_index].buffer.length /
-                3;
+        } else {
+            const attr = buf_geom.attributes[Object.keys(buf_geom.attributes)[0]];
+            this.count = buf_geom.buffers[attr.buffer_index].buffer.length / attr.component_count;
+        }
+
         this.instances = buf_geom.instances;
 
         if (buf_geom.groups === undefined || buf_geom.groups.length == 0) {
@@ -73,15 +75,20 @@ export class Mesh {
     public setupVAO(gl: WebGL2RenderingContext, program: Shader) {
         this.#inititalized = true;
         this.vertex_buffer.setupVAO(gl, program);
+        gl.bindVertexArray(null);
+    }
+
+    public updateBuffer(gl: WebGL2RenderingContext, index: number, data: TypedArray) {
+        this.vertex_buffer.updateBuffer(gl, index, data);
+        gl.bindVertexArray(null);
     }
 
     //TODO: Complete this
-    updateGeometryBuffer(gl: WebGL2RenderingContext, buf_geom: BufferedGeometry): void {
+    public updateGeometryBuffer(gl: WebGL2RenderingContext, buf_geom: BufferedGeometry): void {
         // if (buf_geom.index_buffer !== undefined) {
         //     this.index_buffer?.bufferData(gl,buf_geom.index_buffer);
         // }
         this.vertex_buffer.updateBufferData(gl, buf_geom);
-
         // this.sub_meshes = [];
         // this.draw_mode = buf_geom.draw_mode ?? DrawMode.TRIANGLES;
         // this.count = 0;
