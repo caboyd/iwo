@@ -8,10 +8,16 @@ iwo is a physically based renderer written in Typescript. This project was creat
 [<img src="https://i.imgur.com/5aFTrlk.png" alt="Typescript PBR Renderer Demoimage">](https://caboyd.github.io/iwo-examples/index.html)
 
 ## Installing
-This library is a work in progress and not yet published. To use this library look at the examples repo.
+```
+npm i iwo-renderer gl-matrix
+```
+
+This library requires a bundler like rollup and depends on gl-matrix.
+To use this library look at my example game [Underwater Game](https://github.com/caboyd/underwater_game)
 
 ## Examples
 - https://github.com/caboyd/iwo-examples
+- https://github.com/caboyd/underwater_game
 
 ## Features
 This is a list of features to reference for ideas. Checkmarked features have been implemented.  

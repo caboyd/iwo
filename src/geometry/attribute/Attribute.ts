@@ -43,20 +43,32 @@ export type Attributes = {
 export function typeToComponentCount(type: GLenum) {
     switch (type) {
         case GL.FLOAT_VEC2:
+        case GL.UNSIGNED_INT_VEC2:
         case GL.INT_VEC2:
         case GL.BOOL_VEC2:
             return 2;
         case GL.FLOAT_VEC3:
+        case GL.UNSIGNED_INT_VEC3:
         case GL.INT_VEC3:
         case GL.BOOL_VEC3:
             return 3;
         case GL.FLOAT_VEC4:
+        case GL.UNSIGNED_INT_VEC4:
         case GL.INT_VEC4:
         case GL.BOOL_VEC4:
         case GL.FLOAT_MAT2:
             return 4;
+        case GL.FLOAT_MAT2X3:
+        case GL.FLOAT_MAT3X2:
+            return 6;
+        case GL.FLOAT_MAT4X2:
+        case GL.FLOAT_MAT2X4:
+            return 8;
         case GL.FLOAT_MAT3:
             return 9;
+        case GL.FLOAT_MAT3X4:
+        case GL.FLOAT_MAT4X3:
+            return 12;
         case GL.FLOAT_MAT4:
             return 16;
         default:

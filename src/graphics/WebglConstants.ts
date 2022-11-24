@@ -85,6 +85,12 @@ export namespace GL {
     export const FLOAT_MAT2 = 35674 as const;
     export const FLOAT_MAT3 = 35675 as const;
     export const FLOAT_MAT4 = 35676 as const;
+    export const FLOAT_MAT2X3 = 0x8b65 as const;
+    export const FLOAT_MAT2X4 = 0x8b66 as const;
+    export const FLOAT_MAT3X2 = 0x8b67 as const;
+    export const FLOAT_MAT3X4 = 0x8b68 as const;
+    export const FLOAT_MAT4X2 = 0x8b69 as const;
+    export const FLOAT_MAT4X3 = 0x8b6a as const;
     export const FLOAT_VEC2 = 35664 as const;
     export const FLOAT_VEC3 = 35665 as const;
     export const FLOAT_VEC4 = 35666 as const;
@@ -294,6 +300,9 @@ export namespace GL {
     export const UNPACK_PREMULTIPLY_ALPHA_WEBGL = 37441 as const;
     export const UNSIGNED_BYTE = 5121 as const;
     export const UNSIGNED_INT = 5125 as const;
+    export const UNSIGNED_INT_VEC2 = 0x8dc6 as const;
+    export const UNSIGNED_INT_VEC3 = 0x8dc7 as const;
+    export const UNSIGNED_INT_VEC4 = 0x8dc8 as const;
     export const UNSIGNED_SHORT = 5123 as const;
     export const UNSIGNED_SHORT_4_4_4_4 = 32819 as const;
     export const UNSIGNED_SHORT_5_5_5_1 = 32820 as const;
