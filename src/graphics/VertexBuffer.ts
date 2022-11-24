@@ -50,7 +50,7 @@ export class VertexBuffer {
             }
 
             gl.enableVertexAttribArray(index);
-            if (WebGL.isComponentTypeInteger(info.type))
+            if (WebGL.isComponentTypeInteger(attrib.component_type))
                 gl.vertexAttribIPointer(
                     index,
                     typeToComponentCount(info.type),
