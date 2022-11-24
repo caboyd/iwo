@@ -8,21 +8,6 @@ export const enum DrawMode {
     TRIANGLE_FAN = 0x0006,
 }
 
-export type ComponentType = ComponentTypeInteger | typeof GL.FLOAT | typeof GL.HALF_FLOAT;
-
-export const _componentTypeInteger = [
-    GL.BYTE,
-    GL.UNSIGNED_BYTE,
-    GL.SHORT,
-    GL.UNSIGNED_SHORT,
-    GL.INT,
-    GL.UNSIGNED_INT,
-] as const;
-
-export type ComponentTypeInteger = typeof _componentTypeInteger[number];
-
-export type ComponentFormatType = "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
-
 export namespace GL {
     export const ACTIVE_ATTRIBUTES = 35721 as const;
     export const ACTIVE_ATTRIBUTE_MAX_LENGTH = 35722 as const;
@@ -327,3 +312,18 @@ export namespace GL {
     export const VIEWPORT = 2978 as const;
     export const ZERO = 0 as const;
 }
+
+export type ComponentType = ComponentTypeInteger | typeof GL.FLOAT | typeof GL.HALF_FLOAT;
+
+export const _componentTypeInteger = [
+    GL.BYTE,
+    GL.UNSIGNED_BYTE,
+    GL.SHORT,
+    GL.UNSIGNED_SHORT,
+    GL.INT,
+    GL.UNSIGNED_INT,
+] as const;
+
+export type ComponentTypeInteger = typeof _componentTypeInteger[number];
+
+export type ComponentFormatType = "SCALAR" | "VEC2" | "VEC3" | "VEC4" | "MAT2" | "MAT3" | "MAT4" | string;
