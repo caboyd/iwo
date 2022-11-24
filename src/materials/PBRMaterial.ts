@@ -61,11 +61,11 @@ export class PBRMaterial extends Material {
     public constructor(options?: Partial<PBRMaterialOptions>) {
         super();
         const opt = { ...DefaultPBRMaterialOptions, ...options };
-        this.albedo_color = opt.albedo_color;
+        this.albedo_color = vec3.clone(opt.albedo_color);
         this.metallic = opt.metallic;
         this.roughness = opt.roughness;
         this.ao = opt.ao;
-        this.emissive_factor = opt.emissive_factor;
+        this.emissive_factor = vec3.clone(opt.emissive_factor);
         this.albedo_texture = opt.albedo_texture;
         this.albedo_image = opt.albedo_image;
         this.normal_texture = opt.normal_texture;
