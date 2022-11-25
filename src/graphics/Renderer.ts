@@ -202,6 +202,11 @@ export class Renderer {
         }
     }
 
+    public cleanupGLState(): void {
+        if (this.current_material && this.current_material.cleanupGLState)
+            this.current_material.cleanupGLState(this.gl);
+    }
+
     public resetStats(): void {
         //console.dir(this.stats);
         this.stats.reset();

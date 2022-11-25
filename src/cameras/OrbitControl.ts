@@ -54,6 +54,7 @@ export class OrbitControl {
     public readonly opt: OrbitControlOptions;
 
     private is_mouse_down: boolean = false;
+    public mouse_active: boolean;
 
     public readonly active_keys: ActiveKeys = Object.fromEntries(
         Object.entries(DefaultOrbitControlBinds).map(([k, v]) => [v, false])
@@ -61,6 +62,7 @@ export class OrbitControl {
 
     public constructor(camera: Camera, options: Partial<OrbitControlOptions> = DefaultOrbitControlOptions) {
         this.camera = camera;
+        this.mouse_active = true;
 
         this.opt = { ...DefaultOrbitControlOptions, ...options };
         this.reset_orbit_point = vec3.clone(this.opt.orbit_point);
@@ -80,10 +82,12 @@ export class OrbitControl {
     }
 
     private mouseDownCallback = (e: MouseEvent) => {
+        if (!this.mouse_active) return;
         if (e.button === 0) this.is_mouse_down = true;
     };
 
     private mouseUpCallback = (e: MouseEvent) => {
+        if (!this.mouse_active) return;
         if (e.button === 0) this.is_mouse_down = false;
     };
 
@@ -109,6 +113,7 @@ export class OrbitControl {
     };
 
     private mousewheelCallback = (e: WheelEvent) => {
+        if (!this.mouse_active) return;
         e.stopPropagation();
         this.scroll_y_total += e.deltaY;
     };
