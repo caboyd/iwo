@@ -33,6 +33,7 @@ struct Material {
     float metallic;
     float ao;
     vec3 emissive_factor;
+    bool flat_shading;
 
     sampler2D albedo_sampler;
     samplerCube irradiance_sampler;
@@ -197,6 +198,12 @@ void main() {
        vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - vec3(1.0);
         mat3 TBN = cotangent_frame(world_normal, world_pos, tex_coord, vec2(1.,1.));
         N = perturbNormal(TBN, mapN, 1.0);
+    }
+
+    if(u_material.flat_shading){
+        vec3 xTangent = dFdx( world_normal );
+        vec3 yTangent = dFdy( world_normal );
+        N = normalize( cross( xTangent, yTangent ) );
     }
 
     //View Direction

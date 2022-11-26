@@ -12,6 +12,7 @@ export type PBRMaterialOptions = {
     roughness: number;
     ao: number;
     emissive_factor: vec3;
+    flat_shading: boolean;
     albedo_texture?: Texture2D;
     albedo_image?: HTMLImageElement;
     normal_texture?: Texture2D;
@@ -34,6 +35,7 @@ const DefaultPBRMaterialOptions: PBRMaterialOptions = {
     roughness: 1,
     ao: 1,
     emissive_factor: [1, 1, 1],
+    flat_shading: false,
 };
 
 export class PBRMaterial extends Material {
@@ -42,6 +44,7 @@ export class PBRMaterial extends Material {
     public roughness: number;
     public ao: number = 1;
     public emissive_factor: vec3 = [1, 1, 1];
+    public flat_shading: boolean;
     public albedo_texture: Texture2D | undefined;
     public albedo_image: HTMLImageElement | undefined;
     public normal_texture: Texture2D | undefined;
@@ -66,6 +69,7 @@ export class PBRMaterial extends Material {
         this.roughness = opt.roughness;
         this.ao = opt.ao;
         this.emissive_factor = vec3.clone(opt.emissive_factor);
+        this.flat_shading = opt.flat_shading;
         this.albedo_texture = opt.albedo_texture;
         this.albedo_image = opt.albedo_image;
         this.normal_texture = opt.normal_texture;
@@ -163,6 +167,7 @@ export class PBRMaterial extends Material {
         shader.setUniform("u_material.metallic", this.metallic);
         shader.setUniform("u_material.ao", this.ao);
         shader.setUniform("u_material.emissive_factor", this.emissive_factor);
+        shader.setUniform("u_material.flat_shading", this.flat_shading);
     }
 
     public get shaderSource(): ShaderSource {
