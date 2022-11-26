@@ -56,7 +56,9 @@ export class PBRMaterial extends Material {
     public emissive_texture: Texture2D | undefined;
     public emissive_image: HTMLImageElement | undefined;
     public irradiance_texture: TextureCubeMap | undefined;
+    public irradiance_texture_active: boolean;
     public specular_env_texture: TextureCubeMap | undefined;
+    public specular_env_texture_active: boolean;
     public shadow_texture: Texture2D | undefined;
 
     private material_options?: MaterialOptions;
@@ -81,7 +83,9 @@ export class PBRMaterial extends Material {
         this.emissive_texture = opt.emissive_texture;
         this.emissive_image = opt.emissive_image;
         this.irradiance_texture = opt.irradiance_texture;
+        this.irradiance_texture_active = true;
         this.specular_env_texture = opt.specular_env_texture;
+        this.specular_env_texture_active = true;
         this.shadow_texture = opt.shadow_texture;
     }
 
@@ -101,12 +105,12 @@ export class PBRMaterial extends Material {
 
         if (this.irradiance_texture) {
             this.irradiance_texture.bind(gl, 1);
-            active_textures[1] = true;
+            active_textures[1] = true && this.irradiance_texture_active;
         }
 
         if (this.specular_env_texture) {
             this.specular_env_texture.bind(gl, 2);
-            active_textures[2] = true;
+            active_textures[2] = true && this.specular_env_texture_active;
         }
 
         if (this.normal_texture === undefined && this.normal_image?.complete) {
