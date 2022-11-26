@@ -1,5 +1,6 @@
 #version 300 es
 precision highp float;
+precision highp int;
 precision highp sampler2DShadow;
 
 #define PI 3.14159265358979
