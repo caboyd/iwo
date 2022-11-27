@@ -104,11 +104,11 @@ export class BoxGeometry extends Geometry {
             buildSide(Order.x, Order.z, Order.y, width, width_segs, depth, depth_segs, -half_height, 1, 1, 5);
         }
 
-        this.attributes.set(StandardAttribute.Name.Vertex, verts);
-        this.attributes.set(StandardAttribute.Name.Normal, normals);
-        this.attributes.set(StandardAttribute.Name.Tex_Coord, tex_coords);
-        this.attributes.set(StandardAttribute.Name.Tangent, tangents);
-        this.attributes.set(StandardAttribute.Name.Bitangent, bitangents);
+        this.attributes.set(StandardAttribute.Position.name, verts);
+        this.attributes.set(StandardAttribute.Normal.name, normals);
+        this.attributes.set(StandardAttribute.Tex_Coord.name, tex_coords);
+        this.attributes.set(StandardAttribute.Tangent.name, tangents);
+        this.attributes.set(StandardAttribute.Bitangent.name, bitangents);
         this.interleaved_attributes = interleaved;
         this.groups = groups;
 

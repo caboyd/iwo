@@ -1,10 +1,17 @@
 import { TypedArray } from "@customtypes/types";
 import { ComponentType, GL } from "@graphics/WebglConstants";
 
-export type AttributeFormat = {
-    name: string;
-    createAttribute: (attr?: Partial<Attribute>) => Attribute;
+export type AttributeFormat<T = string> = {
+    readonly name: T;
+    readonly createAttribute: (attr?: Partial<Attribute>) => Attribute;
 };
+
+export function AttributeGenerator<T extends string>(name: T, attribute?: Partial<Attribute>) {
+    return {
+        name: name,
+        createAttribute: (attr?: Partial<Attribute>) => createAttribute(name, { ...attribute, ...attr }),
+    };
+}
 
 export function createAttribute(name: string, attr?: Partial<Attribute>): Attribute {
     return {
@@ -17,7 +24,6 @@ export function createAttribute(name: string, attr?: Partial<Attribute>): Attrib
             normalized: false,
             byte_offset: 0,
             byte_stride: 0,
-            divisor: undefined,
         },
         ...attr,
     };
@@ -30,17 +36,19 @@ export interface Attribute {
     byte_offset: number;
     byte_stride: number;
     component_type: ComponentType;
-    component_count: 1 | 2 | 3 | 4 | 9 | 16;
+    component_count: ComponentCount;
     normalized: boolean;
     divisor?: number;
     buffer?: TypedArray;
 }
 
+type ComponentCount = 1 | 2 | 3 | 4 | 6 | 8 | 9 | 12 | 16;
+
 export type Attributes = {
     [key: string]: Attribute;
 };
 
-export function typeToComponentCount(type: GLenum) {
+export function typeToComponentCount(type: GLenum): ComponentCount {
     switch (type) {
         case GL.FLOAT_VEC2:
         case GL.UNSIGNED_INT_VEC2:

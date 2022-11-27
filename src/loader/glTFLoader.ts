@@ -142,7 +142,7 @@ export class glTFLoader {
                         let buf_index = 0;
                         x.attributes = StandardAttribute.SingleBufferApproach();
                         let attrib_index: number | undefined;
-                        let a = x.attributes[StandardAttribute.Vertex.name];
+                        let a = x.attributes[StandardAttribute.Position.name];
                         if ((attrib_index = prim.attributes["POSITION"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
                                 o,

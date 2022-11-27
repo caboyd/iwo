@@ -248,7 +248,7 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
             geom.groups.push(geom_group);
         }
         //build geom
-        geom.attributes.set(StandardAttribute.Vertex.name, new Float32Array(v_arr));
+        geom.attributes.set(StandardAttribute.Position.name, new Float32Array(v_arr));
         if (vt_check) geom.attributes.set(StandardAttribute.Tex_Coord.name, new Float32Array(vt_arr));
         if (vn_check) geom.attributes.set(StandardAttribute.Normal.name, new Float32Array(vn_arr));
         result.objects.push({

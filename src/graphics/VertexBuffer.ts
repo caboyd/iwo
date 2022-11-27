@@ -4,7 +4,6 @@ import { BufferedGeometry } from "@geometry/BufferedGeometry";
 import { ReferenceCounter } from "@helpers/ReferenceCounter";
 import { Shader } from "./shader/Shader";
 import { WebGL } from "./WebglHelper";
-import { ComponentTypeInteger } from "./WebglConstants";
 
 export class VertexBuffer {
     public attributes: Attributes;

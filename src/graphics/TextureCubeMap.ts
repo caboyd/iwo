@@ -399,7 +399,7 @@ export class TextureCubeMap {
             const quad_geom = new Geometry();
             quad_geom.attributes = new Map<string, TypedArray>()
                 .set(
-                    StandardAttribute.Vertex.name,
+                    StandardAttribute.Position.name,
                     new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0])
                 )
                 .set(StandardAttribute.Tex_Coord.name, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));

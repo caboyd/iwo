@@ -2,6 +2,7 @@ import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
 import { BufferedGeometry } from "@geometry/BufferedGeometry";
 import { GL } from "@graphics/WebglConstants";
 import { Geometry, Group } from "./Geometry";
+import { Attribute, Attributes } from "./attribute/Attribute";
 
 enum Order {
     x = 0,
@@ -60,11 +61,11 @@ export class PlaneGeometry extends Geometry {
             buildSide(Order.x, Order.z, Order.y, width, width_segs, depth, depth_segs, 0, 1, -1, 0);
         }
 
-        this.attributes.set(StandardAttribute.Name.Vertex, verts);
-        this.attributes.set(StandardAttribute.Name.Normal, normals);
-        this.attributes.set(StandardAttribute.Name.Tex_Coord, tex_coords);
-        this.attributes.set(StandardAttribute.Name.Tangent, tangents);
-        this.attributes.set(StandardAttribute.Name.Bitangent, bitangents);
+        this.attributes.set(StandardAttribute.Position.name, verts);
+        this.attributes.set(StandardAttribute.Normal.name, normals);
+        this.attributes.set(StandardAttribute.Tex_Coord.name, tex_coords);
+        this.attributes.set(StandardAttribute.Tangent.name, tangents);
+        this.attributes.set(StandardAttribute.Bitangent.name, bitangents);
         this.interleaved_attributes = interleaved;
         this.groups = groups;
 
@@ -204,11 +205,11 @@ export class PlaneGeometry extends Geometry {
     }
 
     public getBufferedGeometry(): BufferedGeometry {
-        const attrib = StandardAttribute.SingleBufferApproach();
+        const attrib: Attributes = StandardAttribute.SingleBufferApproach();
         const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
 
         for (const name in attrib) attrib[name].byte_stride = 56; //12 + 8 + 12 + 12 + 12;
-        attrib[StandardAttribute.Vertex.name].byte_offset = 0;
+        attrib[StandardAttribute.Position.name].byte_offset = 0;
         attrib[StandardAttribute.Tex_Coord.name].byte_offset = 12;
         attrib[StandardAttribute.Normal.name].byte_offset = 20;
         attrib[StandardAttribute.Tangent.name].byte_offset = 32;
