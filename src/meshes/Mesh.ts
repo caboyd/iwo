@@ -50,12 +50,38 @@ export class Mesh {
         this.sub_meshes = [];
         this.draw_mode = buf_geom.draw_mode ?? DrawMode.TRIANGLES;
 
+        this.count = 0;
         if (this.index_buffer) {
             this.count = buf_geom.index_buffer!.buffer.length;
             this.index_buffer.references.increment();
         } else {
-            const attr = buf_geom.attributes[Object.keys(buf_geom.attributes)[0]];
-            this.count = buf_geom.buffers[attr.buffer_index].buffer.length / attr.component_count;
+            const vertex_attrib = buf_geom.attributes[Object.keys(buf_geom.attributes)[0]];
+            const vertex_buffer = buf_geom.buffers[vertex_attrib.buffer_index].buffer;
+            let is_interleaved = false;
+            let is_concatenated = false;
+            for (const a of Object.values(buf_geom.attributes)) {
+                if (a.buffer_index !== vertex_attrib.buffer_index) continue;
+                if (a.byte_offset !== 0 && a.byte_stride === 0) {
+                    is_concatenated = true;
+                    break;
+                }
+                if (a.byte_stride !== 0) is_interleaved = true;
+            }
+            if (is_concatenated) {
+                //the next attribute that shares the buffer with vertex_attrib
+                for (let i = 1; i < Object.keys(buf_geom.attributes).length; i++) {
+                    const a = Object.values(buf_geom.attributes)[i];
+                    if (a.buffer_index === vertex_attrib.buffer_index) {
+                        //assumes buffer is full of 4 byte components
+                        this.count = a.byte_offset / 4 / vertex_attrib.component_count;
+                        break;
+                    }
+                }
+            } else if (is_interleaved) {
+                this.count = (vertex_buffer.length / vertex_attrib.byte_stride) * vertex_attrib.component_count;
+            } else {
+                this.count = vertex_buffer.length / vertex_attrib.component_count;
+            }
         }
 
         this.instances = buf_geom.instances;
@@ -75,7 +101,6 @@ export class Mesh {
     public setupVAO(gl: WebGL2RenderingContext, program: Shader) {
         this.#inititalized = true;
         this.vertex_buffer.setupVAO(gl, program);
-        gl.bindVertexArray(null);
     }
 
     public updateBuffer(gl: WebGL2RenderingContext, index: number, data: TypedArray) {
