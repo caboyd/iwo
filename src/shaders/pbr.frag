@@ -319,7 +319,7 @@ void main() {
     
     color = Lo + (emission + ambient) * PI_light;
 
-    //HDR correction
+    //Reinhard HDR correction
     color = color / (color + vec3(1.0));
     //Gamma correction
     float g = gamma;
