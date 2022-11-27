@@ -90,7 +90,10 @@ void main()
             float saTexel  = 4.0 * PI / (6.0 * resolution * resolution);
             float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
 
-            float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
+            float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel) ;
+            
+            //mipLevel doesnt get big enough for noisy environment so do this
+            mipLevel *= 1.25;
             
             prefiltered_color += textureLod(environment_map, L, mipLevel).rgb * NdotL;
             total_weight      += NdotL;
