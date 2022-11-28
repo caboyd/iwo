@@ -1,6 +1,6 @@
 import { TypedArray } from "@customtypes/types";
 import { DrawMode } from "@graphics/WebglConstants";
-import { Attribute } from "./attribute/Attribute";
+import { Attribute } from "../graphics/attribute/Attribute";
 
 export interface Group {
     offset: number;
@@ -17,4 +17,3 @@ export interface Geometry {
     count: number;
     instances?: number;
 }
-

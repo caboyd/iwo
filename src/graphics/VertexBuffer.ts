@@ -1,5 +1,5 @@
 import { TypedArray } from "@customtypes/types";
-import { Attribute, Attributes, typeToComponentCount } from "@geometry/attribute/Attribute";
+import { Attribute, Attributes, typeToComponentCount } from "@graphics/attribute/Attribute";
 import { ReferenceCounter } from "@helpers/ReferenceCounter";
 import { Shader } from "./shader/Shader";
 import { WebGL } from "./WebglHelper";

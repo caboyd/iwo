@@ -1,7 +1,7 @@
 import { TypedArray } from "@customtypes/types";
-import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
+import { StandardAttribute } from "@graphics/attribute/StandardAttribute";
 import { DrawMode, GL } from "@graphics/WebglConstants";
-import { Attribute } from "./attribute/Attribute";
+import { Attribute } from "../graphics/attribute/Attribute";
 import { Geometry, Group } from "./Geometry";
 
 enum Order {
@@ -72,8 +72,6 @@ export class PlaneGeometry implements Geometry {
         this.groups = groups;
 
         this.attributes = StandardAttribute.SeparatePostionPlusInterleavedRemainingApproach();
-
-       
 
         /**
          * Fills the Arrays for one side of a cube

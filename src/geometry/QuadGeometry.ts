@@ -1,7 +1,7 @@
 import { TypedArray } from "@customtypes/types";
 import { DrawMode, GL } from "@graphics/WebglConstants";
-import { Attribute } from "./attribute/Attribute";
-import { StandardAttribute } from "./attribute/StandardAttribute";
+import { Attribute } from "../graphics/attribute/Attribute";
+import { StandardAttribute } from "../graphics/attribute/StandardAttribute";
 import { Geometry, Group } from "./Geometry";
 
 export class QuadGeometry implements Geometry {

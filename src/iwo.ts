@@ -4,9 +4,9 @@ export * from "./cameras/OrbitControl";
 export * from "./cameras/FPSControl";
 export * from "./cameras/Frustum";
 
-export * from "./geometry/attribute/Attribute";
-export * from "./geometry/attribute/StandardAttribute";
-export * from "./geometry/attribute/LineAttribute";
+export * from "./graphics/attribute/Attribute";
+export * from "./graphics/attribute/StandardAttribute";
+export * from "./graphics/attribute/LineAttribute";
 
 export * from "./geometry/Geometry";
 export * from "./geometry/QuadGeometry";
@@ -15,19 +15,18 @@ export * from "./geometry/PlaneGeometry";
 export * from "./geometry/SphereGeometry";
 export * from "./geometry/LineGeometry";
 
-export * from "./graphics/RendererStats";
-export * from "./graphics/Renderer";
+export * from "./graphics/renderer/RendererStats";
+export * from "./graphics/renderer/Renderer";
 export * from "./graphics/WebglConstants";
 export * from "./graphics/WebglHelper";
 export * from "./graphics/Uniform";
-export * from "./graphics/AttributeBuffer";
 export * from "./graphics/IndexBuffer";
 export * from "./graphics/UniformBuffer";
 export * from "./graphics/VertexBuffer";
 
-export * from "./graphics/Texture2D";
-export * from "./graphics/TextureCubeMap";
-export * from "./graphics/TextureHelper";
+export * from "./graphics/textures/Texture2D";
+export * from "./graphics/textures/TextureCubeMap";
+export * from "./graphics/textures/TextureHelper";
 
 export * from "./graphics/shader/ShaderSources";
 export * from "./graphics/shader/Shader";

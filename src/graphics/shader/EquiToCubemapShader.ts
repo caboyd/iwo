@@ -1,5 +1,5 @@
 import { Shader } from "./Shader";
-import { Renderer } from "../Renderer";
+import { Renderer } from "../renderer/Renderer";
 import { ShaderSource } from "./ShaderSources";
 
 export class EquiToCubemapShader extends Shader {

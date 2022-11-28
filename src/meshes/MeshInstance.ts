@@ -1,6 +1,6 @@
 import { mat4 } from "gl-matrix";
 import { Material } from "@materials/Material";
-import { Renderer } from "../graphics/Renderer";
+import { Renderer } from "../graphics/renderer/Renderer";
 import { Mesh } from "./Mesh";
 
 export class MeshInstance {

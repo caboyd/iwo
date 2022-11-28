@@ -1,4 +1,4 @@
-import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
+import { StandardAttribute } from "@graphics/attribute/StandardAttribute";
 import { Geometry, Group } from "@geometry/Geometry";
 import { Material } from "@materials/Material";
 import { FileLoader } from "./FileLoader";

@@ -2,8 +2,8 @@ import { TypedArray } from "@customtypes/types";
 import { Geometry, Group } from "@geometry/Geometry";
 import { DrawMode } from "@graphics/WebglConstants";
 import { vec3 } from "gl-matrix";
-import { Attribute } from "./attribute/Attribute";
-import { LineAttribute as LA } from "./attribute/LineAttribute";
+import { Attribute } from "../graphics/attribute/Attribute";
+import { LineAttribute as LA } from "../graphics/attribute/LineAttribute";
 
 export interface LineOptions {
     type: "lines" | "line strip";

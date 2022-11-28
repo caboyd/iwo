@@ -1,13 +1,13 @@
 import { mat3, mat4 } from "gl-matrix";
 import { Material } from "@materials/Material";
-import { IndexBuffer } from "./IndexBuffer";
+import { IndexBuffer } from "../IndexBuffer";
 import { RendererStats } from "./RendererStats";
-import { Shader } from "./shader/Shader";
-import { ShaderSource } from "./shader/ShaderSources";
-import { Texture2D } from "./Texture2D";
-import { TextureCubeMap } from "./TextureCubeMap";
-import { UniformBuffer } from "./UniformBuffer";
-import { VertexBuffer } from "./VertexBuffer";
+import { Shader } from "../shader/Shader";
+import { ShaderSource } from "../shader/ShaderSources";
+import { Texture2D } from "../textures/Texture2D";
+import { TextureCubeMap } from "../textures/TextureCubeMap";
+import { UniformBuffer } from "../UniformBuffer";
+import { VertexBuffer } from "../VertexBuffer";
 
 const temp: mat4 = mat4.create();
 
@@ -191,7 +191,6 @@ export class Renderer {
 
         vertex_buffer.bind(this.gl);
         this.stats.vertex_buffer_bind_count++;
-
     }
 
     public cleanupGLState(): void {

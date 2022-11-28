@@ -1,7 +1,7 @@
-import { StandardAttribute } from "./attribute/StandardAttribute";
+import { StandardAttribute } from "../graphics/attribute/StandardAttribute";
 import { Geometry, Group } from "./Geometry";
 import { DrawMode, GL } from "../graphics/WebglConstants";
-import { Attribute } from "./attribute/Attribute";
+import { Attribute } from "../graphics/attribute/Attribute";
 import { TypedArray } from "@customtypes/types";
 
 enum Order {

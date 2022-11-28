@@ -1,8 +1,8 @@
 import { TypedArray } from "@customtypes/types";
-import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
+import { StandardAttribute } from "@graphics/attribute/StandardAttribute";
 import { DrawMode, GL } from "@graphics/WebglConstants";
 import { throws } from "assert";
-import { Attribute } from "./attribute/Attribute";
+import { Attribute } from "../graphics/attribute/Attribute";
 import { Geometry, Group } from "./Geometry";
 
 export class SphereGeometry implements Geometry {

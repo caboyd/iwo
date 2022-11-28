@@ -1,7 +1,7 @@
 import { FileLoader } from "./FileLoader";
 //https://www.npmjs.com/package/gltf-typescript-generator
-import { Attribute } from "@geometry/attribute/Attribute";
-import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
+import { Attribute } from "@graphics/attribute/Attribute";
+import { StandardAttribute } from "@graphics/attribute/StandardAttribute";
 import { vec3 } from "gl-matrix";
 import { ComponentType, GL } from "@graphics/WebglConstants";
 import { ImageLoader } from "@loader/ImageLoader";
