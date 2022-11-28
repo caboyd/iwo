@@ -1,15 +1,13 @@
 import { CubeCamera } from "@cameras/CubeCamera";
-import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
 import { BoxGeometry } from "@geometry/BoxGeometry";
-import { Geometry } from "@geometry/Geometry";
-import { mat4 } from "gl-matrix";
 import { HDRBuffer, instanceOfHDRBuffer } from "@loader/HDRImageLoader";
 import { Mesh } from "@meshes/Mesh";
-import { TypedArray } from "@customtypes/types";
+import { mat4 } from "gl-matrix";
 import { Renderer } from "./Renderer";
 import { ShaderSource } from "./shader/ShaderSources";
 import { DefaultTextureOptions, Texture2D, TextureOptions } from "./Texture2D";
 import { TextureHelper } from "./TextureHelper";
+import { QuadGeometry } from "@geometry/QuadGeometry";
 
 export interface TextureCubeMapOptions extends TextureOptions {
     wrap_R: number;
@@ -396,17 +394,8 @@ export class TextureCubeMap {
     ): void {
         if (Renderer.BRDF_LUT_TEXTURE === undefined) {
             //Generate brdf LUT if it doesnt exist as its required for IBL
-            const quad_geom = new Geometry();
-            quad_geom.attributes = new Map<string, TypedArray>()
-                .set(
-                    StandardAttribute.Position.name,
-                    new Float32Array([-1.0, 1.0, 0.0, -1.0, -1.0, 0.0, 1.0, 1.0, 0.0, 1.0, -1.0, 0.0])
-                )
-                .set(StandardAttribute.Tex_Coord.name, new Float32Array([0.0, 1.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0]));
-            quad_geom.groups = [];
-
+            const quad_geom = new QuadGeometry();
             const quad_mesh = new Mesh(gl, quad_geom);
-            quad_mesh.draw_mode = gl.TRIANGLE_STRIP;
 
             const options = {
                 ...DefaultTextureOptions,

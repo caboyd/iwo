@@ -2,7 +2,6 @@ import { FileLoader } from "./FileLoader";
 //https://www.npmjs.com/package/gltf-typescript-generator
 import { Attribute } from "@geometry/attribute/Attribute";
 import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
-import { BufferedGeometry } from "@geometry/BufferedGeometry";
 import { vec3 } from "gl-matrix";
 import { ComponentType, GL } from "@graphics/WebglConstants";
 import { ImageLoader } from "@loader/ImageLoader";
@@ -10,9 +9,10 @@ import { Accessor, glTF, MeshPrimitive } from "@loader/spec/glTF";
 import { Material } from "@materials/Material";
 import { PBRMaterial } from "@materials/PBRMaterial";
 import { TypedArray } from "@customtypes/types";
+import { Geometry } from "@geometry/Geometry";
 
 export interface glTFData {
-    buffered_geometries: BufferedGeometry[];
+    geometries: Geometry[];
     materials: Material[];
 }
 
@@ -47,15 +47,17 @@ export class glTFLoader {
     public static async promise(file_name: string, base_url: string = FileLoader.Default_Base_URL): Promise<glTFData> {
         return new Promise<glTFData>((resolve) => {
             FileLoader.promise(file_name, base_url).then((response: Response) => {
-                response.json().then(async (o: glTF) => {
+                response.json().then(async (gltf: glTF) => {
                     //Validate toplevel
-                    if (o.meshes === undefined) glTFLoaderError(o.meshes);
-                    if (o.buffers === undefined) glTFLoaderError(o.buffers);
-                    if (o.bufferViews === undefined) glTFLoaderError(o.bufferViews);
-                    if (o.accessors === undefined) glTFLoaderError(o.accessors);
+                    if (gltf.meshes === undefined) glTFLoaderError(gltf.meshes);
+                    if (gltf.buffers === undefined) glTFLoaderError(gltf.buffers);
+                    if (gltf.bufferViews === undefined) glTFLoaderError(gltf.bufferViews);
+                    if (gltf.accessors === undefined) glTFLoaderError(gltf.accessors);
+
+                    const result: glTFData = { geometries: [], materials: [] };
 
                     const buffers = (await FileLoader.promiseAll(
-                        o.buffers.map((v) => v.uri!),
+                        gltf.buffers.map((v) => v.uri!),
                         base_url
                     )) as Response[];
 
@@ -83,17 +85,20 @@ export class glTFLoader {
                     // console.log(geom_buffers);
 
                     let images: HTMLImageElement[] = [];
-                    if (o.images) {
+                    if (gltf.images) {
                         images = ImageLoader.loadAllBackground(
-                            o.images.map((v) => v.uri!),
+                            gltf.images.map((v) => v.uri!),
                             base_url
                         );
                     }
 
-                    const buffered_geometries = [];
-
-                    for (const mesh of o.meshes) {
-                        const x = new BufferedGeometry();
+                    for (const mesh of gltf.meshes) {
+                        const geom: Geometry = {
+                            attributes: StandardAttribute.SingleBufferApproach(),
+                            buffers: [],
+                            count: 0,
+                            draw_mode: GL.TRIANGLES,
+                        };
                         //x.buffers = geom_buffers;
                         if (mesh.primitives.length === 0) throw new Error("glTF missing mesh primitives");
                         if (mesh.primitives.length > 1)
@@ -113,23 +118,23 @@ export class glTFLoader {
                         // }
                         const prim = mesh.primitives[0]!;
                         if (prim.indices !== undefined) {
-                            const accessor = o.accessors[prim.indices];
-                            const buffer_view = o.bufferViews[accessor.bufferView!];
+                            const accessor = gltf.accessors[prim.indices];
+                            const buffer_view = gltf.bufferViews[accessor.bufferView!];
                             const count = accessor.count;
                             const componentType = accessor.componentType as ComponentType;
                             const buffer_index = buffer_view.buffer;
                             const offset = buffer_view.byteOffset;
-                            const bytes = count > 66536 ? 4 : 2;
-                            const length = buffer_view.byteLength / bytes;
-                            x.index_buffer = {
-                                buffer: ArrayBufferToTypedArray(
-                                    componentType,
-                                    array_buffers[buffer_index],
-                                    offset,
-                                    length
-                                ),
-                                target: 34963,
-                            };
+                            const bytes_per_element = count > 66536 ? 4 : 2;
+                            const length = buffer_view.byteLength / bytes_per_element;
+                            const buffer = ArrayBufferToTypedArray(
+                                componentType,
+                                array_buffers[buffer_index],
+                                offset,
+                                length
+                            );
+                            geom.index_buffer =
+                                bytes_per_element === 2 ? (buffer as Uint16Array) : (buffer as Uint32Array);
+                            geom.count = length;
                             //  x.index_buffer =
                             //        {
                             //            buffer: count > 66536
@@ -140,69 +145,67 @@ export class glTFLoader {
                         }
 
                         let buf_index = 0;
-                        x.attributes = StandardAttribute.SingleBufferApproach();
                         let attrib_index: number | undefined;
-                        let a = x.attributes[StandardAttribute.Position.name];
+                        let attr = geom.attributes[StandardAttribute.Position.name];
                         if ((attrib_index = prim.attributes["POSITION"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
-                                o,
-                                a,
-                                o.accessors![attrib_index]!,
-                                x,
+                                gltf,
+                                attr,
+                                gltf.accessors![attrib_index]!,
+                                geom,
                                 array_buffers,
                                 buf_index++
                             );
                         } else {
-                            a.enabled = false;
+                            attr.enabled = false;
                         }
 
-                        a = x.attributes[StandardAttribute.Tex_Coord.name];
+                        attr = geom.attributes[StandardAttribute.Tex_Coord.name];
                         if ((attrib_index = prim.attributes["TEXCOORD_0"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
-                                o,
-                                a,
-                                o.accessors![attrib_index]!,
-                                x,
+                                gltf,
+                                attr,
+                                gltf.accessors![attrib_index]!,
+                                geom,
                                 array_buffers,
                                 buf_index++
                             );
                         } else {
-                            a.enabled = false;
+                            attr.enabled = false;
                         }
 
-                        a = x.attributes[StandardAttribute.Normal.name];
+                        attr = geom.attributes[StandardAttribute.Normal.name];
                         if ((attrib_index = prim.attributes["NORMAL"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
-                                o,
-                                a,
-                                o.accessors![attrib_index]!,
-                                x,
+                                gltf,
+                                attr,
+                                gltf.accessors![attrib_index]!,
+                                geom,
                                 array_buffers,
                                 buf_index++
                             );
                         } else {
-                            a.enabled = false;
+                            attr.enabled = false;
                         }
 
-                        a = x.attributes[StandardAttribute.Tangent.name];
+                        attr = geom.attributes[StandardAttribute.Tangent.name];
                         if ((attrib_index = prim.attributes["TANGENT"]) !== undefined) {
                             this.buildAttributeAndTypedBuffer(
-                                o,
-                                a,
-                                o.accessors![attrib_index]!,
-                                x,
+                                gltf,
+                                attr,
+                                gltf.accessors![attrib_index]!,
+                                geom,
                                 array_buffers,
                                 buf_index++
                             );
                         } else {
-                            a.enabled = false;
+                            attr.enabled = false;
                         }
 
-                        buffered_geometries.push(x);
+                        result.geometries.push(geom);
                     }
-                    const materials = [];
-                    if (o.materials !== undefined)
-                        for (const mat of o.materials) {
+                    if (gltf.materials !== undefined)
+                        for (const mat of gltf.materials) {
                             const m = new PBRMaterial({
                                 albedo_color: new Color(mat.pbrMetallicRoughness?.baseColorFactor).rgb,
                                 metallic: mat.pbrMetallicRoughness?.metallicFactor ?? 1,
@@ -214,13 +217,13 @@ export class glTFLoader {
                                     images[mat.pbrMetallicRoughness!.metallicRoughnessTexture!.index],
                                 emissive_image: images[mat.emissiveTexture!.index],
                             });
-                            materials.push(m);
+                            result.materials.push(m);
                         }
 
-                    resolve({ buffered_geometries: buffered_geometries, materials: materials } as glTFData);
+                    resolve(result);
 
                     function glTFLoaderError(prop: any): never {
-                        throw new Error(`${file_name} missing ${prop in o}`);
+                        throw new Error(`${file_name} missing ${prop in gltf}`);
                     }
                 });
             });
@@ -232,7 +235,7 @@ export class glTFLoader {
         o: glTF,
         attr: Attribute,
         accessor: Accessor,
-        x: BufferedGeometry,
+        geom: Geometry,
         array_buffers: ArrayBuffer[],
         my_buffer_index: number
     ): void {
@@ -241,30 +244,12 @@ export class glTFLoader {
         const buffer_index = buffer_view.buffer;
         const offset = buffer_view.byteOffset;
         const length = buffer_view.byteLength / 4;
-        x.buffers.push({
-            buffer: ArrayBufferToTypedArray(componentType, array_buffers[buffer_index], offset, length),
-            target: 34962,
-        });
+        geom.buffers.push(ArrayBufferToTypedArray(componentType, array_buffers[buffer_index], offset, length));
 
         attr.enabled = true;
         attr.buffer_index = my_buffer_index;
         attr.component_type = componentType;
     }
-
-    // private static fromString(s: string, float32Array = Float32Array): MeshInstance {
-    //
-    //
-    //
-    // }
-}
-
-function buildBufferedGeometry(o: glTF): BufferedGeometry[] {
-    const attributes = buildAttributes(o.meshes![0].primitives[0]);
-    return [] as BufferedGeometry[];
-}
-
-function buildAttributes(o: MeshPrimitive): Attribute[] {
-    return [] as Attribute[];
 }
 
 function ArrayBufferToTypedArray(

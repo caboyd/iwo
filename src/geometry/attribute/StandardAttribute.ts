@@ -13,6 +13,7 @@ export namespace StandardAttribute {
     ] as const;
 
     export const Position = AttributeGenerator(Names[0]);
+    /** @defaults { component_count: 2 }*/
     export const Tex_Coord = AttributeGenerator(Names[1], { component_count: 2 });
     export const Normal = AttributeGenerator(Names[2]);
     export const Tangent = AttributeGenerator(Names[3]);
@@ -31,5 +32,28 @@ export namespace StandardAttribute {
         [Normal.name]: Normal.createAttribute({ buffer_index: 2 }),
         [Tangent.name]: Tangent.createAttribute({ buffer_index: 3 }),
         [Bitangent.name]: Bitangent.createAttribute({ buffer_index: 4 }),
+    });
+    export const SeparatePostionPlusInterleavedRemainingApproach = (): Attributes => ({
+        [StandardAttribute.Position.name]: StandardAttribute.Position.createAttribute(),
+        [StandardAttribute.Tex_Coord.name]: StandardAttribute.Position.createAttribute({
+            buffer_index: 1,
+            byte_stride: 11 * 4,
+            byte_offset: 0 * 4,
+        }),
+        [StandardAttribute.Normal.name]: StandardAttribute.Position.createAttribute({
+            buffer_index: 1,
+            byte_stride: 11 * 4,
+            byte_offset: 2 * 4,
+        }),
+        [StandardAttribute.Tangent.name]: StandardAttribute.Position.createAttribute({
+            buffer_index: 1,
+            byte_stride: 11 * 4,
+            byte_offset: 5 * 4,
+        }),
+        [StandardAttribute.Bitangent.name]: StandardAttribute.Position.createAttribute({
+            buffer_index: 1,
+            byte_stride: 11 * 4,
+            byte_offset: 8 * 4,
+        }),
     });
 }

@@ -1,9 +1,9 @@
-import { Geometry } from "@geometry/Geometry";
+import { TypedArray } from "@customtypes/types";
+import { Geometry, Group } from "@geometry/Geometry";
+import { DrawMode } from "@graphics/WebglConstants";
 import { vec3 } from "gl-matrix";
-import { DrawMode, GL } from "@graphics/WebglConstants";
+import { Attribute } from "./attribute/Attribute";
 import { LineAttribute as LA } from "./attribute/LineAttribute";
-import { BufferedGeometry } from "./BufferedGeometry";
-import { Attributes } from "./attribute/Attribute";
 
 export interface LineOptions {
     type: "lines" | "line strip";
@@ -15,9 +15,15 @@ const DefaultLineOptions: LineOptions = {
     line_cap_resolution: 16,
 };
 
-export class LineGeometry extends Geometry {
+export class LineGeometry implements Geometry {
     public opt: LineOptions;
-    public instances: number;
+    attributes: Record<string, Attribute>;
+    buffers: TypedArray[];
+    index_buffer?: Uint16Array | Uint32Array | undefined;
+    groups?: Group[] | undefined;
+    count: number;
+    instances: number;
+    draw_mode: DrawMode;
 
     private line_segment_verts = [
         [0, -0.5, 0],
@@ -29,12 +35,12 @@ export class LineGeometry extends Geometry {
     ];
 
     constructor(points: vec3[] | number[], LineOptions?: Partial<LineOptions>) {
-        super();
         this.opt = { ...DefaultLineOptions, ...LineOptions };
         this.draw_mode = DrawMode.TRIANGLES;
+        this.attributes = {};
+        this.buffers = [];
 
         const line_segment_flat = this.line_segment_verts.flat() as number[];
-
         const resolution = this.opt.line_cap_resolution;
 
         // Add the left cap.
@@ -54,21 +60,15 @@ export class LineGeometry extends Geometry {
             line_segment_flat.push(0.5 * Math.cos(theta1), 0.5 * Math.sin(theta1), 1);
         }
 
-        const pos_buff = new Float32Array(line_segment_flat);
-        this.attributes.set(LA.position.name, pos_buff);
-
+        this.buffers.push(new Float32Array(line_segment_flat));
         const points_flat = points.flat() as number[];
+        this.buffers.push(new Float32Array(points_flat));
+
+        this.count = line_segment_flat.length / 3;
         this.instances = points_flat.length / 6;
         if (this.opt.type === "line strip") this.instances = points_flat.length / 3 - 1;
-        const point_a_buff = new Float32Array(points_flat);
-        this.attributes.set(LA.point_a.name, point_a_buff);
-    }
 
-    public getBufferedGeometry(): BufferedGeometry {
-        const pos_buf = this.attributes.get(LA.position.name)!;
-        const point_buf = this.attributes.get(LA.point_a.name)!;
-
-        const attrs: Attributes = {
+        this.attributes = {
             [LA.position.name]: LA.position.createAttribute(),
             [LA.point_a.name]: LA.point_a.createAttribute({
                 byte_offset: Float32Array.BYTES_PER_ELEMENT * 0,
@@ -79,16 +79,5 @@ export class LineGeometry extends Geometry {
                 byte_stride: this.opt.type === "lines" ? Float32Array.BYTES_PER_ELEMENT * 6 : 0,
             }),
         };
-
-        return {
-            attributes: attrs,
-            buffers: [
-                { buffer: pos_buf, target: GL.ARRAY_BUFFER },
-                { buffer: point_buf, target: GL.ARRAY_BUFFER, usage: GL.STATIC_DRAW },
-            ],
-            draw_mode: this.draw_mode,
-            buffer_format: "concatenated",
-            instances: this.instances,
-        } as BufferedGeometry;
     }
 }

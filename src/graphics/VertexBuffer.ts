@@ -1,39 +1,34 @@
 import { TypedArray } from "@customtypes/types";
-import { Attributes, typeToComponentCount } from "@geometry/attribute/Attribute";
-import { BufferedGeometry } from "@geometry/BufferedGeometry";
+import { Attribute, Attributes, typeToComponentCount } from "@geometry/attribute/Attribute";
 import { ReferenceCounter } from "@helpers/ReferenceCounter";
 import { Shader } from "./shader/Shader";
 import { WebGL } from "./WebglHelper";
+import { Geometry } from "../geometry/Geometry";
 
 export class VertexBuffer {
-    public attributes: Attributes;
+    public attributes: Record<string, Attribute>;
     public buffers: WebGLBuffer[];
     public VAO!: WebGLVertexArrayObject;
     public readonly references: ReferenceCounter;
     public stride: number = 0;
 
-    public constructor(gl: WebGL2RenderingContext, geometry: BufferedGeometry) {
-        this.attributes = geometry.attributes;
+    public constructor(gl: WebGL2RenderingContext, attributes: Record<string, Attribute>, buffers: TypedArray[]) {
+        this.attributes = attributes;
         this.references = new ReferenceCounter();
         this.buffers = [];
         this.VAO = gl.createVertexArray()!;
-        this.constructFromBufferedGeometry(gl, geometry);
+        this.constructFromBuffers(gl, buffers);
     }
 
-    private constructFromBufferedGeometry(gl: WebGL2RenderingContext, geometry: BufferedGeometry): void {
-        gl.bindVertexArray(this.VAO);
-
+    private constructFromBuffers(gl: WebGL2RenderingContext, buffers: TypedArray[]): void {
         //Turn the geometry buffer into WebGLBuffers
-        for (const buffer of geometry.buffers) {
-            const b = WebGL.buildBuffer(gl, buffer.target, buffer.buffer);
+        for (const buffer of buffers) {
+            const b = WebGL.buildBuffer(gl, gl.ARRAY_BUFFER, buffer);
             this.buffers.push(b);
         }
-        gl.bindVertexArray(null);
     }
 
     public setupVAO(gl: WebGL2RenderingContext, program: Shader): void {
-        gl.bindVertexArray(this.VAO);
-
         let bound_buffer = undefined;
         let i = 0;
 
@@ -71,28 +66,16 @@ export class VertexBuffer {
                 gl.vertexAttribDivisor(index, attrib.divisor);
             }
         }
-        gl.bindVertexArray(null);
     }
 
-    public updateBuffer(gl: WebGL2RenderingContext, index: number, data: TypedArray): void {
-        this.bindBuffers(gl);
+    public bufferSubData(gl: WebGL2RenderingContext, index: number, data: TypedArray): void {
+        this.bind(gl);
         const buffer = this.buffers[index];
         gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
         gl.bufferSubData(gl.ARRAY_BUFFER, 0, data);
     }
 
-    public updateBufferData(gl: WebGL2RenderingContext, geometry: BufferedGeometry): void {
-        this.bindBuffers(gl);
-
-        for (const [index, buffer] of geometry.buffers.entries()) {
-            gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers[index]);
-            gl.bufferSubData(buffer.target, 0, buffer.buffer);
-        }
-        // this.setupVAOBuffers(gl);
-        gl.bindVertexArray(null);
-    }
-
-    public bindBuffers(gl: WebGL2RenderingContext): void {
+    public bind(gl: WebGL2RenderingContext): void {
         gl.bindVertexArray(this.VAO!);
     }
 

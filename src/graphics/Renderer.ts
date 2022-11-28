@@ -25,7 +25,6 @@ export class ViewportDimensions {
 
 export class Renderer {
     public readonly gl: WebGL2RenderingContext;
-    private current_vertex_buffer: VertexBuffer | undefined;
     private current_material: Material | undefined;
     private current_shader: Shader | undefined;
 
@@ -126,7 +125,6 @@ export class Renderer {
     }
 
     public resetSaveBindings(): void {
-        this.current_vertex_buffer = undefined;
         this.current_material = undefined;
         this.current_shader = undefined;
     }
@@ -141,14 +139,15 @@ export class Renderer {
     ): void {
         this.prepareDraw(mat, vertex_buffer, index_buffer);
 
-        if (index_buffer && index_buffer.indices.BYTES_PER_ELEMENT === 2)
-            this.gl.drawElements(draw_mode, count, this.gl.UNSIGNED_SHORT, offset);
-        else if (index_buffer && index_buffer.indices.BYTES_PER_ELEMENT === 4)
-            this.gl.drawElements(draw_mode, count, this.gl.UNSIGNED_INT, offset);
-        else this.gl.drawArrays(draw_mode, offset, count);
-
-        this.stats.vertex_draw_count += count;
+        if (index_buffer) {
+            this.gl.drawElements(draw_mode, count, index_buffer.type, offset);
+            this.stats.index_draw_count += count;
+        } else {
+            this.gl.drawArrays(draw_mode, offset, count);
+            this.stats.vertex_draw_count += count;
+        }
         this.stats.draw_calls++;
+        this.gl.bindVertexArray(null);
     }
 
     public drawInstanced(
@@ -162,14 +161,15 @@ export class Renderer {
     ): void {
         this.prepareDraw(mat, vertex_buffer, index_buffer);
 
-        if (index_buffer && index_buffer.indices.BYTES_PER_ELEMENT === 2)
-            this.gl.drawElementsInstanced(draw_mode, count, this.gl.UNSIGNED_SHORT, offset, instance_count);
-        else if (index_buffer && index_buffer.indices.BYTES_PER_ELEMENT === 4)
-            this.gl.drawElementsInstanced(draw_mode, count, this.gl.UNSIGNED_INT, offset, instance_count);
-        else this.gl.drawArraysInstanced(draw_mode, offset, count, instance_count);
-
-        this.stats.vertex_draw_count += count;
+        if (index_buffer) {
+            this.gl.drawElementsInstanced(draw_mode, count, index_buffer.type, offset, instance_count);
+            this.stats.index_draw_count += count;
+        } else {
+            this.gl.drawArraysInstanced(draw_mode, offset, count, instance_count);
+            this.stats.vertex_draw_count += count;
+        }
         this.stats.draw_calls++;
+        this.gl.bindVertexArray(null);
     }
 
     private prepareDraw(mat: Material | undefined, vertex_buffer: VertexBuffer, index_buffer: IndexBuffer | undefined) {
@@ -189,17 +189,9 @@ export class Renderer {
             this.stats.material_bind_count++;
         }
 
-        if (vertex_buffer != this.current_vertex_buffer) {
-            this.current_vertex_buffer = vertex_buffer;
-            this.current_vertex_buffer.bindBuffers(this.gl);
-            this.stats.vertex_buffer_bind_count++;
-        }
+        vertex_buffer.bind(this.gl);
+        this.stats.vertex_buffer_bind_count++;
 
-        //always bind index buffer because it is not part of vertex buffers VAO
-        if (index_buffer) {
-            index_buffer.bind(this.gl);
-            this.stats.index_buffer_bind_count++;
-        }
     }
 
     public cleanupGLState(): void {
@@ -208,10 +200,7 @@ export class Renderer {
     }
 
     public resetStats(): void {
-        //console.dir(this.stats);
         this.stats.reset();
-        this.current_shader = undefined;
-        this.current_material = undefined;
     }
 
     public static get EMPTY_TEXTURE(): WebGLTexture {

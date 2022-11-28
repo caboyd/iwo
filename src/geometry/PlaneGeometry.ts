@@ -1,8 +1,8 @@
+import { TypedArray } from "@customtypes/types";
 import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
-import { BufferedGeometry } from "@geometry/BufferedGeometry";
-import { GL } from "@graphics/WebglConstants";
+import { DrawMode, GL } from "@graphics/WebglConstants";
+import { Attribute } from "./attribute/Attribute";
 import { Geometry, Group } from "./Geometry";
-import { Attribute, Attributes } from "./attribute/Attribute";
 
 enum Order {
     x = 0,
@@ -10,7 +10,15 @@ enum Order {
     z = 2,
 }
 
-export class PlaneGeometry extends Geometry {
+export class PlaneGeometry implements Geometry {
+    attributes: Record<string, Attribute>;
+    buffers: TypedArray[];
+    index_buffer?: Uint32Array | Uint16Array | undefined;
+    groups?: Group[] | undefined;
+    draw_mode: DrawMode;
+    count: number;
+    instances?: number | undefined;
+
     /**
      * @param {boolean} stretch_texture true stretches texture across segments, false repeats texture
      */
@@ -21,7 +29,9 @@ export class PlaneGeometry extends Geometry {
         depth_segments: number = 1,
         stretch_texture: boolean = true
     ) {
-        super();
+        this.attributes = {};
+        this.buffers = [];
+        this.draw_mode = GL.TRIANGLES;
 
         const width_segs = Math.floor(width_segments) || 1;
         const depth_segs = Math.floor(depth_segments) || 1;
@@ -35,23 +45,19 @@ export class PlaneGeometry extends Geometry {
 
         let index_size = 2;
         if (total_verts >= 65536) {
-            this.indices = new Uint32Array(total_indices);
+            this.index_buffer = new Uint32Array(total_indices);
             index_size = 4;
-        } else this.indices = new Uint16Array(total_indices);
+        } else this.index_buffer = new Uint16Array(total_indices);
+        this.count = total_indices;
 
-        const indices = this.indices;
+        const indices = this.index_buffer;
 
         const verts = new Float32Array(total_verts * 3);
-        const tex_coords = new Float32Array(total_verts * 2);
-        const normals = new Float32Array(total_verts * 3);
-        const tangents = new Float32Array(total_verts * 3);
-        const bitangents = new Float32Array(total_verts * 3);
 
         const interleaved = new Float32Array(total_verts * 14);
         const groups: Group[] = [];
 
         let ptr = 0;
-        let tex_ptr = 0;
         let i_ptr = 0;
         let interleaved_ptr = 0;
         let vertex_count = 0;
@@ -61,13 +67,13 @@ export class PlaneGeometry extends Geometry {
             buildSide(Order.x, Order.z, Order.y, width, width_segs, depth, depth_segs, 0, 1, -1, 0);
         }
 
-        this.attributes.set(StandardAttribute.Position.name, verts);
-        this.attributes.set(StandardAttribute.Normal.name, normals);
-        this.attributes.set(StandardAttribute.Tex_Coord.name, tex_coords);
-        this.attributes.set(StandardAttribute.Tangent.name, tangents);
-        this.attributes.set(StandardAttribute.Bitangent.name, bitangents);
-        this.interleaved_attributes = interleaved;
+        this.buffers.push(verts);
+        this.buffers.push(interleaved);
         this.groups = groups;
+
+        this.attributes = StandardAttribute.SeparatePostionPlusInterleavedRemainingApproach();
+
+       
 
         /**
          * Fills the Arrays for one side of a cube
@@ -75,12 +81,8 @@ export class PlaneGeometry extends Geometry {
          *
          * @modifies {ptr} ptr is incremented 3 for each vertex
          * @modifies {i_ptr} i_ptr is incremented 3 for each indices
-         * @modifies {tex_ptr} ptr is incremented 2 for each vertex
-         * @modifies {vertex_index} is incremented by the number of vertices used by the indices
+         * @modifies {vertex_count} is incremented by the number of vertices
          * @modifies {verts} values are placed at the index of ptr
-         * @modifies {normals} values are placed at the index of ptr
-         * @modifies {tex_coords} values are placed at the index of ptr
-         * @modifies {tangents} values are placed at the index of ptr
          * @modifies {indices} values are placed at the index of i_ptr
          *
          * @param {Order} x_order - the dimension going from left to right
@@ -130,46 +132,43 @@ export class PlaneGeometry extends Geometry {
                     const ipz = interleaved_ptr + z_order;
 
                     //The X coords may go from left to right or right to left
-                    interleaved[ipx] = verts[px] = x * x_dir;
+                    verts[px] = x * x_dir;
 
                     //The Y coords may go from bottom to top or top to bottom
-                    interleaved[ipy] = verts[py] = y * y_dir;
+                    verts[py] = y * y_dir;
                     //The Z coordinate is the same for a side
-                    interleaved[ipz] = verts[pz] = plane;
+                    verts[pz] = plane;
 
                     //If stretched then texture_coords go from 0 to 1.
                     //If not stretched texture_coords go above 1;
-                    interleaved[interleaved_ptr + 3] = tex_coords[tex_ptr++] = stretch_texture
-                        ? (i * horizontal_step) / horizontal_size
-                        : i;
-                    interleaved[interleaved_ptr + 4] = tex_coords[tex_ptr++] = stretch_texture
+                    interleaved[interleaved_ptr + 0] = stretch_texture ? (i * horizontal_step) / horizontal_size : i;
+                    interleaved[interleaved_ptr + 1] = stretch_texture
                         ? 1 - (j * vertical_step) / vertical_size
                         : 1 - j;
 
                     //The normal is just 1 in the direction of the side
-                    interleaved[ipx + 5] = normals[px] = 0;
-                    interleaved[ipy + 5] = normals[py] = 0;
-                    interleaved[ipz + 5] = normals[pz] = plane >= 0 ? 1 : -1;
+                    interleaved[ipx + 2] = 0;
+                    interleaved[ipy + 2] = 0;
+                    interleaved[ipz + 2] = plane >= 0 ? 1 : -1;
 
                     //The tangent is any vector orthogonal to the normal
-                    interleaved[ipx + 8] = tangents[px] = x_dir;
-                    interleaved[ipy + 8] = tangents[py] = 0;
-                    interleaved[ipz + 8] = tangents[pz] = 0;
+                    interleaved[ipx + 5] = x_dir;
+                    interleaved[ipy + 5] = 0;
+                    interleaved[ipz + 5] = 0;
 
                     //The bitangent is any vector orthogonal to the normal and tangent
-                    interleaved[ipx + 11] = bitangents[px] = 0;
-                    interleaved[ipy + 11] = bitangents[py] = y_dir;
-                    interleaved[ipz + 11] = bitangents[pz] = 0;
+                    interleaved[ipx + 8] = 0;
+                    interleaved[ipy + 8] = y_dir;
+                    interleaved[ipz + 8] = 0;
 
                     //Processed one vertex
                     ptr += 3;
-                    interleaved_ptr += 14;
+                    interleaved_ptr += 11;
                     vertex_count++;
                 }
             }
 
             //INDICES
-            let index_count = 0;
             for (let i = 0; i < horizontal_steps; i++) {
                 for (let j = 0; j < vertical_steps; j++) {
                     //The Vertex indices of the 4 corners we need for this quad
@@ -190,38 +189,8 @@ export class PlaneGeometry extends Geometry {
                     indices[i_ptr++] = upper_left;
                     indices[i_ptr++] = lower_right;
                     indices[i_ptr++] = upper_right;
-
-                    //number of indices for a quad
-                    index_count += 6;
                 }
             }
-            //Each side is a seperate group so they can be rendered with different materials
-            // groups.push({
-            //     count: index_count,
-            //     offset: (i_ptr - index_count) * index_size,
-            //     material_index: mat_index,
-            // } as Group);
         }
-    }
-
-    public getBufferedGeometry(): BufferedGeometry {
-        const attrib: Attributes = StandardAttribute.SingleBufferApproach();
-        const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
-
-        for (const name in attrib) attrib[name].byte_stride = 56; //12 + 8 + 12 + 12 + 12;
-        attrib[StandardAttribute.Position.name].byte_offset = 0;
-        attrib[StandardAttribute.Tex_Coord.name].byte_offset = 12;
-        attrib[StandardAttribute.Normal.name].byte_offset = 20;
-        attrib[StandardAttribute.Tangent.name].byte_offset = 32;
-        attrib[StandardAttribute.Bitangent.name].byte_offset = 44;
-        attrib[StandardAttribute.Tangent.name].enabled = true;
-        attrib[StandardAttribute.Bitangent.name].enabled = true;
-
-        return {
-            attributes: attrib,
-            index_buffer: index_buffer,
-            buffers: [{ buffer: this.interleaved_attributes, target: GL.ARRAY_BUFFER }],
-            groups: this.groups,
-        } as BufferedGeometry;
     }
 }

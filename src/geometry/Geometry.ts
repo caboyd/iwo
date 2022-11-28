@@ -1,6 +1,6 @@
-import { DrawMode } from "@graphics/WebglConstants";
 import { TypedArray } from "@customtypes/types";
-import { BufferedGeometry } from "./BufferedGeometry";
+import { DrawMode } from "@graphics/WebglConstants";
+import { Attribute } from "./attribute/Attribute";
 
 export interface Group {
     offset: number;
@@ -8,21 +8,13 @@ export interface Group {
     material_index: number;
 }
 
-export class Geometry {
-    public indices: Uint16Array | Uint32Array | undefined;
-    public attributes: Map<string, TypedArray>;
-    public groups?: Group[];
-    public interleaved_attributes: Float32Array | undefined;
-    public draw_mode: DrawMode = DrawMode.TRIANGLES;
-
-    public constructor() {
-        this.attributes = new Map<string, TypedArray>();
-        this.groups = [];
-    }
-
-    public getBufferedGeometry?(): BufferedGeometry;
-
-    //TODO
-    //Bounding Sphere
-    //Bounding Box (AABB)
+export interface Geometry {
+    attributes: Record<string, Attribute>;
+    buffers: TypedArray[];
+    index_buffer?: Uint16Array | Uint32Array;
+    groups?: Group[];
+    draw_mode: DrawMode;
+    count: number;
+    instances?: number;
 }
+

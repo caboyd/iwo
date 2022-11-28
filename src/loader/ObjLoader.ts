@@ -1,12 +1,12 @@
 import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
-import { BufferedGeometry } from "@geometry/BufferedGeometry";
 import { Geometry, Group } from "@geometry/Geometry";
 import { Material } from "@materials/Material";
 import { FileLoader } from "./FileLoader";
 import { MtlData, MtlLoader, MtlOptions } from "./MtlLoader";
+import { GL } from "../graphics/WebglConstants";
 
 export interface ObjData {
-    objects: { name: string; buffered_geometry: BufferedGeometry }[];
+    objects: { name: string; geometry: Geometry }[];
     materials: Material[];
 }
 
@@ -201,8 +201,14 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
     };
 
     for (const raw_obj_data of raw_obj_data_array) {
-        const geom = new Geometry();
-        geom.groups = [];
+        const groups: Group[] = [];
+        const geom: Geometry = {
+            attributes: {},
+            buffers: [],
+            count: 0,
+            draw_mode: GL.TRIANGLES,
+            groups: groups,
+        };
         const v_arr = [];
         const vt_arr = [];
         const vt_check = raw_obj_data.trait_flags & VertexDataTraits.vt;
@@ -245,15 +251,28 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
             //update offset and count
             geom_group.count = elements;
             offset += elements;
-            geom.groups.push(geom_group);
+            groups.push(geom_group);
         }
         //build geom
-        geom.attributes.set(StandardAttribute.Position.name, new Float32Array(v_arr));
-        if (vt_check) geom.attributes.set(StandardAttribute.Tex_Coord.name, new Float32Array(vt_arr));
-        if (vn_check) geom.attributes.set(StandardAttribute.Normal.name, new Float32Array(vn_arr));
+        geom.buffers.push(new Float32Array(v_arr));
+        geom.attributes[StandardAttribute.Position.name] = StandardAttribute.Position.createAttribute();
+
+        if (vt_check) {
+            geom.buffers.push(new Float32Array(vt_arr));
+            geom.attributes[StandardAttribute.Tex_Coord.name] = StandardAttribute.Tex_Coord.createAttribute({
+                buffer_index: 1,
+            });
+        }
+        if (vn_check) {
+            geom.buffers.push(new Float32Array(vn_arr));
+            geom.attributes[StandardAttribute.Normal.name] = StandardAttribute.Normal.createAttribute({
+                buffer_index: 2,
+            });
+        }
+
         result.objects.push({
             name: raw_obj_data.name,
-            buffered_geometry: BufferedGeometry.fromGeometry(geom),
+            geometry: geom,
         });
     }
 

@@ -1,4 +1,4 @@
-import { Attribute, AttributeFormat, AttributeGenerator, createAttribute } from "./Attribute";
+import { AttributeGenerator } from "./Attribute";
 
 export namespace LineAttribute {
     //matches shader attributes
@@ -12,7 +12,9 @@ export namespace LineAttribute {
     ] as const;
 
     export const position = AttributeGenerator(Names[0]);
+    /** @defaults { divisor: 1, buffer_index: 1 }*/
     export const point_a = AttributeGenerator(Names[1], { divisor: 1, buffer_index: 1 });
+    /** @defaults { divisor: 1, buffer_index: 1 }*/
     export const point_b = AttributeGenerator(Names[2], { divisor: 1, buffer_index: 1 });
     export const color_a = AttributeGenerator(Names[3]);
     export const color_b = AttributeGenerator(Names[4]);

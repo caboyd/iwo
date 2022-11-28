@@ -1,9 +1,19 @@
+import { TypedArray } from "@customtypes/types";
 import { StandardAttribute } from "@geometry/attribute/StandardAttribute";
-import { BufferedGeometry } from "@geometry/BufferedGeometry";
-import { GL } from "@graphics/WebglConstants";
-import { Geometry } from "./Geometry";
+import { DrawMode, GL } from "@graphics/WebglConstants";
+import { throws } from "assert";
+import { Attribute } from "./attribute/Attribute";
+import { Geometry, Group } from "./Geometry";
 
-export class SphereGeometry extends Geometry {
+export class SphereGeometry implements Geometry {
+    attributes: Record<string, Attribute>;
+    buffers: TypedArray[];
+    index_buffer?: Uint32Array | Uint16Array | undefined;
+    groups?: Group[] | undefined;
+    draw_mode: DrawMode;
+    count: number;
+    instances?: number | undefined;
+
     public constructor(
         radius: number,
         horizontal_segments: number,
@@ -13,7 +23,9 @@ export class SphereGeometry extends Geometry {
         theta_start = 0,
         theta_length: number = Math.PI
     ) {
-        super();
+        this.attributes = {};
+        this.buffers = [];
+        this.draw_mode = GL.TRIANGLES;
 
         const flip_u = horizontal_segments < 0;
         const flip_v = vertical_segments < 0;
@@ -84,30 +96,17 @@ export class SphereGeometry extends Geometry {
             index += 2;
         }
 
-        const vert_buff = new Float32Array(verts);
-        this.attributes.set(StandardAttribute.Position.name, vert_buff);
-        this.attributes.set(StandardAttribute.Normal.name, vert_buff);
-        this.attributes.set(StandardAttribute.Tex_Coord.name, new Float32Array(tex_coords));
-        if (verts.length >= 65536) this.indices = new Uint32Array(indices);
-        else this.indices = new Uint16Array(indices);
-    }
+        this.buffers.push(new Float32Array(verts));
+        this.buffers.push(new Float32Array(tex_coords));
 
-    public getBufferedGeometry(): BufferedGeometry {
-        const attrib = StandardAttribute.SingleBufferApproach();
-        const verts = this.attributes.get(StandardAttribute.Position.name)!;
-        const tex_coords = this.attributes.get(StandardAttribute.Tex_Coord.name)!;
-        const index_buffer = { buffer: this.indices, target: GL.ELEMENT_ARRAY_BUFFER };
+        if (verts.length >= 65536) this.index_buffer = new Uint32Array(indices);
+        else this.index_buffer = new Uint16Array(indices);
+        this.count = indices.length;
 
-        const v_buf = new Float32Array(verts.length + tex_coords.length);
-        v_buf.set(verts);
-        v_buf.set(tex_coords, verts.length);
-
-        attrib[StandardAttribute.Tex_Coord.name].byte_offset = verts.length * 4;
-
-        return {
-            attributes: attrib,
-            index_buffer: index_buffer,
-            buffers: [{ buffer: v_buf, target: GL.ARRAY_BUFFER }],
-        } as BufferedGeometry;
+        this.attributes = {
+            [StandardAttribute.Position.name]: StandardAttribute.Position.createAttribute(),
+            [StandardAttribute.Tex_Coord.name]: StandardAttribute.Position.createAttribute({ buffer_index: 1 }),
+            [StandardAttribute.Normal.name]: StandardAttribute.Position.createAttribute(),
+        };
     }
 }

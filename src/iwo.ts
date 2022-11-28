@@ -4,11 +4,12 @@ export * from "./cameras/OrbitControl";
 export * from "./cameras/FPSControl";
 export * from "./cameras/Frustum";
 
-export * from "./geometry/attribute/StandardAttribute";
 export * from "./geometry/attribute/Attribute";
+export * from "./geometry/attribute/StandardAttribute";
+export * from "./geometry/attribute/LineAttribute";
 
 export * from "./geometry/Geometry";
-export * from "./geometry/BufferedGeometry";
+export * from "./geometry/QuadGeometry";
 export * from "./geometry/BoxGeometry";
 export * from "./geometry/PlaneGeometry";
 export * from "./geometry/SphereGeometry";
