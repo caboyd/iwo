@@ -17,6 +17,7 @@ export * from "./geometry/LineGeometry";
 
 export * from "./graphics/renderer/RendererStats";
 export * from "./graphics/renderer/Renderer";
+export * from "./graphics/renderer/RenderQueue";
 export * from "./graphics/WebglConstants";
 export * from "./graphics/WebglHelper";
 export * from "./graphics/Uniform";
@@ -58,9 +59,9 @@ export * from "./loader/TextureLoader";
 
 export * from "./helpers/ReferenceCounter";
 
-export function initGL(canvas: HTMLCanvasElement): WebGL2RenderingContext {
+export function initGL(canvas: HTMLCanvasElement, opt?: Partial<WebGLContextAttributes>): WebGL2RenderingContext {
     try {
-        const gl = <WebGL2RenderingContext>canvas.getContext("webgl2");
+        const gl = <WebGL2RenderingContext>canvas.getContext("webgl2", opt);
         if (!gl) {
             alert("WebGL is not available on your browser.");
         }

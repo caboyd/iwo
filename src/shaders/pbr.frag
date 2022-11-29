@@ -58,6 +58,7 @@ uniform Light u_lights[16];
 uniform Material u_material;
 uniform vec3 light_ambient;
 uniform float gamma;
+uniform bool hdr_correction_disabled;
 uniform float shadow_map_size;
 uniform float shadow_distance;
 uniform float transition_distance;
@@ -319,12 +320,14 @@ void main() {
     
     color = Lo + (emission + ambient) * PI_light;
 
-    //Reinhard HDR correction
-    color = color / (color + vec3(1.0));
-    //Gamma correction
-    float g = gamma;
-    if(g < 0.0001) g = 2.2;
-    color = pow(color, vec3(1.0/g));
+    if(!hdr_correction_disabled){
+        //Reinhard HDR correction
+        color = color / (color + vec3(1.0));
+        //Gamma correction
+        float g = gamma;
+        if(g < 0.0001) g = 2.2;
+        color = pow(color, vec3(1.0/g));
+    }
 
     //HDR + Gamma Correction Magic
     //https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting  slide 140

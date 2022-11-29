@@ -54,6 +54,8 @@ import depthVert from "../../shaders/depth_RTT.vert";
 import quadFrag from "../../shaders/quad.frag";
 // @ts-ignore
 import quadVert from "../../shaders/quad.vert";
+// @ts-ignore
+import hdrFrag from "../../shaders/hdr.frag";
 
 export namespace ShaderSource {
     export const Basic: ShaderSource = {
@@ -130,6 +132,13 @@ export namespace ShaderSource {
         name: "QuadShader",
         vert: quadVert,
         frag: quadFrag,
+        subclass: undefined,
+    };
+
+    export const HDR: ShaderSource = {
+        name: "HDRShader",
+        vert: quadVert,
+        frag: hdrFrag,
         subclass: undefined,
     };
 }

@@ -1,13 +1,13 @@
-import { mat3, mat4 } from "gl-matrix";
 import { Material } from "@materials/Material";
+import { mat3, mat4 } from "gl-matrix";
 import { IndexBuffer } from "../IndexBuffer";
-import { RendererStats } from "./RendererStats";
 import { Shader } from "../shader/Shader";
 import { ShaderSource } from "../shader/ShaderSources";
 import { Texture2D } from "../textures/Texture2D";
 import { TextureCubeMap } from "../textures/TextureCubeMap";
 import { UniformBuffer } from "../UniformBuffer";
 import { VertexBuffer } from "../VertexBuffer";
+import { RendererStats } from "./RendererStats";
 
 const temp: mat4 = mat4.create();
 
@@ -40,12 +40,14 @@ export class Renderer {
 
     private stats: RendererStats;
 
-    public viewport: ViewportDimensions = new ViewportDimensions();
+    #view_port_changed: boolean = false;
+    public viewport: ViewportDimensions;
 
     public constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
         this.stats = new RendererStats();
         this.__Shaders = new Map<string, Shader>();
+        this.viewport = { x: 0, y: 0, width: gl.drawingBufferWidth, height: gl.drawingBufferHeight };
 
         Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
         Renderer._EMPTY_CUBE_TEXTURE = new TextureCubeMap(gl).texture_id;
@@ -115,13 +117,35 @@ export class Renderer {
         return current_shader;
     }
 
+    public viewPortHasChanged(): boolean {
+        return this.#view_port_changed;
+    }
+
     public setViewport(x: number, y: number, width: number, height: number): void {
-        this.viewport = { x, y, width, height };
-        this.gl.viewport(x, y, width, height);
+        if (
+            this.viewport.x !== x ||
+            this.viewport.y !== y ||
+            this.viewport.width !== width ||
+            this.viewport.height !== height
+        ) {
+            this.viewport = { x, y, width, height };
+            this.gl.viewport(x, y, width, height);
+            this.#view_port_changed = true;
+        }
     }
 
     public resetViewport(): void {
-        this.gl.viewport(this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height);
+        const v: Int32Array = this.gl.getParameter(this.gl.VIEWPORT);
+        //untested
+        if (
+            this.viewport.x !== v[0] ||
+            this.viewport.y !== v[1] ||
+            this.viewport.width !== v[2] ||
+            this.viewport.height !== v[3]
+        ) {
+            this.gl.viewport(this.viewport.x, this.viewport.y, this.viewport.width, this.viewport.height);
+            this.#view_port_changed = true;
+        }
     }
 
     public resetSaveBindings(): void {
@@ -191,6 +215,9 @@ export class Renderer {
 
         vertex_buffer.bind(this.gl);
         this.stats.vertex_buffer_bind_count++;
+
+        //lock in viewport change
+        this.#view_port_changed = false;
     }
 
     public cleanupGLState(): void {
