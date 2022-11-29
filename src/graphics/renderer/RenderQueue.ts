@@ -173,6 +173,80 @@ export class RendererQueue {
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
     }
 
+    public buildFrameBuffers(): void {
+        const gl = this.renderer.gl;
+        const renderer = this.renderer;
+        this.width = renderer.viewport.width - renderer.viewport.x;
+        this.height = renderer.viewport.height - renderer.viewport.y;
+        const texture_settings = {
+            width: this.width,
+            height: this.height,
+            type: gl.FLOAT,
+            internal_format: gl.RGBA32F,
+            format: gl.RGBA,
+            wrap_S: gl.CLAMP_TO_EDGE,
+            wrap_T: gl.CLAMP_TO_EDGE,
+            min_filter: gl.LINEAR,
+        };
+        const buffer = new Float32Array(this.width * this.height * 4);
+
+        this.output_textures = [
+            new Texture2D(gl, buffer, texture_settings),
+            new Texture2D(gl, buffer, texture_settings),
+        ];
+
+        this.frame_buffers = [gl.createFramebuffer()!, gl.createFramebuffer()!];
+        for (let i = 0; i < 2; i++) {
+            const ext = gl.getExtension("EXT_color_buffer_float");
+            if (!ext) throw `EXT_color_buffer_float not available. Required for RenderPass.`;
+
+            gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffers[i]);
+            gl.framebufferTexture2D(
+                gl.FRAMEBUFFER,
+                gl.COLOR_ATTACHMENT0,
+                gl.TEXTURE_2D,
+                this.output_textures[i].texture_id,
+                0
+            );
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        }
+
+        this.multisample_frame_buffer = gl.createFramebuffer()!;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, this.multisample_frame_buffer);
+        const color = gl.createRenderbuffer()!;
+        gl.bindRenderbuffer(gl.RENDERBUFFER, color);
+        gl.renderbufferStorageMultisample(
+            gl.RENDERBUFFER,
+            gl.getParameter(gl.MAX_SAMPLES),
+            gl.RGBA32F,
+            this.width,
+            this.height
+        );
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, color);
+        const depth = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, depth);
+        gl.renderbufferStorageMultisample(
+            gl.RENDERBUFFER,
+            gl.getParameter(gl.MAX_SAMPLES),
+            gl.DEPTH_COMPONENT16,
+            this.width,
+            this.height
+        );
+        gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
+    }
+
+    public updateViewPort(): void {
+        const gl = this.renderer.gl;
+        if (this.renderer.viewPortHasChanged()) {
+            gl.deleteTexture(this.output_textures[0].texture_id);
+            gl.deleteTexture(this.output_textures[1].texture_id);
+            gl.deleteFramebuffer(this.frame_buffers[0]);
+            gl.deleteFramebuffer(this.frame_buffers[1]);
+            gl.deleteFramebuffer(this.multisample_frame_buffer);
+            this.buildFrameBuffers();
+        }
+    }
+
     public getRenderPass(id: string): RenderPass {
         const index = this.render_pass_index_map[id];
         if (index === undefined) throw `RenderPass ${id} does not exist`;
@@ -204,6 +278,7 @@ export class RendererQueue {
     }
 
     public execute(): void {
+        this.updateViewPort();
         const gl = this.renderer.gl;
         for (const pass of this.render_passes) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.multisample_frame_buffer);
