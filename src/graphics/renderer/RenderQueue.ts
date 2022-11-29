@@ -66,15 +66,14 @@ export class DefaultRenderPass implements RenderPass {
         const gl = renderer.gl;
 
         this.setupPass = () => {
-            // gl.enable(gl.SAMPLE_COVERAGE);
-            //gl.sampleCoverage(4.0, true);
             renderer.setPerFrameUniforms(this.view_matrix, this.proj_matrix);
         };
-        this.teardownPass = () => {
-            //gl.disable(gl.SAMPLE_COVERAGE);
-        };
+        this.teardownPass = () => {};
     }
 }
+
+export const HDR_Type_Const = ["Reinhard", "Reinhard2", "Lottes", "ACES", "Exposure", "Unreal"] as const;
+export type HDR_Type = typeof HDR_Type_Const[number];
 
 export class HDRCorrectionPostProcess implements PostProcessPass {
     onBeforePass?: (() => void) | undefined;
@@ -83,8 +82,26 @@ export class HDRCorrectionPostProcess implements PostProcessPass {
     post_pass_func?: (() => void) | undefined;
     shader: Shader;
 
-    constructor(renderer: Renderer) {
+    constructor(renderer: Renderer, type: HDR_Type = HDR_Type_Const[0], gamma: number = 2.2) {
         this.shader = renderer.getorCreateShader(ShaderSource.HDR);
+        renderer.setAndActivateShader(this.shader);
+        this.shader.setUniform("hdr_type", HDR_Type_Const.indexOf(type));
+        this.shader.setUniform("gamma", gamma);
+        this.shader.setUniform("exposure", 1.0);
+    }
+
+    public setHDR(renderer: Renderer, type: HDR_Type) {
+        renderer.setAndActivateShader(this.shader);
+        this.shader.setUniform("hdr_type", HDR_Type_Const.indexOf(type));
+    }
+
+    public setGamma(renderer: Renderer, value: number) {
+        renderer.setAndActivateShader(this.shader);
+        this.shader.setUniform("gamma", value);
+    }
+    public setExposure(renderer: Renderer, value: number) {
+        renderer.setAndActivateShader(this.shader);
+        this.shader.setUniform("exposure", value);
     }
 }
 
