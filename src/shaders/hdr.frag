@@ -20,10 +20,10 @@ vec3 aces(vec3 x) {
     return (x * (a * x + b)) / (x * (c * x + d) + e);
 }
 
-vec3 gammaCorrect(vec3 mapped_color){
+void gammaCorrect(inout vec3 x){
     float g = gamma;
     g = max(g, 0.0001);
-    return pow(mapped_color, vec3(1.0 / g));
+    x = pow(x, vec3(1.0 / g));
 }
 
 void main()
@@ -36,13 +36,13 @@ void main()
         case 0:
             //Reinhard tonemapping
             mapped_color = mapped_color / (mapped_color + vec3(1.0));
-            mapped_color = gammaCorrect(mapped_color);
+            gammaCorrect(mapped_color);
             break;
         case 1:
             //Reinhard2 tonemapping
             const float L_white = 4.0;
             mapped_color = (mapped_color * (1.0 + mapped_color / (L_white * L_white))) / (1.0 + mapped_color);
-            mapped_color = gammaCorrect(mapped_color);
+            gammaCorrect(mapped_color);
             break;
         
         case 2:
@@ -61,22 +61,23 @@ void main()
                 ((pow(hdrMax, a * d) - pow(midIn, a * d)) * midOut);
 
             mapped_color = pow(mapped_color, vec3(a)) / (pow(mapped_color, vec3(a * d)) * b + c);
-            mapped_color = gammaCorrect(mapped_color);
+            gammaCorrect(mapped_color);
             break;
         
         case 3:
             //ACES tonemapping
             mapped_color = aces(mapped_color);
-            mapped_color = gammaCorrect(mapped_color);
-        
+            gammaCorrect(mapped_color);
+            break;
         case 4:
             //Exposure tonemapping
             mapped_color = vec3(1.0) - exp(-mapped_color * exposure);
-            mapped_color = gammaCorrect(mapped_color);
+            gammaCorrect(mapped_color);
             break;
         case 5:
             //Unreal gamma baked in
             mapped_color = mapped_color / (mapped_color + 0.155) * 1.019;
+            break;
     }
 
 
