@@ -58,6 +58,31 @@ import quadVert from "../../shaders/quad.vert";
 import hdrFrag from "../../shaders/hdr.frag";
 
 export namespace ShaderSource {
+    export const Defines = ["INSTANCING"] as const;
+    export type Define = typeof Defines[number];
+    export namespace Define {
+        export const INSTANCING = Defines[0];
+    }
+
+    export function toShaderSourceWithDefines(source: ShaderSource, defines?: Define[]): ShaderSource {
+        if (!defines) return source;
+        let name = source.name;
+        let vert = source.vert;
+        let frag = source.frag;
+        for (const d of defines) {
+            vert = vert.replace("//##END", `#define ${d}\n//##END`);
+            frag = frag.replace("//##END", `#define ${d}\n//##END`);
+            name += `#${d}`;
+        }
+        const result: ShaderSource = {
+            name: name,
+            vert: vert,
+            frag: frag,
+            subclass: source.subclass,
+        };
+        return result;
+    }
+
     export const Basic: ShaderSource = {
         name: "BasicShader",
         vert: standardVert,
@@ -102,7 +127,7 @@ export namespace ShaderSource {
 
     export const Grid: ShaderSource = {
         name: "GridShader",
-        vert: standardVert,
+        vert: gridVert,
         frag: gridFrag,
         subclass: undefined,
     };
@@ -142,5 +167,3 @@ export namespace ShaderSource {
         subclass: undefined,
     };
 }
-
-export const ShaderSources: ShaderSource[] = Object.values(ShaderSource);

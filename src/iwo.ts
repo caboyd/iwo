@@ -48,6 +48,7 @@ export * from "./materials/EmptyMaterial";
 export * from "./meshes/SubMesh";
 export * from "./meshes/Mesh";
 export * from "./meshes/MeshInstance";
+export * from "./meshes/InstancedMesh";
 
 export * from "./loader/FileLoader";
 export * from "./loader/HDRImageLoader";

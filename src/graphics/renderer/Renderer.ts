@@ -38,7 +38,7 @@ export class Renderer {
     private uboPerFrameBlock: UniformBuffer;
     private uboPerModelBlock: UniformBuffer;
 
-    private stats: RendererStats;
+    public stats: RendererStats;
 
     #view_port_changed: boolean = false;
     public viewport: ViewportDimensions;
@@ -82,10 +82,11 @@ export class Renderer {
         this.uboPerModelBlock.update(this.gl);
     }
 
-    public prepareMaterialShaders(materials: Material[]) {
+    public prepareMaterialShaders(materials: Material[], defines?: ShaderSource.Define[]) {
         for (const mat of materials) {
-            if (this.__Shaders.has(mat.shaderSource.name)) continue;
-            else this.initShader(mat.shaderSource);
+            const source = ShaderSource.toShaderSourceWithDefines(mat.shaderSource, defines);
+            if (this.__Shaders.has(source.name)) continue;
+            else this.initShader(source);
         }
     }
 
@@ -95,9 +96,10 @@ export class Renderer {
         this.stats.shader_bind_count++;
     }
 
-    public getorCreateShader(src: ShaderSource): Shader {
-        let shader = this.__Shaders.get(src.name)!;
-        if (shader === undefined) shader = this.initShader(src);
+    public getorCreateShader(src: ShaderSource, defines?: ShaderSource.Define[]): Shader {
+        const source = ShaderSource.toShaderSourceWithDefines(src, defines);
+        let shader = this.__Shaders.get(source.name)!;
+        if (shader === undefined) shader = this.initShader(source);
         return shader;
     }
 
@@ -149,6 +151,7 @@ export class Renderer {
     }
 
     public resetSaveBindings(): void {
+        this.cleanupGLState();
         this.current_material = undefined;
         this.current_shader = undefined;
     }
@@ -159,9 +162,10 @@ export class Renderer {
         offset: number,
         index_buffer: IndexBuffer | undefined,
         vertex_buffer: VertexBuffer,
-        mat: Material | undefined = undefined
+        mat: Material | undefined = undefined,
+        defines?: ShaderSource.Define[]
     ): void {
-        this.prepareDraw(mat, vertex_buffer, index_buffer);
+        this.prepareDraw(mat, vertex_buffer, defines);
 
         if (index_buffer) {
             this.gl.drawElements(draw_mode, count, index_buffer.type, offset);
@@ -181,23 +185,24 @@ export class Renderer {
         instance_count: number,
         index_buffer: IndexBuffer | undefined,
         vertex_buffer: VertexBuffer,
-        mat: Material | undefined = undefined
+        mat: Material | undefined = undefined,
+        defines?: ShaderSource.Define[]
     ): void {
-        this.prepareDraw(mat, vertex_buffer, index_buffer);
+        this.prepareDraw(mat, vertex_buffer, defines);
 
         if (index_buffer) {
             this.gl.drawElementsInstanced(draw_mode, count, index_buffer.type, offset, instance_count);
-            this.stats.index_draw_count += count;
+            this.stats.index_draw_count += count * instance_count;
         } else {
             this.gl.drawArraysInstanced(draw_mode, offset, count, instance_count);
-            this.stats.vertex_draw_count += count;
+            this.stats.vertex_draw_count += count * instance_count;
         }
         this.stats.draw_calls++;
         this.gl.bindVertexArray(null);
     }
 
-    private prepareDraw(mat: Material | undefined, vertex_buffer: VertexBuffer, index_buffer: IndexBuffer | undefined) {
-        const shader = mat && this.getorCreateShader(mat?.shaderSource);
+    private prepareDraw(mat: Material | undefined, vertex_buffer: VertexBuffer, defines?: ShaderSource.Define[]) {
+        const shader = mat && this.getorCreateShader(mat?.shaderSource, defines);
 
         if (shader && shader != this.current_shader) {
             this.current_shader = shader;
@@ -206,7 +211,7 @@ export class Renderer {
         }
 
         if (mat && mat != this.current_material) {
-            if (mat.cleanupGLState) mat.cleanupGLState(this.gl);
+            if (this.current_material?.cleanupGLState) this.current_material.cleanupGLState(this.gl);
             this.current_material = mat;
             if (this.current_shader === undefined) throw "No shader bound with material";
             this.current_material.activate(this.gl, this.current_shader);

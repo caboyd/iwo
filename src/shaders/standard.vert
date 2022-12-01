@@ -1,12 +1,18 @@
 #version 300 es
 precision highp float;
 
+//##DEFINES
+
+//##END
 layout (location = 0) in vec3 a_vertex;
 layout (location = 1) in vec2 a_tex_coord;
 layout (location = 2) in vec3 a_normal;
 layout (location = 3) in vec3 a_tangent;
 layout (location = 4) in vec3 a_bitangent;
 
+#ifdef INSTANCING
+in mat4 a_instance;
+#endif
 
 layout (std140) uniform ubo_per_frame{
                           // base alignment   // aligned offset
@@ -51,28 +57,36 @@ vec3 inverseTransformDirection(in vec3 normal, in mat4 matrix) {
 }
 
 void main() {
+
+vec4 world_pos4 = model * vec4(a_vertex, 1.0);
+
+#ifdef INSTANCING
+    gl_Position = view_projection * a_instance * model * vec4(a_vertex,1.0f);
+    mat4 normal_mat4 = transpose(inverse(a_instance * model)); 
+    view_pos = (view * a_instance * model * vec4(a_vertex,1.0f)).xyz ;
+    view_normal =  (view * normal_mat4 * vec4(a_normal, 1.0)).xyz ;
+    world_pos4 = a_instance * world_pos4;
+    world_normal = normalize((normal_mat4 * vec4(a_normal, 1.0)).xyz);
+#else
     gl_Position = mvp * vec4(a_vertex,1.0f);
+    view_pos = (view * model * vec4(a_vertex,1.0f)).xyz ;
+    view_normal =  normal_view * a_normal ;
+    world_normal = normalize(inverseTransformDirection( view_normal, view ));
+#endif
 
     camera_pos = view_inverse[3].xyz;
     local_pos = a_vertex;
-    view_pos = (view * model * vec4(a_vertex,1.0f)).xyz ;
-    view_normal =  normal_view * a_normal ;
-    vec4 wp = model * vec4(a_vertex, 1.0);
-    world_pos = wp.xyz;
-    world_normal = normalize(inverseTransformDirection( view_normal, view ));
-    tex_coord =  a_tex_coord;
+    world_pos = world_pos4.xyz;
+    tex_coord = a_tex_coord;
 
-    //(OUT) Calculate world space coords that map this vertex to the shadow_map
+    //Calculate world space coords that map this vertex to the shadow_map
     //The vertex may not appear in the shadow_map and will have no shadow
-
     vec3 toLight = normalize(u_lights[0].position.xyz);
     float cos_light_angle = dot(toLight, world_normal);
     float slope_scale = clamp(1.0 - cos_light_angle, 0.0, 1.0);
     float normal_offset_scale =  slope_scale * 0.4;
     vec4 shadow_offset = vec4(world_normal * normal_offset_scale,0.0);
-    shadow_coord = shadow_map_space * (wp + shadow_offset);
-
-    //shadow_coord = shadow_map_space * wp;
+    shadow_coord = shadow_map_space * (world_pos4 + shadow_offset);
 
     //Shadow_coord.w will be used to fade in and out shadows softly when they are far from camera
     //doing this per vertex doesnt work well for objects with one vertex inside and one outside when they are large

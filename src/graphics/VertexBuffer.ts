@@ -36,17 +36,19 @@ export class VertexBuffer {
         for (let i = 0; i < num_attribs; ++i) {
             const info = gl.getActiveAttrib(program.ID, i)!;
             const attrib = this.attributes[info.name];
-            if (!attrib || !attrib.enabled) continue;
-            const index = gl.getAttribLocation(program.ID, info.name);
+            if (!attrib || !attrib.enabled) {
+                //gl.disableVertexAttribArray(i);
+                continue;
+            }
             if (this.buffers[attrib.buffer_index] !== bound_buffer) {
                 gl.bindBuffer(gl.ARRAY_BUFFER, this.buffers[attrib.buffer_index]);
                 bound_buffer = this.buffers[attrib.buffer_index];
             }
 
-            gl.enableVertexAttribArray(index);
+            gl.enableVertexAttribArray(i);
             if (WebGL.isComponentTypeInteger(attrib.component_type))
                 gl.vertexAttribIPointer(
-                    index,
+                    i,
                     typeToComponentCount(info.type),
                     attrib.component_type,
                     attrib.byte_stride,
@@ -54,7 +56,7 @@ export class VertexBuffer {
                 );
             else
                 gl.vertexAttribPointer(
-                    index,
+                    i,
                     typeToComponentCount(info.type),
                     attrib.component_type,
                     attrib.normalized,
@@ -63,7 +65,7 @@ export class VertexBuffer {
                 );
 
             if (attrib.divisor) {
-                gl.vertexAttribDivisor(index, attrib.divisor);
+                gl.vertexAttribDivisor(i, attrib.divisor);
             }
         }
     }
