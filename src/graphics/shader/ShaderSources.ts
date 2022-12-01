@@ -17,6 +17,8 @@ export interface ShaderSource {
     vert: string;
     frag: string;
     subclass: typeof Shader | undefined;
+    valid_defines?: Set<ShaderSource.Define>;
+    material_defines?: Set<ShaderSource.Define>;
 }
 
 //NOTE: Relative import is required for rollup-plugin-node-resolve to resolve these extensions
@@ -58,22 +60,39 @@ import quadVert from "../../shaders/quad.vert";
 import hdrFrag from "../../shaders/hdr.frag";
 
 export namespace ShaderSource {
-    export const Defines = ["INSTANCING"] as const;
+    export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING"] as const;
     export type Define = typeof Defines[number];
     export namespace Define {
         export const INSTANCING = Defines[0];
+        export const SHADOWS = Defines[1];
+        export const FLATSHADING = Defines[2];
     }
 
-    export function toShaderSourceWithDefines(source: ShaderSource, defines?: Define[]): ShaderSource {
-        if (!defines) return source;
+    export function toShaderSourceWithDefines(source: ShaderSource, defines?: Set<Define>): ShaderSource {
+        if (!source.material_defines && (!defines || !source.valid_defines)) return source;
+
         let name = source.name;
         let vert = source.vert;
         let frag = source.frag;
-        for (const d of defines) {
-            vert = vert.replace("//##END", `#define ${d}\n//##END`);
-            frag = frag.replace("//##END", `#define ${d}\n//##END`);
+
+        const valid_defines = [];
+        if (defines && source.valid_defines)
+            for (const d of source.valid_defines.values()) {
+                if (defines.has(d)) valid_defines.push(d);
+            }
+        if (source.material_defines) for (const d of source.material_defines) valid_defines.push(d);
+
+        //DEFINES ALWAYS ALPHABETICAL
+        valid_defines.sort((a, b) => a.localeCompare(b));
+
+        let define_str = "";
+        for (const d of valid_defines) {
+            define_str += `#define ${d}\n`;
             name += `#${d}`;
         }
+        vert = vert.replace("//##END", `${define_str}//##END`);
+        frag = frag.replace("//##END", `${define_str}//##END`);
+
         const result: ShaderSource = {
             name: name,
             vert: vert,
@@ -88,6 +107,7 @@ export namespace ShaderSource {
         vert: standardVert,
         frag: basicFrag,
         subclass: BasicShader,
+        valid_defines: new Set<Define>([Define.INSTANCING]),
     };
 
     export const PBR: ShaderSource = {
@@ -95,6 +115,7 @@ export namespace ShaderSource {
         vert: standardVert,
         frag: pbrFrag,
         subclass: PBRShader,
+        valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS]),
     };
 
     export const NormalOnly: ShaderSource = {
@@ -102,6 +123,7 @@ export namespace ShaderSource {
         vert: standardVert,
         frag: normalOnlyFrag,
         subclass: undefined,
+        valid_defines: new Set<Define>([Define.INSTANCING, Define.FLATSHADING]),
     };
 
     export const EquiToCubemap: ShaderSource = {

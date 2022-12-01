@@ -4,7 +4,6 @@ precision highp float;
 out vec4 frag_color;
 
 in vec3 local_pos;
-in vec3 view_pos;
 in vec2 tex_coord;
 in vec3 view_normal;
 

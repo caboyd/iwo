@@ -43,11 +43,16 @@ export class Renderer {
     #view_port_changed: boolean = false;
     public viewport: ViewportDimensions;
 
+    #global_defines: Set<ShaderSource.Define>;
+    #shader_variant_uniforms: Map<string, Map<string, any>>;
+
     public constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
         this.stats = new RendererStats();
         this.__Shaders = new Map<string, Shader>();
         this.viewport = { x: 0, y: 0, width: gl.drawingBufferWidth, height: gl.drawingBufferHeight };
+        this.#global_defines = new Set();
+        this.#shader_variant_uniforms = new Map();
 
         Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
         Renderer._EMPTY_CUBE_TEXTURE = new TextureCubeMap(gl).texture_id;
@@ -58,6 +63,11 @@ export class Renderer {
         this.uboPerModelBlock = new UniformBuffer(shader, "ubo_per_model");
         this.uboPerFrameBlock.bindShader(shader, this.PerFrameBinding);
         this.uboPerModelBlock.bindShader(shader, this.PerModelBinding);
+    }
+
+    public setShadows(enabled: boolean) {
+        if (enabled) this.#global_defines.add(ShaderSource.Define.SHADOWS);
+        else this.#global_defines.delete(ShaderSource.Define.SHADOWS);
     }
 
     public setPerFrameUniforms(view: mat4, proj: mat4, shadow_map?: mat4): void {
@@ -82,7 +92,7 @@ export class Renderer {
         this.uboPerModelBlock.update(this.gl);
     }
 
-    public prepareMaterialShaders(materials: Material[], defines?: ShaderSource.Define[]) {
+    public prepareMaterialShaders(materials: Material[], defines?: Set<ShaderSource.Define>) {
         for (const mat of materials) {
             const source = ShaderSource.toShaderSourceWithDefines(mat.shaderSource, defines);
             if (this.__Shaders.has(source.name)) continue;
@@ -96,8 +106,18 @@ export class Renderer {
         this.stats.shader_bind_count++;
     }
 
-    public getorCreateShader(src: ShaderSource, defines?: ShaderSource.Define[]): Shader {
-        const source = ShaderSource.toShaderSourceWithDefines(src, defines);
+    public setShaderVariantUniforms(source: ShaderSource, uniforms: Map<string, any>) {
+        this.#shader_variant_uniforms.set(source.name, uniforms);
+
+        //loop through all variant shaders with same base and set uniforms
+        for (const [name, shader] of this.__Shaders) {
+            if (name.includes(source.name)) shader.setUniforms(uniforms);
+        }
+    }
+
+    public getorCreateShader(src: ShaderSource, defines: Set<ShaderSource.Define> = new Set()): Shader {
+        const combined_defines: Set<ShaderSource.Define> = new Set([...this.#global_defines, ...defines]);
+        const source = ShaderSource.toShaderSourceWithDefines(src, combined_defines);
         let shader = this.__Shaders.get(source.name)!;
         if (shader === undefined) shader = this.initShader(source);
         return shader;
@@ -105,13 +125,18 @@ export class Renderer {
 
     private initShader(src: ShaderSource): Shader {
         let current_shader;
-        if (src.subclass !== undefined) {
-            current_shader = new src.subclass(this.gl, src.vert, src.frag);
-            this.__Shaders.set(src.name, current_shader);
-        } else {
-            current_shader = new Shader(this.gl, src.vert, src.frag);
-            this.__Shaders.set(src.name, current_shader);
-        }
+
+        //create shader
+        const shader_class = src.subclass ?? Shader;
+        current_shader = new shader_class(this.gl, src.vert, src.frag);
+        this.__Shaders.set(src.name, current_shader);
+
+        //set any preset uniforms that have be set for this shader base
+        const shader_base_name = src.name.split("#")[0];
+        const uniforms = this.#shader_variant_uniforms.get(shader_base_name);
+        if (uniforms) current_shader.setUniforms(uniforms);
+
+        //set ubos
         if (this.uboPerFrameBlock && this.uboPerModelBlock) {
             this.uboPerFrameBlock.bindShader(current_shader, this.PerFrameBinding);
             this.uboPerModelBlock.bindShader(current_shader, this.PerModelBinding);
@@ -163,7 +188,7 @@ export class Renderer {
         index_buffer: IndexBuffer | undefined,
         vertex_buffer: VertexBuffer,
         mat: Material | undefined = undefined,
-        defines?: ShaderSource.Define[]
+        defines?: Set<ShaderSource.Define>
     ): void {
         this.prepareDraw(mat, vertex_buffer, defines);
 
@@ -186,7 +211,7 @@ export class Renderer {
         index_buffer: IndexBuffer | undefined,
         vertex_buffer: VertexBuffer,
         mat: Material | undefined = undefined,
-        defines?: ShaderSource.Define[]
+        defines?: Set<ShaderSource.Define>
     ): void {
         this.prepareDraw(mat, vertex_buffer, defines);
 
@@ -201,7 +226,7 @@ export class Renderer {
         this.gl.bindVertexArray(null);
     }
 
-    private prepareDraw(mat: Material | undefined, vertex_buffer: VertexBuffer, defines?: ShaderSource.Define[]) {
+    private prepareDraw(mat: Material | undefined, vertex_buffer: VertexBuffer, defines?: Set<ShaderSource.Define>) {
         const shader = mat && this.getorCreateShader(mat?.shaderSource, defines);
 
         if (shader && shader != this.current_shader) {

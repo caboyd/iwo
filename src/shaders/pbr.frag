@@ -3,20 +3,27 @@ precision highp float;
 precision highp int;
 precision highp sampler2DShadow;
 
+//##DEFINES
 #define PI 3.14159265358979
 #define MIN_PERCEPTUAL_ROUGHNESS 0.045
 #define MIN_ROUGHNESS            0.002025
 
+
+//##END
+
 out vec4 frag_color;
 
-in vec3 view_pos;
+//in vec3 view_pos;
 in vec3 world_pos;
 in vec2 tex_coord;
 in vec3 normal;
 in vec3 view_normal;
 in vec3 world_normal;
 in vec3 camera_pos;
+
+#ifdef SHADOWS
 in vec4 shadow_coord;
+#endif
 
 layout (std140) uniform ubo_per_frame{
                           // base alignment   // aligned offset
@@ -33,7 +40,6 @@ struct Material {
     float metallic;
     float ao;
     vec3 emissive_factor;
-    bool flat_shading;
 
     sampler2D albedo_sampler;
     samplerCube irradiance_sampler;
@@ -59,9 +65,12 @@ uniform Material u_material;
 uniform vec3 light_ambient;
 uniform float gamma;
 uniform bool hdr_correction_disabled;
+
+#ifdef SHADOWS
 uniform float shadow_map_size;
 uniform float shadow_distance;
 uniform float transition_distance;
+#endif
 
 float saturate(float a){
     return clamp(a, 0.0, 1.0);
@@ -194,18 +203,18 @@ void main() {
     perceptual_roughness = clamp(perceptual_roughness,MIN_PERCEPTUAL_ROUGHNESS, perceptual_roughness);
 
 
-    vec3 N = normalize(world_normal);
-    if(u_material.active_textures[3]){
-       vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - vec3(1.0);
-        mat3 TBN = cotangent_frame(world_normal, world_pos, tex_coord, vec2(1.,1.));
-        N = perturbNormal(TBN, mapN, 1.0);
-    }
-
-    if(u_material.flat_shading){
+    #ifdef FLATSHADING
         vec3 xTangent = dFdx( world_normal );
         vec3 yTangent = dFdy( world_normal );
-        N = normalize( cross( xTangent, yTangent ) );
-    }
+        vec3 N = normalize( cross( xTangent, yTangent ) );
+    #else
+        vec3 N = world_normal;
+        if(u_material.active_textures[3]) {
+            vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - vec3(1.0);
+            mat3 TBN = cotangent_frame(world_normal, world_pos, tex_coord, vec2(1.,1.));
+            N = perturbNormal(TBN, mapN, 1.0);
+        }
+    #endif
 
     //View Direction
     vec3 V = normalize( camera_pos - world_pos);
@@ -256,7 +265,7 @@ void main() {
         float NdotL = saturate(dot(N, L));
         
 
-
+        #ifdef SHADOWS
         //only light 0 has shadows
         if(u_material.active_textures[7]) {
             //Objects not in shadow have full light
@@ -276,6 +285,7 @@ void main() {
             }
             radiance *= light_factor;
         }
+        #endif
 
         Lo += (kD * albedo / PI + specular) * radiance * NdotL;
    

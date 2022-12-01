@@ -171,10 +171,13 @@ export class PBRMaterial extends Material {
         shader.setUniform("u_material.metallic", this.metallic);
         shader.setUniform("u_material.ao", this.ao);
         shader.setUniform("u_material.emissive_factor", this.emissive_factor);
-        shader.setUniform("u_material.flat_shading", this.flat_shading);
+       // shader.setUniform("u_material.flat_shading", this.flat_shading);
     }
 
     public get shaderSource(): ShaderSource {
-        return ShaderSource.PBR;
+        const source = ShaderSource.PBR;
+        source.material_defines = new Set<ShaderSource.Define>();
+        if (this.flat_shading) source.material_defines.add(ShaderSource.Define.FLATSHADING);
+        return source;
     }
 }

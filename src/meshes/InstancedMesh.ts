@@ -15,6 +15,8 @@ export class InstancedMesh {
     #instance_buffer: WebGLBuffer | undefined;
     #buffer_sent_to_gpu: boolean = false;
 
+    static readonly Defines: Set<ShaderSource.Define> = new Set([ShaderSource.Define.INSTANCING]);
+
     public constructor(mesh: Mesh, materials: Material[] | Material) {
         this.mesh = mesh;
         this.materials = [materials].flat(2);
@@ -83,7 +85,7 @@ export class InstancedMesh {
                         submesh.index_buffer,
                         submesh.vertex_buffer,
                         mat,
-                        [ShaderSource.Define.INSTANCING]
+                        InstancedMesh.Defines
                     );
                     submeshes_rendered++;
                 }
@@ -113,18 +115,18 @@ export class InstancedMesh {
     }
 
     private prepareMesh(renderer: Renderer) {
-        renderer.prepareMaterialShaders(this.materials, [ShaderSource.Define.INSTANCING]);
+        renderer.prepareMaterialShaders(this.materials, InstancedMesh.Defines);
         if (!this.mesh.initialized) {
             //Assumes every material shader in this mesh has same attribute layout
             this.mesh.setupVAO(
                 renderer.gl,
-                renderer.getorCreateShader(this.materials[0].shaderSource, [ShaderSource.Define.INSTANCING])
+                renderer.getorCreateShader(this.materials[0].shaderSource, InstancedMesh.Defines)
             );
         }
         if (!this.#buffer_sent_to_gpu) {
             this.updateBuffer(
                 renderer.gl,
-                renderer.getorCreateShader(this.materials[0].shaderSource, [ShaderSource.Define.INSTANCING])
+                renderer.getorCreateShader(this.materials[0].shaderSource, InstancedMesh.Defines)
             );
             this.#buffer_sent_to_gpu = true;
         }
