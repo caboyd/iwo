@@ -16,7 +16,7 @@ void main() {
         vec3 yTangent = dFdy( world_normal );
         vec3 N = normalize( cross( xTangent, yTangent ) );
     #else
-        vec3 N = world_normal;
+        vec3 N = normalize(world_normal);
     #endif
 
     frag_color = vec4(N, 1.0);
