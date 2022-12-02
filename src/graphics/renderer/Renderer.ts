@@ -124,6 +124,7 @@ export class Renderer {
         } else {
             //loop through all variant shaders with same base and set uniforms
             for (const [name, shader] of this.__Shaders) {
+                shader.use();
                 if (name.includes(source.name)) shader.setUniforms(uniforms);
             }
             //update existing saved uniforms
@@ -132,19 +133,20 @@ export class Renderer {
         }
     }
 
-    public addShaderVariantUniform(source: ShaderSource, name: string, value: any) {
+    public addShaderVariantUniform(source: ShaderSource, uniform_name: string, value: any) {
         const existing_uniforms = this.#shader_variant_uniforms.get(source.name);
 
         if (!existing_uniforms) {
-            this.setShaderVariantUniforms(source, new Map().set(name, value));
+            this.setShaderVariantUniforms(source, new Map().set(uniform_name, value));
             return;
         } else {
             //loop through all variant shaders with same base and set uniforms
             for (const [name, shader] of this.__Shaders) {
-                if (name.includes(source.name)) shader.setUniform(name, value);
+                shader.use();
+                if (name.includes(source.name)) shader.setUniform(uniform_name, value);
             }
             //update existing saved uniforms
-            existing_uniforms.set(name, value);
+            existing_uniforms.set(uniform_name, value);
         }
     }
 
