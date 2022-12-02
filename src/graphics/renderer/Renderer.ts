@@ -115,6 +115,39 @@ export class Renderer {
         }
     }
 
+    public addShaderVariantUniforms(source: ShaderSource, uniforms: Map<string, any>) {
+        const existing_uniforms = this.#shader_variant_uniforms.get(source.name);
+
+        if (!existing_uniforms) {
+            this.setShaderVariantUniforms(source, uniforms);
+            return;
+        } else {
+            //loop through all variant shaders with same base and set uniforms
+            for (const [name, shader] of this.__Shaders) {
+                if (name.includes(source.name)) shader.setUniforms(uniforms);
+            }
+            //update existing saved uniforms
+            const merged = new Map([...existing_uniforms, ...uniforms]);
+            this.#shader_variant_uniforms.set(source.name, merged);
+        }
+    }
+
+    public addShaderVariantUniform(source: ShaderSource, name: string, value: any) {
+        const existing_uniforms = this.#shader_variant_uniforms.get(source.name);
+
+        if (!existing_uniforms) {
+            this.setShaderVariantUniforms(source, new Map().set(name, value));
+            return;
+        } else {
+            //loop through all variant shaders with same base and set uniforms
+            for (const [name, shader] of this.__Shaders) {
+                if (name.includes(source.name)) shader.setUniform(name, value);
+            }
+            //update existing saved uniforms
+            existing_uniforms.set(name, value);
+        }
+    }
+
     public getorCreateShader(src: ShaderSource, defines: Set<ShaderSource.Define> = new Set()): Shader {
         const combined_defines: Set<ShaderSource.Define> = new Set([...this.#global_defines, ...defines]);
         const source = ShaderSource.toShaderSourceWithDefines(src, combined_defines);

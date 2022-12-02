@@ -57,7 +57,9 @@ import quadFrag from "../../shaders/quad.frag";
 // @ts-ignore
 import quadVert from "../../shaders/quad.vert";
 // @ts-ignore
-import hdrFrag from "../../shaders/hdr.frag";
+import toneFrag from "../../shaders/postprocess/tonemapping.frag";
+// @ts-ignore
+import gaussFrag from "../../shaders/postprocess/gaussianblur.frag";
 
 export namespace ShaderSource {
     export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING"] as const;
@@ -185,7 +187,14 @@ export namespace ShaderSource {
     export const HDR: ShaderSource = {
         name: "HDRShader",
         vert: quadVert,
-        frag: hdrFrag,
+        frag: toneFrag,
+        subclass: undefined,
+    };
+
+    export const GuassianBlur: ShaderSource = {
+        name: "GuassianBlurShader",
+        vert: quadVert,
+        frag: gaussFrag,
         subclass: undefined,
     };
 }

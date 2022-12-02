@@ -208,7 +208,7 @@ void main() {
         vec3 yTangent = dFdy( world_normal );
         vec3 N = normalize( cross( xTangent, yTangent ) );
     #else
-        vec3 N = world_normal;
+        vec3 N = normalize(world_normal);
         if(u_material.active_textures[3]) {
             vec3 mapN = texture( u_material.normal_sampler, tex_coord ).xyz * 2.0 - vec3(1.0);
             mat3 TBN = cotangent_frame(world_normal, world_pos, tex_coord, vec2(1.,1.));

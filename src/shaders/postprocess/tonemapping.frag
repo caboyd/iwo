@@ -6,7 +6,7 @@ layout(location = 0) out vec4 frag_color;
 uniform sampler2D input_texture;
 uniform float gamma;
 uniform float exposure;
-uniform int hdr_type;
+uniform int tonemapping;
 
 in vec2 tex_coord;
 
@@ -28,11 +28,11 @@ void gammaCorrect(inout vec3 x){
 
 void main()
 {
-	vec4 hdr_color = texture(input_texture, tex_coord).rgba;
+	vec4 original_color = texture(input_texture, tex_coord).rgba;
 
-    vec3 mapped_color = hdr_color.rgb;
+    vec3 mapped_color = original_color.rgb;
 
-    switch(hdr_type){
+    switch(tonemapping){
         case 0:
             //Reinhard tonemapping
             mapped_color = mapped_color / (mapped_color + vec3(1.0));
@@ -81,5 +81,5 @@ void main()
     }
 
 
-    frag_color = vec4(mapped_color, hdr_color.a);
+    frag_color = vec4(mapped_color, original_color.a);
 }

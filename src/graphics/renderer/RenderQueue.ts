@@ -1,116 +1,16 @@
 import { QuadGeometry } from "@geometry/QuadGeometry";
-import { Shader } from "@graphics/shader/Shader";
 import { Mesh } from "@meshes/Mesh";
 import { MeshInstance } from "@meshes/MeshInstance";
-import { mat4 } from "gl-matrix";
-import { ShaderSource } from "../shader/ShaderSources";
 import { Texture2D } from "../textures/Texture2D";
+import { PostProcessPass } from "./postpass/PostProcessPass";
 import { Renderer } from "./Renderer";
-
-interface RenderCommand {
-    mesh_instance: MeshInstance;
-    onBeforeRender?: () => void;
-    onAfterRender?: () => void;
-}
-
-interface RenderPass {
-    //frame_buffer: WebGLFramebuffer;
-    //render_buffer: WebGLRenderbuffer;
-    onBeforePass?: () => void;
-    onAfterPass?: () => void;
-    readonly setupPass: () => void;
-    readonly teardownPass: () => void;
-
-    render_command_list: RenderCommand[];
-    view_matrix: mat4;
-    proj_matrix: mat4;
-    //output_texture: Texture2D;
-}
-
-interface PostProcessPass {
-    onBeforePass?: () => void;
-    onAfterPass?: () => void;
-}
-
-interface PostProcessPass {
-    //frame_buffer: WebGLFramebuffer;
-    // render_buffer: WebGLRenderbuffer;
-    shader: Shader;
-    pre_pass_func?: () => void;
-    post_pass_func?: () => void;
-}
-
-export class DefaultRenderPass implements RenderPass {
-    onBeforePass?: (() => void) | undefined;
-    onAfterPass?: (() => void) | undefined;
-    readonly setupPass: () => void;
-    readonly teardownPass: () => void;
-    render_command_list: RenderCommand[];
-    view_matrix: mat4;
-    proj_matrix: mat4;
-
-    /**
-     *
-     * @param renderer
-     * @param view_matrix_ptr - matrix is not cloned so it is affected by changes
-     * @param proj_matrix_ptr -  matrix is not cloned so it is affected by changes
-     */
-    constructor(renderer: Renderer, view_matrix_ptr: mat4, proj_matrix_ptr: mat4) {
-        this.render_command_list = [];
-        this.view_matrix = view_matrix_ptr;
-        this.proj_matrix = proj_matrix_ptr;
-
-        const pbr = renderer.getorCreateShader(ShaderSource.PBR);
-        renderer.setAndActivateShader(pbr);
-        pbr.setUniform("hdr_correction_disabled", true);
-        const gl = renderer.gl;
-
-        this.setupPass = () => {
-            renderer.setPerFrameUniforms(this.view_matrix, this.proj_matrix);
-        };
-        this.teardownPass = () => {};
-    }
-}
-
-export const HDR_Type_Const = ["Reinhard", "Reinhard2", "Lottes", "ACES", "Exposure", "Unreal"] as const;
-export type HDR_Type = typeof HDR_Type_Const[number];
-
-export class HDRCorrectionPostProcess implements PostProcessPass {
-    onBeforePass?: (() => void) | undefined;
-    onAfterPass?: (() => void) | undefined;
-    pre_pass_func?: (() => void) | undefined;
-    post_pass_func?: (() => void) | undefined;
-    shader: Shader;
-
-    constructor(renderer: Renderer, type: HDR_Type = HDR_Type_Const[0], gamma: number = 2.2) {
-        this.shader = renderer.getorCreateShader(ShaderSource.HDR);
-        renderer.setAndActivateShader(this.shader);
-        this.shader.setUniform("hdr_type", HDR_Type_Const.indexOf(type));
-        this.shader.setUniform("gamma", gamma);
-        this.shader.setUniform("exposure", 1.0);
-    }
-
-    public setHDR(renderer: Renderer, type: HDR_Type) {
-        renderer.setAndActivateShader(this.shader);
-        this.shader.setUniform("hdr_type", HDR_Type_Const.indexOf(type));
-    }
-
-    public setGamma(renderer: Renderer, value: number) {
-        renderer.setAndActivateShader(this.shader);
-        this.shader.setUniform("gamma", value);
-    }
-    public setExposure(renderer: Renderer, value: number) {
-        renderer.setAndActivateShader(this.shader);
-        this.shader.setUniform("exposure", value);
-    }
-}
+import { RenderCommand, RenderPass } from "./renderpass/Renderpass";
 
 export class RendererQueue {
     public renderer: Renderer;
-    public render_pass_index_map: Record<string, number>;
-    public render_passes: RenderPass[];
-    public post_processes_pass_index_map: Record<string, number>;
-    public post_processes_passes: PostProcessPass[];
+    private render_pass_index_map: Record<string, number>;
+    private render_passes: RenderPass[];
+    private post_processes_passes: Map<string, PostProcessPass>;
     private quad: Mesh;
     private width: number;
     private height: number;
@@ -126,8 +26,7 @@ export class RendererQueue {
         this.renderer = renderer;
         this.render_passes = [];
         this.render_pass_index_map = {};
-        this.post_processes_passes = [];
-        this.post_processes_pass_index_map = {};
+        this.post_processes_passes = new Map();
 
         const geom = new QuadGeometry();
         this.quad = new Mesh(gl, geom);
@@ -283,15 +182,17 @@ export class RendererQueue {
         }
     }
 
-    public getPostProcessPass(id: string): PostProcessPass {
-        const index = this.post_processes_pass_index_map[id];
-        if (index === undefined) throw `PostProcessPass ${id} does not exist`;
-        return this.post_processes_passes[index];
+    public getPostProcessPass(id: string): PostProcessPass | undefined {
+        return this.post_processes_passes.get(id);
     }
 
     public appendPostProcessPass(id: string, pass: PostProcessPass) {
-        const l = this.post_processes_passes.push(pass);
-        this.post_processes_pass_index_map[id] = l - 1;
+        if (this.post_processes_passes.has(id)) throw `PostProcessPass ${id} already exists`;
+        this.post_processes_passes.set(id, pass);
+    }
+
+    public removePostProcessPass(id: string) {
+        this.post_processes_passes.delete(id);
     }
 
     public execute(): void {
@@ -319,17 +220,19 @@ export class RendererQueue {
         gl.blitFramebuffer(0, 0, this.width, this.height, 0, 0, this.width, this.height, gl.COLOR_BUFFER_BIT, gl.LINEAR);
 
         //ping pong and post process
-        for (let i = 0; i < this.post_processes_passes.length; i++) {
-            const pass = this.post_processes_passes[i];
+        let i = -1;
+        for (const [key, pass] of this.post_processes_passes.entries()) {
+            i++;
             const current_texture = this.current_frame_buffer;
 
-            if (i === this.post_processes_passes.length - 1) {
+            if (i === this.post_processes_passes.size - 1) {
                 //last pass
                 gl.bindFramebuffer(gl.FRAMEBUFFER, null);
             } else {
                 this.current_frame_buffer = 1 - this.current_frame_buffer;
-                gl.bindFramebuffer(gl.FRAMEBUFFER, this.current_frame_buffer);
+                gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffers[this.current_frame_buffer]);
             }
+            pass.setupPass();
             pass.onBeforePass?.();
             this.renderer.setAndActivateShader(pass.shader);
             pass.shader.setUniform("input_texture", 0);
@@ -337,6 +240,7 @@ export class RendererQueue {
             gl.bindTexture(gl.TEXTURE_2D, this.output_textures[current_texture].texture_id);
             if (!this.quad.initialized) this.quad.setupVAO(gl, pass.shader);
             this.renderer.draw(this.quad.draw_mode, this.quad.count, 0, undefined, this.quad.vertex_buffer);
+            pass.teardownPass();
             pass.onAfterPass?.();
         }
         this.renderer.cleanupGLState();
