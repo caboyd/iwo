@@ -2,6 +2,7 @@ import { ShaderSource } from "@graphics/shader/ShaderSources";
 import { MeshInstance } from "@meshes/MeshInstance";
 import { mat4 } from "gl-matrix";
 import { Renderer } from "../Renderer";
+import { Material } from "@materials/Material";
 
 export interface RenderCommand {
     mesh_instance: MeshInstance;
@@ -16,10 +17,10 @@ export interface RenderPass {
     onAfterPass?: () => void;
     readonly setupPass: () => void;
     readonly teardownPass: () => void;
-
     render_command_list: RenderCommand[];
     view_matrix: mat4;
     proj_matrix: mat4;
+    override_material?: Material;
     //output_texture: Texture2D;
 }
 
@@ -43,7 +44,7 @@ export class DefaultRenderPass implements RenderPass {
         this.view_matrix = view_matrix_ptr;
         this.proj_matrix = proj_matrix_ptr;
 
-        this.setDefaultTonemapping(renderer, false);
+        //this.setDefaultTonemapping(renderer, false);
 
         this.setupPass = () => {
             renderer.setPerFrameUniforms(this.view_matrix, this.proj_matrix);

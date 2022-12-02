@@ -4,9 +4,10 @@ import { MeshInstance } from "@meshes/MeshInstance";
 import { Texture2D } from "../textures/Texture2D";
 import { PostProcessPass } from "./postpass/PostProcessPass";
 import { Renderer } from "./Renderer";
-import { RenderCommand, RenderPass } from "./renderpass/Renderpass";
+import { RenderCommand, RenderPass } from "./renderpass/RenderPass";
+import { ShaderSource } from "../shader/ShaderSources";
 
-export class RendererQueue {
+export class RenderQueue {
     public renderer: Renderer;
     private render_pass_index_map: Record<string, number>;
     private render_passes: RenderPass[];
@@ -51,8 +52,8 @@ export class RendererQueue {
         ];
 
         for (let i = 0; i < 2; i++) {
-            const ext = gl.getExtension("EXT_color_buffer_float");
-            if (!ext) throw `EXT_color_buffer_float not available. Required for RenderPass.`;
+            // const ext = gl.getExtension("EXT_color_buffer_float");
+            // if (!ext) throw `EXT_color_buffer_float not available. Required for RenderPass.`;
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffers[i]);
             gl.framebufferTexture2D(
@@ -113,8 +114,8 @@ export class RendererQueue {
 
         this.frame_buffers = [gl.createFramebuffer()!, gl.createFramebuffer()!];
         for (let i = 0; i < 2; i++) {
-            const ext = gl.getExtension("EXT_color_buffer_float");
-            if (!ext) throw `EXT_color_buffer_float not available. Required for RenderPass.`;
+            // const ext = gl.getExtension("EXT_color_buffer_float");
+            // if (!ext) throw `EXT_color_buffer_float not available. Required for RenderPass.`;
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.frame_buffers[i]);
             gl.framebufferTexture2D(
@@ -151,7 +152,7 @@ export class RendererQueue {
         gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth);
     }
 
-    public updateViewPort(): void {
+    public rebuildIfViewportChanged(): void {
         const gl = this.renderer.gl;
         if (this.renderer.viewPortHasChanged()) {
             gl.deleteTexture(this.output_textures[0].texture_id);
@@ -196,7 +197,7 @@ export class RendererQueue {
     }
 
     public execute(): void {
-        this.updateViewPort();
+        this.rebuildIfViewportChanged();
         const gl = this.renderer.gl;
         for (const pass of this.render_passes) {
             gl.bindFramebuffer(gl.FRAMEBUFFER, this.multisample_frame_buffer);
@@ -204,7 +205,14 @@ export class RendererQueue {
             pass.onBeforePass?.();
             for (const command of pass.render_command_list) {
                 command.onBeforeRender?.();
-                command.mesh_instance.render(this.renderer, pass.view_matrix, pass.proj_matrix);
+                if (pass.override_material)
+                    command.mesh_instance.renderWithMaterial(
+                        this.renderer,
+                        pass.view_matrix,
+                        pass.proj_matrix,
+                        pass.override_material
+                    );
+                else command.mesh_instance.render(this.renderer, pass.view_matrix, pass.proj_matrix);
                 command.onAfterRender?.();
             }
             pass.teardownPass();
@@ -215,9 +223,21 @@ export class RendererQueue {
         //blit multisample buffer
         gl.bindFramebuffer(gl.READ_FRAMEBUFFER, this.multisample_frame_buffer);
         gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, this.frame_buffers[this.current_frame_buffer]);
-        gl.clearBufferfv(gl.COLOR, 0, [1.0, 1.0, 1.0, 0.0]);
+        gl.clearBufferfv(gl.COLOR, 0, [1.0, 1.0, 1.0, 1.0]);
         //prettier-ignore
         gl.blitFramebuffer(0, 0, this.width, this.height, 0, 0, this.width, this.height, gl.COLOR_BUFFER_BIT, gl.LINEAR);
+
+        //blit to screen if no post process passes
+        if (this.post_processes_passes.size === 0) {
+            gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+            const shader = this.renderer.getorCreateShader(ShaderSource.Quad);
+            this.renderer.setAndActivateShader(shader);
+            shader.setUniform("input_texture", 0);
+            gl.activeTexture(gl.TEXTURE0);
+            gl.bindTexture(gl.TEXTURE_2D, this.output_textures[this.current_frame_buffer].texture_id);
+            if (!this.quad.initialized) this.quad.setupVAO(gl, shader);
+            this.renderer.draw(this.quad.draw_mode, this.quad.count, 0, undefined, this.quad.vertex_buffer);
+        }
 
         //ping pong and post process
         let i = -1;

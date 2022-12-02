@@ -57,6 +57,9 @@ export class Renderer {
         Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
         Renderer._EMPTY_CUBE_TEXTURE = new TextureCubeMap(gl).texture_id;
 
+        const ext = gl.getExtension("EXT_color_buffer_float");
+        if (!ext) throw "Your browser does not support Webgl2:EXT_color_buffer_float";
+
         const shader = this.getorCreateShader(ShaderSource.PBR);
         //Requires shader that has these uniform buffers present
         this.uboPerFrameBlock = new UniformBuffer(shader, "ubo_per_frame");
@@ -68,6 +71,15 @@ export class Renderer {
     public setShadows(enabled: boolean) {
         if (enabled) this.#global_defines.add(ShaderSource.Define.SHADOWS);
         else this.#global_defines.delete(ShaderSource.Define.SHADOWS);
+    }
+
+    public setPerFrameUniform(
+        name: "view" | "view_inverse" | "view_projection" | "projection" | "shadow_map_space",
+        mat: mat4
+    ): void {
+        if (name === "shadow_map_space")
+            this.uboPerFrameBlock.set("shadow_map_space", mat4.mul(temp, BIAS_MATRIX, mat));
+        else this.uboPerFrameBlock.set(name, mat);
     }
 
     public setPerFrameUniforms(view: mat4, proj: mat4, shadow_map?: mat4): void {
@@ -106,7 +118,7 @@ export class Renderer {
         this.stats.shader_bind_count++;
     }
 
-    public setShaderVariantUniforms(source: ShaderSource, uniforms: Map<string, any>) {
+    public overwriteShaderVariantUniforms(source: ShaderSource, uniforms: Map<string, any>) {
         this.#shader_variant_uniforms.set(source.name, uniforms);
 
         //loop through all variant shaders with same base and set uniforms
@@ -119,7 +131,7 @@ export class Renderer {
         const existing_uniforms = this.#shader_variant_uniforms.get(source.name);
 
         if (!existing_uniforms) {
-            this.setShaderVariantUniforms(source, uniforms);
+            this.overwriteShaderVariantUniforms(source, uniforms);
             return;
         } else {
             //loop through all variant shaders with same base and set uniforms
@@ -137,7 +149,7 @@ export class Renderer {
         const existing_uniforms = this.#shader_variant_uniforms.get(source.name);
 
         if (!existing_uniforms) {
-            this.setShaderVariantUniforms(source, new Map().set(uniform_name, value));
+            this.overwriteShaderVariantUniforms(source, new Map().set(uniform_name, value));
             return;
         } else {
             //loop through all variant shaders with same base and set uniforms

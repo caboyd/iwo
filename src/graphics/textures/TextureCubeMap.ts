@@ -101,7 +101,7 @@ export class TextureCubeMap {
         resolution: number = 128
     ): TextureCubeMap {
         const gl = renderer.gl;
-        const ext = gl.getExtension("EXT_color_buffer_float");
+        //const ext = gl.getExtension("EXT_color_buffer_float");
         const max_res = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
         const res = Math.min(resolution, max_res);
 
@@ -193,7 +193,7 @@ export class TextureCubeMap {
     ): TextureCubeMap {
         const gl = renderer.gl;
 
-        const ext = gl.getExtension("EXT_color_buffer_float");
+        //const ext = gl.getExtension("EXT_color_buffer_float");
 
         const max_res = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
         const res = Math.min(resolution, max_res);
@@ -282,7 +282,7 @@ export class TextureCubeMap {
     private setEquirectangular(renderer: Renderer, image_source: TexImageSource | HDRBuffer, resolution: number): void {
         const gl = renderer.gl;
 
-        const ext = gl.getExtension("EXT_color_buffer_float");
+        //const ext = gl.getExtension("EXT_color_buffer_float");
 
         const max_res = gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE);
         const res = Math.min(resolution, max_res);
