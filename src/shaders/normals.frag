@@ -1,10 +1,6 @@
 #version 300 es
 precision highp float;
 
-//##DEFINES
-
-//##END
-
 out vec4 frag_color;
 
 in vec3 view_normal;

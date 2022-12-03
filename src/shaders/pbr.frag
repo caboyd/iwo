@@ -3,13 +3,10 @@ precision highp float;
 precision highp int;
 precision highp sampler2DShadow;
 
-//##DEFINES
 #define PI 3.14159265358979
 #define MIN_PERCEPTUAL_ROUGHNESS 0.045
 #define MIN_ROUGHNESS            0.002025
 
-
-//##END
 
 out vec4 frag_color;
 
@@ -182,24 +179,26 @@ vec3 perturbNormal(mat3 cotangentFrame, vec3 textureSample, float scale) {
 
 void main() {
     vec3 albedo;
-    if (u_material.active_textures[0])
-    albedo = texture(u_material.albedo_sampler, tex_coord).rgb;
-    else
-    albedo = u_material.albedo_color.rgb;
-
+    if (u_material.active_textures[0]) {
+        albedo = texture(u_material.albedo_sampler, tex_coord).rgb;
+    } else {
+        albedo = u_material.albedo_color.rgb;
+    }
     vec3 emission;
-    if(u_material.active_textures[6])
+    if(u_material.active_textures[6]) {
         emission = u_material.emissive_factor *  texture(u_material.emissive_sampler,tex_coord).rgb;
-    else
+    } else {
         emission = vec3(0);
-
+    }
     float metallic = u_material.metallic;
-    if(u_material.active_textures[5])
-    metallic = u_material.metallic * texture(u_material.metal_roughness_sampler, tex_coord).b;
-
+    if(u_material.active_textures[5]) {
+        metallic = u_material.metallic * texture(u_material.metal_roughness_sampler, tex_coord).b;
+    }
+    
     float perceptual_roughness = u_material.roughness;
-    if(u_material.active_textures[5])
+    if(u_material.active_textures[5]) {
         perceptual_roughness = u_material.roughness * texture(u_material.metal_roughness_sampler, tex_coord).g;
+    }
     perceptual_roughness = clamp(perceptual_roughness,MIN_PERCEPTUAL_ROUGHNESS, perceptual_roughness);
 
 
@@ -229,9 +228,9 @@ void main() {
     vec3 color;
 
     float AO = u_material.ao;
-    if(u_material.active_textures[4])
+    if(u_material.active_textures[4]) {
         AO = u_material.ao * texture(u_material.occlusion_sampler, tex_coord).r;
-
+    }
     for (int i = 0; i < u_light_count; i++) {
 
         // calculate per-light radiance
@@ -240,14 +239,14 @@ void main() {
         vec3 L = light_pos;
         vec3 radiance = u_lights[i].color;
         //point light
-        if (u_lights[i].position.w == 1.0){
+        if (u_lights[i].position.w == 1.0) {
             L = normalize(light_pos - world_pos);
             float distance = length(light_pos - world_pos);
             float attenuation = 1.0 / (distance * distance);
             radiance  *= attenuation;
-        } else
-        L = normalize(L);
-
+        } else {
+            L = normalize(L);
+        }
         vec3 H = normalize(V + L);
 
         float NDF = DistributionGGX_Trowbridge_Reitz(N, H, perceptual_roughness );
@@ -299,7 +298,7 @@ void main() {
     vec3 F = fresnelSchlickRoughness(NoV, F0, perceptual_roughness);
 
     vec3 irradiance;
-    if (u_material.active_textures[1]){
+    if (u_material.active_textures[1]) {
         // ambient lighting (we now use IBL as the ambient term)
         vec3 kS = F;
         vec3 kD = 1.0 - kS;
@@ -315,7 +314,7 @@ void main() {
         ambient = (light_ambient ) * albedo * AO;
     }
 
-    if (u_material.active_textures[2]){
+    if (u_material.active_textures[2]) {
      
         // sample both the pre-filter map and the BRDF lut and combine them together as per the Split-Sum approximation to get the IBL specular part.
         float lod = perceptualRoughnessToLod(perceptual_roughness);
@@ -330,7 +329,7 @@ void main() {
     
     color = Lo + (emission + ambient) * PI_light;
 
-    if(!hdr_correction_disabled){
+    if(!hdr_correction_disabled) {
         //Reinhard HDR correction
         color = color / (color + vec3(1.0));
         //Gamma correction

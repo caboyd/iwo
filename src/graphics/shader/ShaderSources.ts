@@ -92,8 +92,8 @@ export namespace ShaderSource {
             define_str += `#define ${d}\n`;
             name += `#${d}`;
         }
-        vert = vert.replace("//##END", `${define_str}//##END`);
-        frag = frag.replace("//##END", `${define_str}//##END`);
+        vert = vert.replace("#version 300 es\n", `#version 300 es\n${define_str}`);
+        frag = frag.replace("#version 300 es\n", `#version 300 es\n${define_str}`);
 
         const result: ShaderSource = {
             name: name,

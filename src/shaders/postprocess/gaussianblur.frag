@@ -1,7 +1,7 @@
 #version 300 es
 precision highp float;
 precision highp int;
-// Ouput data
+
 layout(location = 0) out vec4 frag_color;
 
 uniform sampler2D input_texture;

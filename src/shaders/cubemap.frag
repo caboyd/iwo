@@ -3,8 +3,6 @@ precision highp float;
 
 out vec4 frag_color;
 
-
-
 uniform samplerCube environment_map;
 
 void main()

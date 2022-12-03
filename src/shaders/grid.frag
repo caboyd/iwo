@@ -52,19 +52,21 @@ void main() {
     //blue lines every x highlight_frequency units
     //light blue is +z
     if(grid2.x < 0.99){
-        if(world_pos.z > 0.0)
+        if(world_pos.z > 0.0) {
             color = mix(vec3(0,0.8,1.), default_color, grid2.x);
-        else
+        } else {
             color = mix(vec3(0.1,0.3,1.), default_color, grid2.x);
+        }
     }
 
     //red/yellow lines every z highlight_frequency units
     //yellow is +x
      if(grid2.y < 0.99){
-        if(world_pos.x > 0.0)
+        if(world_pos.x > 0.0) {
             color = mix(vec3(0.9,0.7,0.1), default_color, grid2.y);
-        else
+        } else {
             color = mix(vec3(0.9,0.1,0.1), default_color, grid2.y);
+        }
     }
     
     //draw anti-aliased circle at origin
