@@ -4,6 +4,7 @@ import { DrawMode } from "@graphics/WebglConstants";
 import { vec3 } from "gl-matrix";
 import { Attribute } from "../graphics/attribute/Attribute";
 import { LineAttribute as LA } from "../graphics/attribute/LineAttribute";
+import { StandardAttribute } from "@graphics/attribute/StandardAttribute";
 
 export interface LineOptions {
     type: "lines" | "line strip";
@@ -79,5 +80,68 @@ export class LineGeometry implements Geometry {
                 byte_stride: this.opt.type === "lines" ? Float32Array.BYTES_PER_ELEMENT * 6 : 0,
             }),
         };
+    }
+
+    static fromGeometry(geometry: Geometry): LineGeometry {
+        //assert buffer 0 is just verts
+        const vert_attr = geometry.attributes[StandardAttribute.Position.name];
+        if (vert_attr.byte_stride !== 0) throw "LineGeometry.fromGeometry failed. vertices must be separate in buffer";
+
+        //convert every triangle into 3 line segments
+        const verts = geometry.buffers[vert_attr.buffer_index];
+        const lines = new Array(verts.length * 2);
+
+        if (geometry.index_buffer) {
+            const inds = geometry.index_buffer;
+            for (let i = 0, j = 0; i < geometry.index_buffer.length - 3; i += 3, j += 18) {
+                //first line segment
+                lines[j + 0] = verts[3 * inds[i] + 0];
+                lines[j + 1] = verts[3 * inds[i] + 1];
+                lines[j + 2] = verts[3 * inds[i] + 2];
+                lines[j + 3] = verts[3 * inds[i + 1] + 0];
+                lines[j + 4] = verts[3 * inds[i + 1] + 1];
+                lines[j + 5] = verts[3 * inds[i + 1] + 2];
+                //second line segment
+                lines[j + 6] = verts[3 * inds[i + 1] + 0];
+                lines[j + 7] = verts[3 * inds[i + 1] + 1];
+                lines[j + 8] = verts[3 * inds[i + 1] + 2];
+                lines[j + 9] = verts[3 * inds[i + 2] + 0];
+                lines[j + 10] = verts[3 * inds[i + 2] + 1];
+                lines[j + 11] = verts[3 * inds[i + 2] + 2];
+                //third line segment
+                lines[j + 12] = verts[3 * inds[i + 2] + 0];
+                lines[j + 13] = verts[3 * inds[i + 2] + 1];
+                lines[j + 14] = verts[3 * inds[i + 2] + 2];
+                lines[j + 15] = verts[3 * inds[i + 0] + 0];
+                lines[j + 16] = verts[3 * inds[i + 0] + 1];
+                lines[j + 17] = verts[3 * inds[i + 0] + 2];
+            }
+        } else {
+            for (let i = 0, j = 0; i < verts.length - 9; i += 9, j += 18) {
+                //first line segment
+                lines[j + 0] = verts[i + 0];
+                lines[j + 1] = verts[i + 1];
+                lines[j + 2] = verts[i + 2];
+                lines[j + 3] = verts[i + 3];
+                lines[j + 4] = verts[i + 4];
+                lines[j + 5] = verts[i + 5];
+                //second line segment
+                lines[j + 6] = verts[i + 3];
+                lines[j + 7] = verts[i + 4];
+                lines[j + 8] = verts[i + 5];
+                lines[j + 9] = verts[i + 6];
+                lines[j + 10] = verts[i + 7];
+                lines[j + 11] = verts[i + 8];
+                //third line segment
+                lines[j + 12] = verts[i + 6];
+                lines[j + 13] = verts[i + 7];
+                lines[j + 14] = verts[i + 8];
+                lines[j + 15] = verts[i + 0];
+                lines[j + 16] = verts[i + 1];
+                lines[j + 17] = verts[i + 2];
+            }
+        }
+
+        return new LineGeometry(lines, { type: "lines", line_cap_resolution: 4 });
     }
 }
