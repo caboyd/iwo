@@ -35,22 +35,22 @@ export namespace StandardAttribute {
     });
     export const SeparatePostionPlusInterleavedRemainingApproach = (): Attributes => ({
         [StandardAttribute.Position.name]: StandardAttribute.Position.createAttribute(),
-        [StandardAttribute.Tex_Coord.name]: StandardAttribute.Position.createAttribute({
+        [StandardAttribute.Tex_Coord.name]: StandardAttribute.Tex_Coord.createAttribute({
             buffer_index: 1,
             byte_stride: 11 * 4,
             byte_offset: 0 * 4,
         }),
-        [StandardAttribute.Normal.name]: StandardAttribute.Position.createAttribute({
+        [StandardAttribute.Normal.name]: StandardAttribute.Normal.createAttribute({
             buffer_index: 1,
             byte_stride: 11 * 4,
             byte_offset: 2 * 4,
         }),
-        [StandardAttribute.Tangent.name]: StandardAttribute.Position.createAttribute({
+        [StandardAttribute.Tangent.name]: StandardAttribute.Tangent.createAttribute({
             buffer_index: 1,
             byte_stride: 11 * 4,
             byte_offset: 5 * 4,
         }),
-        [StandardAttribute.Bitangent.name]: StandardAttribute.Position.createAttribute({
+        [StandardAttribute.Bitangent.name]: StandardAttribute.Bitangent.createAttribute({
             buffer_index: 1,
             byte_stride: 11 * 4,
             byte_offset: 8 * 4,

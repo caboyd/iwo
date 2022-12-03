@@ -104,8 +104,8 @@ export class SphereGeometry implements Geometry {
 
         this.attributes = {
             [StandardAttribute.Position.name]: StandardAttribute.Position.createAttribute(),
-            [StandardAttribute.Tex_Coord.name]: StandardAttribute.Position.createAttribute({ buffer_index: 1 }),
-            [StandardAttribute.Normal.name]: StandardAttribute.Position.createAttribute(),
+            [StandardAttribute.Tex_Coord.name]: StandardAttribute.Tex_Coord.createAttribute({ buffer_index: 1 }),
+            [StandardAttribute.Normal.name]: StandardAttribute.Normal.createAttribute(),
         };
     }
 }
