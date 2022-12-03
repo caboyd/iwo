@@ -98,14 +98,14 @@ export class RenderQueue {
         const texture_settings = {
             width: this.width,
             height: this.height,
-            type: gl.FLOAT,
-            internal_format: gl.RGBA32F,
+            type: gl.HALF_FLOAT,
+            internal_format: gl.RGBA16F,
             format: gl.RGBA,
             wrap_S: gl.CLAMP_TO_EDGE,
             wrap_T: gl.CLAMP_TO_EDGE,
             min_filter: gl.LINEAR,
         };
-        const buffer = new Float32Array(this.width * this.height * 4);
+        const buffer = new Uint16Array(this.width * this.height * 4);
 
         this.output_textures = [
             new Texture2D(gl, buffer, texture_settings),
@@ -135,7 +135,7 @@ export class RenderQueue {
         gl.renderbufferStorageMultisample(
             gl.RENDERBUFFER,
             gl.getParameter(gl.MAX_SAMPLES),
-            gl.RGBA32F,
+            gl.RGBA16F,
             this.width,
             this.height
         );
