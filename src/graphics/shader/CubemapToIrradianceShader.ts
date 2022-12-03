@@ -16,7 +16,7 @@ export class CubemapToIrradianceShader extends Shader {
     public use(): void {
         const gl = this.gl;
         gl.useProgram(this.ID);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, Renderer.EMPTY_CUBE_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE0);
+        // gl.bindTexture(gl.TEXTURE_CUBE_MAP, Renderer.EMPTY_CUBE_TEXTURE);
     }
 }

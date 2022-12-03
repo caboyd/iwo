@@ -16,7 +16,7 @@ export class EquiToCubemapShader extends Shader {
     public use(): void {
         const gl = this.gl;
         gl.useProgram(this.ID);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE0);
+        // gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
     }
 }

@@ -26,24 +26,24 @@ export class PBRShader extends Shader {
     public use(): void {
         const gl = this.gl;
         gl.useProgram(this.ID);
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
-        gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, Renderer.EMPTY_CUBE_TEXTURE);
-        gl.activeTexture(gl.TEXTURE2);
-        gl.bindTexture(gl.TEXTURE_CUBE_MAP, Renderer.EMPTY_CUBE_TEXTURE);
-        gl.activeTexture(gl.TEXTURE3);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
-        gl.activeTexture(gl.TEXTURE4);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
-        gl.activeTexture(gl.TEXTURE5);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
-        gl.activeTexture(gl.TEXTURE6);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE0);
+        // gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE1);
+        // gl.bindTexture(gl.TEXTURE_CUBE_MAP, Renderer.EMPTY_CUBE_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE2);
+        // gl.bindTexture(gl.TEXTURE_CUBE_MAP, Renderer.EMPTY_CUBE_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE3);
+        // gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE4);
+        // gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE5);
+        // gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE6);
+        // gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
         //gl.activeTexture(gl.TEXTURE7);
         //cant bind this to shadow map spot
         //gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
-        gl.activeTexture(gl.TEXTURE8);
-        gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
+        // gl.activeTexture(gl.TEXTURE8);
+        // gl.bindTexture(gl.TEXTURE_2D, Renderer.EMPTY_TEXTURE);
     }
 }
