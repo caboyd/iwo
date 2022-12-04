@@ -1,11 +1,11 @@
 import { mat4 } from "gl-matrix";
 import { Renderer } from "../Renderer";
-import { RenderCommand, RenderPass } from "./RenderPass";
+import { RenderCommand, IRenderPass } from "./RenderPass";
 import { Texture2D } from "../../textures/Texture2D";
 import { EmptyMaterial } from "../../../materials/EmptyMaterial";
 import { ShaderSource } from "@graphics/shader/ShaderSources";
 
-export class DepthPass implements RenderPass {
+export class DepthPass implements IRenderPass {
     onBeforePass?: (() => void) | undefined;
     onAfterPass?: (() => void) | undefined;
     readonly setupPass: () => void;

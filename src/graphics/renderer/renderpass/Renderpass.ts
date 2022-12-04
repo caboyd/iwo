@@ -10,7 +10,7 @@ export interface RenderCommand {
     onAfterRender?: () => void;
 }
 
-export interface RenderPass {
+export interface IRenderPass {
     //frame_buffer: WebGLFramebuffer;
     //render_buffer: WebGLRenderbuffer;
     onBeforePass?: () => void;
@@ -24,7 +24,7 @@ export interface RenderPass {
     //output_texture: Texture2D;
 }
 
-export class BasicRenderPass implements RenderPass {
+export class RenderPass implements IRenderPass {
     onBeforePass?: (() => void) | undefined;
     onAfterPass?: (() => void) | undefined;
     readonly setupPass: () => void;
