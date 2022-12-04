@@ -260,13 +260,13 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
         if (vt_check) {
             geom.buffers.push(new Float32Array(vt_arr));
             geom.attributes[StandardAttribute.Tex_Coord.name] = StandardAttribute.Tex_Coord.createAttribute({
-                buffer_index: 1,
+                buffer_index: geom.buffers.length - 1,
             });
         }
         if (vn_check) {
             geom.buffers.push(new Float32Array(vn_arr));
             geom.attributes[StandardAttribute.Normal.name] = StandardAttribute.Normal.createAttribute({
-                buffer_index: 2,
+                buffer_index: geom.buffers.length - 1,
             });
         }
 
