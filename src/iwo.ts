@@ -65,6 +65,7 @@ export * from "./loader/ImageLoader";
 export * from "./loader/TextureLoader";
 
 export * from "./helpers/ReferenceCounter";
+export * from "./customtypes/types";
 
 export function initGL(canvas: HTMLCanvasElement, opt?: Partial<WebGLContextAttributes>): WebGL2RenderingContext {
     try {
