@@ -4,13 +4,13 @@ import { MeshInstance } from "@meshes/MeshInstance";
 import { Texture2D } from "../textures/Texture2D";
 import { PostProcessPass } from "./postpass/PostProcessPass";
 import { Renderer } from "./Renderer";
-import { RenderCommand, IRenderPass } from "./renderpass/RenderPass";
+import { RenderCommand, RenderPass } from "./renderpass/RenderPass";
 import { ShaderSource } from "../shader/ShaderSources";
 
 export class RenderQueue {
     public renderer: Renderer;
     private render_pass_index_map: Record<string, number>;
-    private render_passes: IRenderPass[];
+    private render_passes: RenderPass[];
     private post_processes_passes: Map<string, PostProcessPass>;
     private quad: Mesh;
     private width: number;
@@ -164,18 +164,18 @@ export class RenderQueue {
         }
     }
 
-    public getRenderPass(id: string): IRenderPass {
+    public getRenderPass(id: string): RenderPass {
         const index = this.render_pass_index_map[id];
         if (index === undefined) throw `RenderPass ${id} does not exist`;
         return this.render_passes[index];
     }
 
-    public appendRenderPass(id: string, pass: IRenderPass) {
+    public appendRenderPass(id: string, pass: RenderPass) {
         const l = this.render_passes.push(pass);
         this.render_pass_index_map[id] = l - 1;
     }
 
-    public prependRenderPass(id: string, pass: IRenderPass) {
+    public prependRenderPass(id: string, pass: RenderPass) {
         this.render_passes.unshift(pass);
         this.render_pass_index_map[id] = 0;
         for (const [s, i] of Object.entries(this.render_pass_index_map)) {

@@ -22,7 +22,7 @@ export * from "./graphics/renderer/postpass/GaussianBlurPass";
 export * from "./graphics/renderer/postpass/PostProcessPass";
 export * from "./graphics/renderer/postpass/TonemappingPass";
 export * from "./graphics/renderer/postpass/GaussianBlurPass";
-export { RenderPass, IRenderPass, RenderCommand } from "./graphics/renderer/renderpass/RenderPass";
+export * from "./graphics/renderer/renderpass/RenderPass";
 export * from "./graphics/renderer/renderpass/DepthPass";
 export * from "./graphics/WebglConstants";
 export * from "./graphics/WebglHelper";
