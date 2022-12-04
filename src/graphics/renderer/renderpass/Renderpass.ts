@@ -24,7 +24,7 @@ export interface RenderPass {
     //output_texture: Texture2D;
 }
 
-export class DefaultRenderPass implements RenderPass {
+export class BasicRenderPass implements RenderPass {
     onBeforePass?: (() => void) | undefined;
     onAfterPass?: (() => void) | undefined;
     readonly setupPass: () => void;
