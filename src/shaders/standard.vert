@@ -46,8 +46,6 @@ out vec3 camera_pos;
 
 #ifdef SHADOWS
 out vec4 shadow_coord;
-uniform float shadow_distance;
-uniform float transition_distance;
 #endif
 
 vec3 inverseTransformDirection(in vec3 normal, in mat4 matrix) {
@@ -87,12 +85,13 @@ vec4 world_pos4 = model * vec4(a_vertex, 1.0);
     vec4 shadow_offset = vec4(world_normal * normal_offset_scale,0.0);
     shadow_coord = shadow_map_space * (world_pos4 + shadow_offset);
 
+    //Note: Moved to fragment shader because it doesn't work if vertices are very far apart.
     //Shadow_coord.w will be used to fade in and out shadows softly when they are far from camera
     //doing this per vertex doesnt work well for objects with one vertex inside and one outside when they are large
-    float distance1 = length(camera_pos - world_pos);
+    // float distance1 = length(camera_pos - world_pos);
 
-    distance1 = distance1 - (shadow_distance - transition_distance);
-    distance1 = distance1 / transition_distance;
-    shadow_coord.w = clamp(1.0 - distance1, 0.0, 1.0);
+    // distance1 = distance1 - (shadow_distance - transition_distance);
+    // distance1 = distance1 / transition_distance;
+    // shadow_coord.w = clamp(distance1, 0.0, 1.0);
     #endif
 }

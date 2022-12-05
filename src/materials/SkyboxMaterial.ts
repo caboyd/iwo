@@ -5,12 +5,11 @@ import { Texture2D } from "@graphics/textures/Texture2D";
 import { TextureCubeMap } from "@graphics/textures/TextureCubeMap";
 import { Material, MaterialOptions } from "./Material";
 
-export class BasicMaterial extends Material {
+export class SkyboxMaterial extends Material {
     private equirectangular_albedo: boolean = false;
     public albedo_color: vec3;
     public albedo_image?: HTMLImageElement;
     public albedo_texture?: Texture2D;
-    public albedo_cube_texture?: TextureCubeMap;
     public material_options?: MaterialOptions;
 
     public constructor(color: vec3, options?: Partial<MaterialOptions>) {
@@ -31,28 +30,24 @@ export class BasicMaterial extends Material {
         if (this.albedo_texture) {
             this.albedo_texture.bind(gl, 0);
             active_textures[0] = true;
-            if (this.equirectangular_albedo) shader.setUniform("u_material.equirectangular_texture", true);
-        }
-
-        if (this.albedo_cube_texture) {
-            this.albedo_cube_texture.bind(gl, 1);
-            active_textures[1] = true;
+            shader.setUniform("u_material.is_equirectangular", this.equirectangular_albedo);
         }
 
         shader.setUniform("u_material.active_textures[0]", active_textures);
         shader.setUniform("u_material.albedo_color", this.albedo_color);
     }
 
+    /**
+     * 
+     * @param tex 
+     * @param equirectangular - set true if skybox is a cube with equirectangular texture 
+     */
     public setAlbedoTexture(tex: Texture2D, equirectangular: boolean = false): void {
         this.equirectangular_albedo = equirectangular;
         this.albedo_texture = tex;
     }
 
-    public setAlbedoCubeTexture(tex: TextureCubeMap): void {
-        this.albedo_cube_texture = tex;
-    }
-
     public get shaderSource(): ShaderSource {
-        return ShaderSource.Basic;
+        return ShaderSource.BasicUnlit;
     }
 }

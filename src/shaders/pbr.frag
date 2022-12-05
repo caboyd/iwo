@@ -241,8 +241,8 @@ void main() {
         //point light
         if (u_lights[i].position.w == 1.0) {
             L = normalize(light_pos - world_pos);
-            float distance = length(light_pos - world_pos);
-            float attenuation = 1.0 / (distance * distance);
+            float light_distance = length(light_pos - world_pos);
+            float attenuation = 1.0 / (light_distance * light_distance);
             radiance  *= attenuation;
         } else {
             L = normalize(L);
@@ -263,13 +263,13 @@ void main() {
         // add to outgoing radiance Lo
         float NdotL = saturate(dot(N, L));
         
-
         #ifdef SHADOWS
         //only light 0 has shadows
-        if(u_material.active_textures[7]) {
+        if(u_material.active_textures[7] && i == 0) {
             //Objects not in shadow have full light
             float light_factor = 1.0;
 
+            //need to do this in fragment shader for very large fragments will interpolate badly
             float distance1 = length(camera_pos - world_pos);
             distance1 = distance1 - (shadow_distance - transition_distance);
             distance1 = distance1 / transition_distance;
@@ -278,7 +278,8 @@ void main() {
             //16 Samples of Percentage Closer Filtering
             for(float y = -1.5; y <= 1.5; y += 1.0){    
                 for(float x = -1.5; x <= 1.5; x += 1.0) {
-                    float vis = 1.0 - texture(u_material.shadow_map_sampler, vec3(shadow_coord.xy + vec2(x/shadow_map_size,y/shadow_map_size) ,  (shadow_coord.z)));
+                    vec2 shadow_offset = vec2(x / shadow_map_size, y / shadow_map_size);
+                    float vis = 1.0 - texture(u_material.shadow_map_sampler, vec3(shadow_coord.xy + shadow_offset, shadow_coord.z));
                     light_factor -= w *  vis * (1.0/16.0);
                 }
             }
@@ -292,7 +293,6 @@ void main() {
 
     vec3 ambient;
     float NoV = max(dot(N,V),0.0);
-    float PI_light = PI;
 
     // ambient lighting (we now use IBL as the ambient term)
     vec3 F = fresnelSchlickRoughness(NoV, F0, perceptual_roughness);
@@ -327,23 +327,13 @@ void main() {
       
     }
     
-    color = Lo + (emission + ambient) * PI_light;
+    color = Lo + (emission + ambient) * PI;
 
     if(!hdr_correction_disabled) {
-        //Reinhard HDR correction
-        color = color / (color + vec3(1.0));
-        //Gamma correction
-        float g = gamma;
-        if(g < 0.0001) g = 2.2;
-        color = pow(color, vec3(1.0/g));
+        //Unreal HDR correction
+        color = color / (color + 0.155) * 1.019;
     }
 
-    //HDR + Gamma Correction Magic
-    //https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting  slide 140
-    //color = max(vec3(0.0), color - 0.004);
-    //color = (color * (6.2*color + 0.5)) / (color *(6.2*color + 1.7)+0.06);
-
     frag_color = vec4(color,1.0);
-
 }
 

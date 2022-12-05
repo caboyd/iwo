@@ -42,8 +42,8 @@ export class PBRMaterial extends Material {
     public albedo_color: vec3;
     public metallic: number;
     public roughness: number;
-    public ao: number = 1;
-    public emissive_factor: vec3 = [1, 1, 1];
+    public ao: number;
+    public emissive_factor: vec3;
     public flat_shading: boolean;
     public albedo_texture: Texture2D | undefined;
     public albedo_image: HTMLImageElement | undefined;
@@ -91,11 +91,10 @@ export class PBRMaterial extends Material {
 
     public activate(gl: WebGL2RenderingContext, shader: Shader): void {
         const active_textures = [false, false, false, false, false, false, false, false];
-        if (this.albedo_texture === undefined && this.albedo_image && this.albedo_image.complete) {
+        if (this.albedo_texture === undefined && this.albedo_image?.complete) {
             this.albedo_texture = new Texture2D(gl, this.albedo_image, {
-                flip: this.material_options?.flip_image_y || false,
+                flip: this.material_options?.flip_image_y,
                 internal_format: this.material_options?.disable_srgb ? gl.RGBA : gl.SRGB8_ALPHA8,
-                format: gl.RGBA,
             });
         }
         if (this.albedo_texture) {
@@ -145,9 +144,8 @@ export class PBRMaterial extends Material {
 
         if (this.emissive_texture === undefined && this.emissive_image?.complete) {
             this.emissive_texture = new Texture2D(gl, this.emissive_image, {
-                flip: this.material_options?.flip_image_y || false,
+                flip: this.material_options?.flip_image_y,
                 internal_format: this.material_options?.disable_srgb ? gl.RGBA : gl.SRGB8_ALPHA8,
-                format: gl.RGBA,
             });
         }
         if (this.emissive_texture) {
@@ -171,7 +169,7 @@ export class PBRMaterial extends Material {
         shader.setUniform("u_material.metallic", this.metallic);
         shader.setUniform("u_material.ao", this.ao);
         shader.setUniform("u_material.emissive_factor", this.emissive_factor);
-       // shader.setUniform("u_material.flat_shading", this.flat_shading);
+        // shader.setUniform("u_material.flat_shading", this.flat_shading);
     }
 
     public get shaderSource(): ShaderSource {

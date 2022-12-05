@@ -3,7 +3,7 @@
  *
  * Shader Source Files
  */
-import { BasicShader } from "./BasicShader";
+import { BasicUnlitShader } from "./BasicUnlitShader";
 import { CubemapSpecularPrefilterShader } from "./CubemapSpecularPrefilterShader";
 import { CubemapToIrradianceShader } from "./CubemapToIrradianceShader";
 import { EquiToCubemapShader } from "./EquiToCubemapShader";
@@ -25,7 +25,7 @@ export interface ShaderSource {
 // @ts-ignore
 import standardVert from "../../shaders/standard.vert";
 // @ts-ignore
-import basicFrag from "../../shaders/basic.frag";
+import basic_unlit_frag from "../../shaders/basic_unlit.frag";
 // @ts-ignore
 import pbrFrag from "../../shaders/pbr.frag";
 // @ts-ignore
@@ -60,6 +60,8 @@ import quadVert from "../../shaders/quad.vert";
 import toneFrag from "../../shaders/postprocess/tonemapping.frag";
 // @ts-ignore
 import gaussFrag from "../../shaders/postprocess/gaussianblur.frag";
+// @ts-ignore
+import toon_frag from "../../shaders/toon.frag";
 
 export namespace ShaderSource {
     export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING"] as const;
@@ -104,12 +106,20 @@ export namespace ShaderSource {
         return result;
     }
 
-    export const Basic: ShaderSource = {
-        name: "BasicShader",
+    export const BasicUnlit: ShaderSource = {
+        name: "BasicUnlitShader",
         vert: standardVert,
-        frag: basicFrag,
-        subclass: BasicShader,
+        frag: basic_unlit_frag,
+        subclass: BasicUnlitShader,
         valid_defines: new Set<Define>([Define.INSTANCING]),
+    };
+
+    export const Toon: ShaderSource = {
+        name: "ToonShader",
+        vert: standardVert,
+        frag: toon_frag,
+        subclass: BasicUnlitShader,
+        valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS, Define.FLATSHADING]),
     };
 
     export const PBR: ShaderSource = {

@@ -18,8 +18,8 @@ export class PBRShader extends Shader {
         this.setUniform("u_material.occlusion_sampler", 4);
         this.setUniform("u_material.metal_roughness_sampler", 5);
         this.setUniform("u_material.emissive_sampler", 6);
-        this.setUniform("u_material.shadow_map_sampler", 7);
 
+        this.setUniform("u_material.shadow_map_sampler", 7);
         this.setUniform("u_material.brdf_LUT_sampler", 8);
     }
 
