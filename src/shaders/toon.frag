@@ -120,7 +120,7 @@ void main() {
 
     color += albedo_color * light_ambient * PI;
 
-    //ignore flat_shading
+    //ignore flat_shading or outline
     vec3 real_normal = normalize(world_normal);
 
     //gives outline sortof
