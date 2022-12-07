@@ -40,7 +40,7 @@ export class GridMaterial extends Material {
         gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     }
 
-    public cleanupGLState(gl: WebGL2RenderingContext): void {
+    public cleanup(gl: WebGL2RenderingContext): void {
         gl.disable(gl.BLEND);
     }
 

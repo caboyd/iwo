@@ -48,6 +48,23 @@ out vec3 camera_pos;
 out vec4 shadow_coord;
 #endif
 
+mat4 mat4ToBillboard(mat4 m) {
+    mat4 out_mat = mat4(m);
+    //column 0
+    out_mat[0][0] = 1.0;
+    out_mat[0][1] = 0.0;
+    out_mat[0][2] = 0.0;
+    //column 1
+    out_mat[1][0] = 0.0;
+    out_mat[1][1] = 1.0;
+    out_mat[1][2] = 0.0;
+    //column 2
+    out_mat[2][0] = 0.0;
+    out_mat[2][1] = 0.0;
+    out_mat[2][2] = 1.0;
+    return out_mat;
+}
+
 vec3 inverseTransformDirection(in vec3 normal, in mat4 matrix) {
     return normalize( (vec4(normal,0.0) * matrix).xyz );
 }
@@ -57,15 +74,31 @@ void main() {
 vec4 world_pos4 = model * vec4(a_vertex, 1.0);
 
 #ifdef INSTANCING
-    gl_Position = view_projection * a_instance * model * vec4(a_vertex,1.0f);
-    mat4 normal_mat4 = transpose(inverse(a_instance * model)); 
-    //view_pos = (view * a_instance * model * vec4(a_vertex,1.0f)).xyz ;
-    view_normal =  (view * normal_mat4 * vec4(a_normal, 1.0)).xyz ;
-    world_pos4 = a_instance * world_pos4;
-    world_normal = normalize((normal_mat4 * vec4(a_normal, 1.0)).xyz);
+   
+    #ifdef BILLBOARD
+        mat4 instance = mat4ToBillboard(view  * a_instance * model);
+        gl_Position = projection * instance * vec4(a_vertex,1.0f);
+        mat4 normal_mat4 = transpose(inverse(instance)); 
+        view_normal =  (normal_mat4 * vec4(a_normal, 1.0)).xyz ;
+        world_normal = (vec4(view_normal,1.0) * view).xyz;
+        world_pos4 = instance * vec4(a_vertex,1.0f);
+    #else
+         mat4 instance = a_instance * model;
+        gl_Position = view_projection * instance * vec4(a_vertex,1.0f);
+        mat4 normal_mat4 = transpose(inverse(instance)); 
+        view_normal =  (view * normal_mat4 * vec4(a_normal, 1.0)).xyz ;
+        world_pos4 = instance * vec4(a_vertex, 1.0);
+        world_normal = normalize((normal_mat4 * vec4(a_normal, 1.0)).xyz);
+    #endif
 #else
-    gl_Position = mvp * vec4(a_vertex,1.0f);
-    //view_pos = (view * model * vec4(a_vertex,1.0f)).xyz ;
+    //FIXME: did not finish this
+    #ifdef BILLBOARD
+        mat4 billboard_model = mat4ToBillboard(view * model);
+        world_pos4 = billboard_model *  vec4(a_vertex, 1.0);
+        gl_Position = projection * billboard_model * vec4(a_vertex,1.0f);
+    #else
+        gl_Position = mvp * vec4(a_vertex,1.0f);
+    #endif
     view_normal =  normal_view * a_normal ;
     world_normal = normalize(inverseTransformDirection( view_normal, view ));
 #endif
@@ -74,6 +107,8 @@ vec4 world_pos4 = model * vec4(a_vertex, 1.0);
     local_pos = a_vertex;
     world_pos = world_pos4.xyz;
     tex_coord = a_tex_coord;
+
+
 
     #ifdef SHADOWS
     //Calculate world space coords that map this vertex to the shadow_map

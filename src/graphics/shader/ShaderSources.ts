@@ -64,12 +64,13 @@ import gaussFrag from "../../shaders/postprocess/gaussianblur.frag";
 import toon_frag from "../../shaders/toon.frag";
 
 export namespace ShaderSource {
-    export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING"] as const;
+    export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING", "BILLBOARD"] as const;
     export type Define = typeof Defines[number];
     export namespace Define {
         export const INSTANCING = Defines[0];
         export const SHADOWS = Defines[1];
         export const FLATSHADING = Defines[2];
+        export const BILLBOARD = Defines[3];
     }
 
     export function toShaderSourceWithDefines(source: ShaderSource, defines?: Set<Define>): ShaderSource {
@@ -111,7 +112,7 @@ export namespace ShaderSource {
         vert: standardVert,
         frag: basic_unlit_frag,
         subclass: BasicUnlitShader,
-        valid_defines: new Set<Define>([Define.INSTANCING]),
+        valid_defines: new Set<Define>([Define.INSTANCING, Define.BILLBOARD]),
     };
 
     export const Toon: ShaderSource = {
@@ -119,7 +120,7 @@ export namespace ShaderSource {
         vert: standardVert,
         frag: toon_frag,
         subclass: BasicUnlitShader,
-        valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS, Define.FLATSHADING]),
+        valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS, Define.FLATSHADING, Define.BILLBOARD]),
     };
 
     export const PBR: ShaderSource = {
@@ -127,7 +128,7 @@ export namespace ShaderSource {
         vert: standardVert,
         frag: pbrFrag,
         subclass: PBRShader,
-        valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS]),
+        valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS, Define.BILLBOARD]),
     };
 
     export const NormalOnly: ShaderSource = {
@@ -135,7 +136,7 @@ export namespace ShaderSource {
         vert: standardVert,
         frag: normalOnlyFrag,
         subclass: undefined,
-        valid_defines: new Set<Define>([Define.INSTANCING, Define.FLATSHADING]),
+        valid_defines: new Set<Define>([Define.INSTANCING, Define.FLATSHADING, Define.BILLBOARD]),
     };
 
     export const EquiToCubemap: ShaderSource = {

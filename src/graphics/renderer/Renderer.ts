@@ -223,7 +223,7 @@ export class Renderer {
     }
 
     public resetSaveBindings(): void {
-        this.cleanupGLState();
+        this.cleanupPrevMaterialState();
         this.current_material = undefined;
         this.current_shader = undefined;
     }
@@ -283,7 +283,6 @@ export class Renderer {
         }
 
         if (mat && mat != this.current_material) {
-            if (this.current_material?.cleanupGLState) this.current_material.cleanupGLState(this.gl);
             this.current_material = mat;
             if (this.current_shader === undefined) throw "No shader bound with material";
             this.current_material.activate(this.gl, this.current_shader);
@@ -297,9 +296,9 @@ export class Renderer {
         this.#view_port_changed = false;
     }
 
-    public cleanupGLState(): void {
-        if (this.current_material && this.current_material.cleanupGLState)
-            this.current_material.cleanupGLState(this.gl);
+    public cleanupPrevMaterialState(): void {
+        if (this.current_material && this.current_material.cleanup)
+            this.current_material.cleanup(this.gl);
     }
 
     public resetStats(): void {

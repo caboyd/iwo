@@ -13,6 +13,7 @@ export type PBRMaterialOptions = {
     ao: number;
     emissive_factor: vec3;
     flat_shading: boolean;
+    is_billboard: boolean;
     albedo_texture?: Texture2D;
     albedo_image?: HTMLImageElement;
     normal_texture?: Texture2D;
@@ -36,6 +37,7 @@ const DefaultPBRMaterialOptions: PBRMaterialOptions = {
     ao: 1,
     emissive_factor: [1, 1, 1],
     flat_shading: false,
+    is_billboard: false,
 };
 
 export class PBRMaterial extends Material {
@@ -45,6 +47,7 @@ export class PBRMaterial extends Material {
     public ao: number;
     public emissive_factor: vec3;
     public flat_shading: boolean;
+    public is_billboard: boolean;
     public albedo_texture: Texture2D | undefined;
     public albedo_image: HTMLImageElement | undefined;
     public normal_texture: Texture2D | undefined;
@@ -72,6 +75,7 @@ export class PBRMaterial extends Material {
         this.ao = opt.ao;
         this.emissive_factor = vec3.clone(opt.emissive_factor);
         this.flat_shading = opt.flat_shading;
+        this.is_billboard = opt.is_billboard;
         this.albedo_texture = opt.albedo_texture;
         this.albedo_image = opt.albedo_image;
         this.normal_texture = opt.normal_texture;
@@ -176,6 +180,7 @@ export class PBRMaterial extends Material {
         const source = ShaderSource.PBR;
         source.material_defines = new Set<ShaderSource.Define>();
         if (this.flat_shading) source.material_defines.add(ShaderSource.Define.FLATSHADING);
+        if (this.is_billboard) source.material_defines.add(ShaderSource.Define.BILLBOARD);
         return source;
     }
 }

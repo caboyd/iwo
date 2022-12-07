@@ -27,6 +27,7 @@ export class ToonMaterial extends Material {
     public flat_shading: boolean = false;
     public albedo_image?: HTMLImageElement;
     public albedo_texture?: Texture2D;
+    public is_billboard: boolean = false;
 
     public constructor(options?: Partial<ToonMaterialOptions>) {
         super();
@@ -68,6 +69,7 @@ export class ToonMaterial extends Material {
         const source = ShaderSource.Toon;
         source.material_defines = new Set<ShaderSource.Define>();
         if (this.flat_shading) source.material_defines.add(ShaderSource.Define.FLATSHADING);
+        if (this.is_billboard) source.material_defines.add(ShaderSource.Define.BILLBOARD);
         return source;
     }
 }

@@ -11,7 +11,7 @@ export abstract class Material {
     protected constructor() {}
 
     public abstract activate(gl: WebGL2RenderingContext, shader:Shader): void;
-    public cleanupGLState?(gl: WebGL2RenderingContext): void;
+    public cleanup?(gl: WebGL2RenderingContext): void;
     public abstract get shaderSource(): ShaderSource;
 
 }

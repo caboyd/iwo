@@ -263,7 +263,7 @@ export class RenderQueue {
             pass.teardownPass();
             pass.onAfterPass?.();
         }
-        this.renderer.cleanupGLState();
+        this.renderer.cleanupPrevMaterialState();
     }
 
     public addCommandToRenderPass(id: string, command: RenderCommand): void {

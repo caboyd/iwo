@@ -4,6 +4,7 @@ import { Material } from "./Material";
 
 export class NormalOnlyMaterial extends Material {
     public flat_shading: boolean = false;
+    public is_billboard: boolean = false;
 
     public constructor(flat_shading?: boolean) {
         //TODO: Allows normal in world or view space
@@ -19,6 +20,7 @@ export class NormalOnlyMaterial extends Material {
         const source = ShaderSource.NormalOnly;
         source.material_defines = new Set<ShaderSource.Define>();
         if (this.flat_shading) source.material_defines.add(ShaderSource.Define.FLATSHADING);
+        if (this.is_billboard) source.material_defines.add(ShaderSource.Define.BILLBOARD);
         return source;
     }
 }

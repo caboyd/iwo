@@ -179,8 +179,11 @@ vec3 perturbNormal(mat3 cotangentFrame, vec3 textureSample, float scale) {
 
 void main() {
     vec3 albedo;
+    float alpha = 1.0;
     if (u_material.active_textures[0]) {
-        albedo = texture(u_material.albedo_sampler, tex_coord).rgb;
+        vec4 albedo_alpha = texture(u_material.albedo_sampler, tex_coord);
+        albedo = u_material.albedo_color.rgb * albedo_alpha.rgb;
+        alpha = albedo_alpha.a;
     } else {
         albedo = u_material.albedo_color.rgb;
     }
@@ -334,6 +337,6 @@ void main() {
         color = color / (color + 0.155) * 1.019;
     }
 
-    frag_color = vec4(color,1.0);
+    frag_color = vec4(color,alpha);
 }
 
