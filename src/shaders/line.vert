@@ -7,11 +7,16 @@ layout (location = 2) in vec3 point_b;
 layout (location = 3) in vec3 color_a;
 layout (location = 4) in vec3 color_b;
 
+layout (std140) uniform ubo_per_frame{
+    vec3 camera;        
+    mat4 view;   
+    mat4 projection;   
+    mat4 shadow_map_space;
+};
+
 layout (std140) uniform ubo_per_model{
-                        // base alignment   // aligned offset
-    mat4 model;         // 64               // 0
-    mat3 normal_view;        // 64               // 64
-    mat4 mvp;           // 64               // 128
+    mat4 model;       
+    mat3 model_inverse;          
 };
 
 uniform float width;
@@ -21,6 +26,7 @@ out vec3 o_color;
 
 void main() {
 
+    mat4 mvp = projection * view * model;
     vec4 clip0 = mvp * vec4(point_a, 1.0);
     vec4 clip1 = mvp * vec4(point_b, 1.0);
 

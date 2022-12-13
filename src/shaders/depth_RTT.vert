@@ -3,23 +3,18 @@
 layout(location = 0) in vec3 a_vertex;
 
 layout (std140) uniform ubo_per_frame{
-                          // base alignment   // aligned offset
-    mat4 view;            // 64               // 0
-    mat4 view_inverse;    // 64               // 64
-    mat4 projection;      // 64               // 128
-    mat4 view_projection; // 64               // 192
-    mat4 shadow_map_space;// 64               // 256
-
+    vec3 camera;        
+    mat4 view;   
+    mat4 projection;   
+    mat4 shadow_map_space;
 };
 
 layout (std140) uniform ubo_per_model{
-                        // base alignment   // aligned offset
-    mat4 model;         // 64               // 0
-    mat3 normal_view;        // 64               // 64
-    mat4 mvp;           // 64               // 128
+    mat4 model;       
+    mat3 model_inverse;           
 };
 
 void main()
 {
-	gl_Position = mvp  * vec4(a_vertex, 1.0);
+	gl_Position = projection * view * model * vec4(a_vertex, 1.0);
 }

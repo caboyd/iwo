@@ -1,26 +1,3 @@
-/**
- * Created by Chris on Apr, 2019
- *
- * Shader Source Files
- */
-import { BasicUnlitShader } from "./BasicUnlitShader";
-import { CubemapSpecularPrefilterShader } from "./CubemapSpecularPrefilterShader";
-import { CubemapToIrradianceShader } from "./CubemapToIrradianceShader";
-import { EquiToCubemapShader } from "./EquiToCubemapShader";
-import { LineShader } from "./LineShader";
-import { PBRShader } from "./PBRShader";
-import { Shader } from "./Shader";
-
-//Shaders may have a subclass defined for custom shader setup
-export interface ShaderSource {
-    name: string;
-    vert: string;
-    frag: string;
-    subclass: typeof Shader | undefined;
-    valid_defines?: Set<ShaderSource.Define>;
-    material_defines?: Set<ShaderSource.Define>;
-}
-
 //NOTE: Relative import is required for rollup-plugin-node-resolve to resolve these extensions
 // @ts-ignore
 import standardVert from "../../shaders/standard.vert";
@@ -63,6 +40,15 @@ import gaussFrag from "../../shaders/postprocess/gaussianblur.frag";
 // @ts-ignore
 import toon_frag from "../../shaders/toon.frag";
 
+export interface ShaderSource {
+    name: string;
+    vert: string;
+    frag: string;
+    valid_defines?: Set<ShaderSource.Define>;
+    material_defines?: Set<ShaderSource.Define>;
+    intial_uniforms: Record<string, any>;
+}
+
 export namespace ShaderSource {
     export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING", "BILLBOARD"] as const;
     export type Define = typeof Defines[number];
@@ -102,7 +88,7 @@ export namespace ShaderSource {
             name: name,
             vert: vert,
             frag: frag,
-            subclass: source.subclass,
+            intial_uniforms: source.intial_uniforms,
         };
         return result;
     }
@@ -111,101 +97,112 @@ export namespace ShaderSource {
         name: "BasicUnlitShader",
         vert: standardVert,
         frag: basic_unlit_frag,
-        subclass: BasicUnlitShader,
         valid_defines: new Set<Define>([Define.INSTANCING, Define.BILLBOARD]),
+        intial_uniforms: { "u_material.albedo_sampler": 0 },
     };
 
     export const Toon: ShaderSource = {
         name: "ToonShader",
         vert: standardVert,
         frag: toon_frag,
-        subclass: BasicUnlitShader,
         valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS, Define.FLATSHADING, Define.BILLBOARD]),
+        intial_uniforms: { "u_material.albedo_sampler": 0 },
     };
 
     export const PBR: ShaderSource = {
         name: "PBRShader",
         vert: standardVert,
         frag: pbrFrag,
-        subclass: PBRShader,
         valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS, Define.BILLBOARD]),
+        intial_uniforms: {
+            gamma: 2.2,
+            "u_material.albedo_sampler": 0,
+            "u_material.irradiance_sampler": 1,
+            "u_material.env_sampler": 2,
+            "u_material.normal_sampler": 3,
+            "u_material.occlusion_sampler": 4,
+            "u_material.metal_roughness_sampler": 5,
+            "u_material.emissive_sampler": 6,
+            "u_material.shadow_map_sampler": 7,
+            "u_material.brdf_LUT_sampler": 8,
+        },
     };
 
     export const NormalOnly: ShaderSource = {
         name: "NormalOnlyShader",
         vert: standardVert,
         frag: normalOnlyFrag,
-        subclass: undefined,
         valid_defines: new Set<Define>([Define.INSTANCING, Define.FLATSHADING, Define.BILLBOARD]),
+        intial_uniforms: {},
     };
 
     export const EquiToCubemap: ShaderSource = {
         name: "EquiToCubemapShader",
         vert: standardVert,
         frag: equiToCubemapFrag,
-        subclass: EquiToCubemapShader,
+        intial_uniforms: { equirectangular_map: 0 },
     };
 
     export const CubemapToIrradiance: ShaderSource = {
         name: "CubemapToIrradianceShader",
         vert: standardVert,
         frag: cubemapToIrradianceFrag,
-        subclass: CubemapToIrradianceShader,
+        intial_uniforms: { equirectangular_map: 0 },
     };
 
     export const CubemapSpecularPrefilter: ShaderSource = {
         name: "CubemapSpecularPrefilter",
         vert: standardVert,
         frag: cubemapSpecularPrefilterFrag,
-        subclass: CubemapSpecularPrefilterShader,
+        intial_uniforms: { equirectangular_map: 0 },
     };
 
     export const Grid: ShaderSource = {
         name: "GridShader",
         vert: gridVert,
         frag: gridFrag,
-        subclass: undefined,
+        intial_uniforms: {},
     };
 
     export const BRDF: ShaderSource = {
         name: "BRDFShader",
         vert: brdfVert,
         frag: brdfFrag,
-        subclass: undefined,
+        intial_uniforms: {},
     };
 
     export const Line: ShaderSource = {
         name: "LineShader",
         vert: lineVert,
         frag: lineFrag,
-        subclass: LineShader,
+        intial_uniforms: {},
     };
 
     export const Depth: ShaderSource = {
         name: "DepthShader",
         vert: depthVert,
         frag: depthFrag,
-        subclass: undefined,
+        intial_uniforms: {},
     };
 
     export const Quad: ShaderSource = {
         name: "QuadShader",
         vert: quadVert,
         frag: quadFrag,
-        subclass: undefined,
+        intial_uniforms: {},
     };
 
     export const HDR: ShaderSource = {
         name: "HDRShader",
         vert: quadVert,
         frag: toneFrag,
-        subclass: undefined,
+        intial_uniforms: {},
     };
 
     export const GuassianBlur: ShaderSource = {
         name: "GuassianBlurShader",
         vert: quadVert,
         frag: gaussFrag,
-        subclass: undefined,
+        intial_uniforms: {},
     };
 }

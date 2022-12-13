@@ -14,7 +14,7 @@ out vec4 frag_color;
 in vec3 world_pos;
 in vec2 tex_coord;
 in vec3 normal;
-in vec3 view_normal;
+//in vec3 view_normal;
 in vec3 world_normal;
 in vec3 camera_pos;
 
@@ -23,14 +23,12 @@ in vec4 shadow_coord;
 #endif
 
 layout (std140) uniform ubo_per_frame{
-                          // base alignment   // aligned offset
-    mat4 view;            // 64               // 0
-    mat4 view_inverse;    // 64               // 64
-    mat4 projection;      // 64               // 128
-    mat4 view_projection; // 64               // 192
-    mat4 shadow_map_space;// 64               // 256
-
+    vec3 camera;        
+    mat4 view;   
+    mat4 projection;   
+    mat4 shadow_map_space;
 };
+
 struct Material {
     vec3 albedo_color;
     float roughness;

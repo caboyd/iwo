@@ -37,12 +37,6 @@ export * from "./graphics/textures/TextureHelper";
 
 export * from "./graphics/shader/ShaderSources";
 export * from "./graphics/shader/Shader";
-export * from "./graphics/shader/PBRShader";
-export * from "./graphics/shader/BasicUnlitShader";
-export * from "./graphics/shader/ToonShader";
-export * from "./graphics/shader/CubemapSpecularPrefilterShader";
-export * from "./graphics/shader/EquiToCubemapShader";
-export * from "./graphics/shader/LineShader";
 
 export * from "./materials/Material";
 export * from "./materials/BasicUnlitMaterial";

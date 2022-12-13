@@ -9,11 +9,8 @@ import { UniformBuffer } from "../UniformBuffer";
 import { VertexBuffer } from "../VertexBuffer";
 import { RendererStats } from "./RendererStats";
 
-const temp: mat4 = mat4.create();
-
-const modelview_matrix: mat4 = mat4.create();
-const normalview_matrix: mat3 = mat3.create();
-const mvp_matrix: mat4 = mat4.create();
+const mat4_temp: mat4 = mat4.create();
+const mat3_temp: mat3 = mat3.create();
 const BIAS_MATRIX = mat4.fromValues(0.5, 0, 0, 0, 0, 0.5, 0, 0, 0, 0, 0.5, 0, 0.5, 0.5, 0.5, 1);
 
 export class ViewportDimensions {
@@ -78,16 +75,16 @@ export class Renderer {
         mat: mat4
     ): void {
         if (name === "shadow_map_space")
-            this.uboPerFrameBlock.set("shadow_map_space", mat4.mul(temp, BIAS_MATRIX, mat));
+            this.uboPerFrameBlock.set("shadow_map_space", mat4.mul(mat4_temp, BIAS_MATRIX, mat));
         else this.uboPerFrameBlock.set(name, mat);
     }
 
     public setPerFrameUniforms(view: mat4, proj: mat4, shadow_map?: mat4): void {
+        mat4.invert(mat4_temp, view);
+        this.uboPerFrameBlock.set("camera", [mat4_temp[12], mat4_temp[13], mat4_temp[14]]);
         this.uboPerFrameBlock.set("view", view);
-        this.uboPerFrameBlock.set("view_inverse", mat4.invert(temp, view));
         this.uboPerFrameBlock.set("projection", proj);
-        this.uboPerFrameBlock.set("view_projection", mat4.mul(temp, proj, view));
-        if (shadow_map) this.uboPerFrameBlock.set("shadow_map_space", mat4.mul(temp, BIAS_MATRIX, shadow_map));
+        if (shadow_map) this.uboPerFrameBlock.set("shadow_map_space", mat4.mul(mat4_temp, BIAS_MATRIX, shadow_map));
         this.uboPerFrameBlock.update(this.gl);
 
         //console.dir(this.stats);
@@ -98,9 +95,8 @@ export class Renderer {
     //A single uniform block for all objects to be drawn should be used and set once per frame.
     public setPerModelUniforms(model_matrix: mat4, view_matrix: mat4, proj_matrix: mat4): void {
         this.uboPerModelBlock.set("model", model_matrix);
-        mat3.normalFromMat4(normalview_matrix, mat4.multiply(modelview_matrix, view_matrix, model_matrix));
-        this.uboPerModelBlock.set("normal_view", normalview_matrix);
-        this.uboPerModelBlock.set("mvp", mat4.mul(mvp_matrix, proj_matrix, modelview_matrix));
+        mat3.normalFromMat4(mat3_temp, model_matrix);
+        this.uboPerModelBlock.set("model_inverse", mat3_temp);
         this.uboPerModelBlock.update(this.gl);
     }
 
@@ -171,24 +167,23 @@ export class Renderer {
     }
 
     private initShader(src: ShaderSource): Shader {
-        let current_shader;
-
-        //create shader
-        const shader_class = src.subclass ?? Shader;
-        current_shader = new shader_class(this.gl, src.vert, src.frag);
-        this.__Shaders.set(src.name, current_shader);
+        let shader = new Shader(this.gl, src.vert, src.frag);
+        shader.use();
+        this.current_shader = shader;
+        shader.setUniformsRecord(src.intial_uniforms);
+        this.__Shaders.set(src.name, shader);
 
         //set any preset uniforms that have be set for this shader base
         const shader_base_name = src.name.split("#")[0];
         const uniforms = this.#shader_variant_uniforms.get(shader_base_name);
-        if (uniforms) current_shader.setUniforms(uniforms);
+        if (uniforms) shader.setUniforms(uniforms);
 
         //set ubos
         if (this.uboPerFrameBlock && this.uboPerModelBlock) {
-            this.uboPerFrameBlock.bindShader(current_shader, this.PerFrameBinding);
-            this.uboPerModelBlock.bindShader(current_shader, this.PerModelBinding);
+            this.uboPerFrameBlock.bindShader(shader, this.PerFrameBinding);
+            this.uboPerModelBlock.bindShader(shader, this.PerModelBinding);
         }
-        return current_shader;
+        return shader;
     }
 
     public viewPortHasChanged(): boolean {
@@ -297,8 +292,7 @@ export class Renderer {
     }
 
     public cleanupPrevMaterialState(): void {
-        if (this.current_material && this.current_material.cleanup)
-            this.current_material.cleanup(this.gl);
+        if (this.current_material && this.current_material.cleanup) this.current_material.cleanup(this.gl);
     }
 
     public resetStats(): void {

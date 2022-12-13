@@ -12,20 +12,15 @@ in mat4 a_instance;
 #endif
 
 layout (std140) uniform ubo_per_frame{
-                          // base alignment   // aligned offset
-    mat4 view;            // 64               // 0
-    mat4 view_inverse;    // 64               // 64
-    mat4 projection;      // 64               // 128
-    mat4 view_projection; // 64               // 192
-    mat4 shadow_map_space;// 64               // 256
-
+    vec3 camera;        
+    mat4 view;   
+    mat4 projection;   
+    mat4 shadow_map_space;
 };
 
 layout (std140) uniform ubo_per_model{
-                        // base alignment   // aligned offset
-    mat4 model;         // 64               // 0
-    mat3 normal_view;        // 64               // 64
-    mat4 mvp;           // 64               // 128
+    mat4 model;       
+    mat3 model_inverse;         
 };
 
 struct Light {
@@ -40,7 +35,7 @@ out vec3 local_pos;
 //out vec3 view_pos;
 out vec3 world_pos;
 out vec2 tex_coord;
-out vec3 view_normal;
+//out vec3 view_normal;
 out vec3 world_normal;
 out vec3 camera_pos;
 
@@ -65,50 +60,43 @@ mat4 mat4ToBillboard(mat4 m) {
     return out_mat;
 }
 
-vec3 inverseTransformDirection(in vec3 normal, in mat4 matrix) {
-    return normalize( (vec4(normal,0.0) * matrix).xyz );
-}
 
 void main() {
 
-vec4 world_pos4 = model * vec4(a_vertex, 1.0);
-
 #ifdef INSTANCING
-   
     #ifdef BILLBOARD
-        mat4 instance = mat4ToBillboard(view  * a_instance * model);
-        gl_Position = projection * instance * vec4(a_vertex,1.0f);
-        mat4 normal_mat4 = transpose(inverse(instance)); 
-        view_normal =  (normal_mat4 * vec4(a_normal, 1.0)).xyz ;
-        world_normal = (vec4(view_normal,1.0) * view).xyz;
-        world_pos4 = instance * vec4(a_vertex,1.0f);
+        mat4 view_model = mat4ToBillboard(view  * a_instance * model);
+        mat4 invert_instance = inverse(a_instance);
+        //Hack to make the view direction and normal always be from directional light source.
+        //Billboard will always be light directly
+        world_normal = normalize(a_normal);   
+        world_pos = u_light_count > 0 ? camera - u_lights[0].position.xyz : a_vertex;
     #else
-         mat4 instance = a_instance * model;
-        gl_Position = view_projection * instance * vec4(a_vertex,1.0f);
-        mat4 normal_mat4 = transpose(inverse(instance)); 
-        view_normal =  (view * normal_mat4 * vec4(a_normal, 1.0)).xyz ;
-        world_pos4 = instance * vec4(a_vertex, 1.0);
-        world_normal = normalize((normal_mat4 * vec4(a_normal, 1.0)).xyz);
+        mat4 view_model = view * a_instance * model;
+        //NOTE: transpose inverse is correct but very slow
+        //mat3 instance_inverse = mat3(transpose(inverse(a_instance)));
+        world_normal = normalize(mat3(a_instance) * model_inverse * a_normal); 
+        world_pos = (a_instance * model * vec4(a_vertex, 1.0)).xyz;
     #endif
+    gl_Position = projection * view_model * vec4(a_vertex,1.0);
 #else
-    //FIXME: did not finish this
     #ifdef BILLBOARD
-        mat4 billboard_model = mat4ToBillboard(view * model);
-        world_pos4 = billboard_model *  vec4(a_vertex, 1.0);
-        gl_Position = projection * billboard_model * vec4(a_vertex,1.0f);
+        mat4 view_model = mat4ToBillboard(view * model);
+        //Hack to make the view direction and normal always be from directional light source.
+        //Billboard will always be light directly
+        world_normal = normalize(a_normal).xyz; 
+        world_pos = u_light_count > 0 ? camera - u_lights[0].position.xyz : a_vertex;
     #else
-        gl_Position = mvp * vec4(a_vertex,1.0f);
+        mat4 view_model = view * model;
+        world_normal = normalize(mat3(model) * a_normal); 
+        world_pos = (model * vec4(a_vertex, 1.0)).xyz;
     #endif
-    view_normal =  normal_view * a_normal ;
-    world_normal = normalize(inverseTransformDirection( view_normal, view ));
+    gl_Position = projection * view_model * vec4(a_vertex,1.0);
 #endif
 
-    camera_pos = view_inverse[3].xyz;
+    camera_pos = camera;
     local_pos = a_vertex;
-    world_pos = world_pos4.xyz;
     tex_coord = a_tex_coord;
-
-
 
     #ifdef SHADOWS
     //Calculate world space coords that map this vertex to the shadow_map
@@ -118,7 +106,7 @@ vec4 world_pos4 = model * vec4(a_vertex, 1.0);
     float slope_scale = clamp(1.0 - cos_light_angle, 0.0, 1.0);
     float normal_offset_scale =  slope_scale * 0.4;
     vec4 shadow_offset = vec4(world_normal * normal_offset_scale,0.0);
-    shadow_coord = shadow_map_space * (world_pos4 + shadow_offset);
+    shadow_coord = shadow_map_space * (vec4(world_pos,1.0) + shadow_offset);
 
     //Note: Moved to fragment shader because it doesn't work if vertices are very far apart.
     //Shadow_coord.w will be used to fade in and out shadows softly when they are far from camera

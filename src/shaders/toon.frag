@@ -11,7 +11,7 @@ out vec4 frag_color;
 in vec3 world_pos;
 in vec2 tex_coord;
 in vec3 normal;
-in vec3 view_normal;
+//in vec3 view_normal;
 in vec3 world_normal;
 in vec3 camera_pos;
 
@@ -120,7 +120,7 @@ void main() {
 
     color += albedo_color * light_ambient * PI;
 
-    //ignore flat_shading or outline
+    //ignore flat_shading for outline
     vec3 real_normal = normalize(world_normal);
 
     //gives outline sortof
