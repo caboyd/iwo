@@ -4,7 +4,7 @@ import { Texture2D } from "@graphics/textures/Texture2D";
 import { vec3 } from "gl-matrix";
 import { Material, MaterialOptions } from "./Material";
 
-type ToonMaterialOptions = {
+export type ToonMaterialOptions = {
     albedo_color: vec3;
     outline_color: vec3;
     specular_power: number;
@@ -12,6 +12,7 @@ type ToonMaterialOptions = {
     diffuse_levels: number;
     specular_levels: number;
     flat_shading: boolean;
+    is_billboard: boolean;
     albedo_image?: HTMLImageElement;
     albedo_texture?: Texture2D;
 } & MaterialOptions;
@@ -25,9 +26,9 @@ export class ToonMaterial extends Material {
     public diffuse_levels: number = 4;
     public specular_levels: number = 1;
     public flat_shading: boolean = false;
+    public is_billboard: boolean = false;
     public albedo_image?: HTMLImageElement;
     public albedo_texture?: Texture2D;
-    public is_billboard: boolean = false;
 
     public constructor(options?: Partial<ToonMaterialOptions>) {
         super();
@@ -37,6 +38,7 @@ export class ToonMaterial extends Material {
         this.diffuse_levels = options?.diffuse_levels ?? this.diffuse_levels;
         this.specular_levels = options?.specular_levels ?? this.specular_levels;
         this.flat_shading = options?.flat_shading ?? this.flat_shading;
+        this.is_billboard = options?.is_billboard ?? this.is_billboard;
         this.albedo_image = options?.albedo_image;
         this.albedo_texture = options?.albedo_texture;
         this.material_options = options;

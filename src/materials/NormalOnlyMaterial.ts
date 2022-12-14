@@ -2,14 +2,20 @@ import { Shader } from "@graphics/shader/Shader";
 import { ShaderSource } from "@graphics/shader/ShaderSources";
 import { Material } from "./Material";
 
+export type NormalOnlyMaterialOptions = {
+    flat_shading: boolean;
+    is_billboard: boolean;
+};
+
 export class NormalOnlyMaterial extends Material {
     public flat_shading: boolean = false;
     public is_billboard: boolean = false;
 
-    public constructor(flat_shading?: boolean) {
+    public constructor(options?: Partial<NormalOnlyMaterialOptions>) {
         //TODO: Allows normal in world or view space
         super();
-        this.flat_shading = flat_shading ?? this.flat_shading;
+        this.flat_shading = options?.flat_shading ?? this.flat_shading;
+        this.is_billboard = options?.is_billboard ?? this.is_billboard;
     }
 
     public activate(gl: WebGL2RenderingContext, shader: Shader): void {

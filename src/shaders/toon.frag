@@ -22,7 +22,7 @@ in vec4 shadow_coord;
 struct Material {
 
     //Textures
-    sampler2D albedo_texture;
+    sampler2D albedo_sampler;
     //sampler2DShadow shadow_map_sampler;
     bool is_texture_active[2];
     //Colors
@@ -83,7 +83,12 @@ void main() {
     vec3 V = normalize( camera_pos - world_pos);
 
 	vec3 albedo_color  = u_material.albedo_color;
-    if(u_material.is_texture_active[0]) albedo_color  *= texture(u_material.albedo_texture,  tex_coord).rgb;
+    float alpha = 1.0;
+    if(u_material.is_texture_active[0]) {
+        vec4 albedo_alpha = texture(u_material.albedo_sampler, tex_coord);
+        alpha = albedo_alpha.a;
+        albedo_color *=  albedo_alpha.rgb;
+    }
 
 	vec3 color = vec3(0.0);
 
@@ -131,7 +136,7 @@ void main() {
     //Unreal HDR correction
     color = color / (color + 0.155) * 1.019;
 
-    frag_color =  vec4(color, 1.0);
+    frag_color =  vec4(color, alpha);
 
     
 }

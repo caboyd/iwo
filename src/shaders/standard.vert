@@ -64,33 +64,33 @@ mat4 mat4ToBillboard(mat4 m) {
 void main() {
 
 #ifdef INSTANCING
+    //NOTE: transpose inverse is correct but very slow
+    //mat3 instance_inverse = mat3(transpose(inverse(a_instance)));
+    world_normal = normalize(mat3(a_instance) * model_inverse * a_normal); 
     #ifdef BILLBOARD
         mat4 view_model = mat4ToBillboard(view  * a_instance * model);
-        mat4 invert_instance = inverse(a_instance);
-        //Hack to make the view direction and normal always be from directional light source.
-        //Billboard will always be light directly
-        world_normal = normalize(a_normal);   
-        world_pos = u_light_count > 0 ? camera - u_lights[0].position.xyz : a_vertex;
+        mat4 view_model_inverse = mat4ToBillboard(view  * a_instance * mat4(model_inverse));
+        vec3 view_normal = normalize(mat3(view_model_inverse) * a_normal); 
+        //put view normal back in world space
+        world_normal = view_normal * mat3(view);
     #else
         mat4 view_model = view * a_instance * model;
-        //NOTE: transpose inverse is correct but very slow
-        //mat3 instance_inverse = mat3(transpose(inverse(a_instance)));
-        world_normal = normalize(mat3(a_instance) * model_inverse * a_normal); 
-        world_pos = (a_instance * model * vec4(a_vertex, 1.0)).xyz;
     #endif
+
+    world_pos = (a_instance * model * vec4(a_vertex, 1.0)).xyz;
     gl_Position = projection * view_model * vec4(a_vertex,1.0);
 #else
+    world_normal = normalize(model_inverse * a_normal); 
     #ifdef BILLBOARD
         mat4 view_model = mat4ToBillboard(view * model);
-        //Hack to make the view direction and normal always be from directional light source.
-        //Billboard will always be light directly
-        world_normal = normalize(a_normal).xyz; 
-        world_pos = u_light_count > 0 ? camera - u_lights[0].position.xyz : a_vertex;
+        mat4 view_model_inverse = mat4ToBillboard(view  * a_instance * mat4(model_inverse));
+        vec3 view_normal = normalize(mat3(view_model_inverse) * a_normal); 
+        //put view normal back in world space
+        world_normal = view_normal * mat3(view);
     #else
         mat4 view_model = view * model;
-        world_normal = normalize(mat3(model) * a_normal); 
-        world_pos = (model * vec4(a_vertex, 1.0)).xyz;
     #endif
+    world_pos = (model * vec4(a_vertex, 1.0)).xyz;
     gl_Position = projection * view_model * vec4(a_vertex,1.0);
 #endif
 

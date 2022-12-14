@@ -1,8 +1,7 @@
-import { vec3 } from "gl-matrix";
-import { ShaderSource } from "@graphics/shader/ShaderSources";
 import { Shader } from "@graphics/shader/Shader";
+import { ShaderSource } from "@graphics/shader/ShaderSources";
 import { Texture2D } from "@graphics/textures/Texture2D";
-import { TextureCubeMap } from "@graphics/textures/TextureCubeMap";
+import { vec3 } from "gl-matrix";
 import { Material, MaterialOptions } from "./Material";
 
 export class SkyboxMaterial extends Material {
@@ -38,9 +37,9 @@ export class SkyboxMaterial extends Material {
     }
 
     /**
-     * 
-     * @param tex 
-     * @param equirectangular - set true if skybox is a cube with equirectangular texture 
+     *
+     * @param tex
+     * @param equirectangular - set true if skybox is a cube with equirectangular texture
      */
     public setAlbedoTexture(tex: Texture2D, equirectangular: boolean = false): void {
         this.equirectangular_albedo = equirectangular;
