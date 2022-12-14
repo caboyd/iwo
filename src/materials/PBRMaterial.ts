@@ -12,6 +12,7 @@ export type PBRMaterialOptions = {
     roughness: number;
     ao: number;
     emissive_factor: vec3;
+    light_factor: vec3;
     flat_shading: boolean;
     is_billboard: boolean;
     albedo_texture?: Texture2D;
@@ -36,6 +37,7 @@ const DefaultPBRMaterialOptions: PBRMaterialOptions = {
     roughness: 1,
     ao: 1,
     emissive_factor: [1, 1, 1],
+    light_factor: [1, 1, 1],
     flat_shading: false,
     is_billboard: false,
 };
@@ -46,6 +48,7 @@ export class PBRMaterial extends Material {
     public roughness: number;
     public ao: number;
     public emissive_factor: vec3;
+    public light_factor: vec3;
     public flat_shading: boolean;
     public is_billboard: boolean;
     public albedo_texture: Texture2D | undefined;
@@ -74,6 +77,7 @@ export class PBRMaterial extends Material {
         this.roughness = opt.roughness;
         this.ao = opt.ao;
         this.emissive_factor = vec3.clone(opt.emissive_factor);
+        this.light_factor = vec3.clone(opt.light_factor);
         this.flat_shading = opt.flat_shading;
         this.is_billboard = opt.is_billboard;
         this.albedo_texture = opt.albedo_texture;
@@ -173,6 +177,7 @@ export class PBRMaterial extends Material {
         shader.setUniform("u_material.metallic", this.metallic);
         shader.setUniform("u_material.ao", this.ao);
         shader.setUniform("u_material.emissive_factor", this.emissive_factor);
+        shader.setUniform("u_material.light_factor", this.light_factor);
         // shader.setUniform("u_material.flat_shading", this.flat_shading);
     }
 

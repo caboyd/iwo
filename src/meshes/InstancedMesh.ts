@@ -2,9 +2,12 @@ import { Shader } from "@graphics/shader/Shader";
 import { ShaderSource } from "@graphics/shader/ShaderSources";
 import { WebGL } from "@iwo";
 import { Material } from "@materials/Material";
-import { mat4 } from "gl-matrix";
+import { mat4, vec3 } from "gl-matrix";
 import { Renderer } from "../graphics/renderer/Renderer";
 import { Mesh } from "./Mesh";
+
+let tmp_vec3 = vec3.create();
+let tmp2_vec3 = vec3.create();
 
 export class InstancedMesh {
     public mesh: Mesh;
@@ -31,6 +34,15 @@ export class InstancedMesh {
     public addInstance(instance: mat4) {
         this.instance_matrix.push(mat4.clone(instance));
         this.#buffer_sent_to_gpu = false;
+    }
+
+    public sortBackToFront(camera: vec3) {
+        this.#buffer_sent_to_gpu = false;
+        this.instance_matrix.sort((a, b) => {
+            const pos_a = mat4.getTranslation(tmp_vec3, a);
+            const pos_b = mat4.getTranslation(tmp2_vec3, b);
+            return vec3.sqrDist(camera, pos_b) - vec3.sqrDist(camera, pos_a);
+        });
     }
 
     private updateBuffer(gl: WebGL2RenderingContext, shader: Shader) {

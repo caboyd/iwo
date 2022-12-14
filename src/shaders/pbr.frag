@@ -35,6 +35,7 @@ struct Material {
     float metallic;
     float ao;
     vec3 emissive_factor;
+    vec3 light_factor;
 
     sampler2D albedo_sampler;
     samplerCube irradiance_sampler;
@@ -288,7 +289,7 @@ void main() {
         }
         #endif
 
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        Lo += (kD * albedo / PI + specular) * u_material.light_factor * radiance * NdotL;
    
     }
 
@@ -309,7 +310,7 @@ void main() {
 
         irradiance = texture(u_material.irradiance_sampler, world_normal).rgb;
         vec3 diffuse = (irradiance + (light_ambient)) * albedo;
-        ambient += (kD * diffuse) * AO ;
+        ambient += (kD * diffuse) * AO  * PI;
 
     } else {
         ambient = (light_ambient ) * albedo * AO;
@@ -324,11 +325,11 @@ void main() {
         vec2 brdf  = texture(u_material.brdf_LUT_sampler, vec2(NoV, perceptual_roughness)).rg;
         vec3  specular =  prefilteredColor * (F * brdf.x + brdf.y);
      
-        ambient += (specular * AO);
+        ambient += (specular * AO) * PI;
       
     }
     
-    color = Lo + (emission + ambient) * PI;
+    color = Lo + emission + ambient;
 
     if(!hdr_correction_disabled) {
         //Unreal HDR correction
