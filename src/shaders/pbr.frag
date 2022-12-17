@@ -177,21 +177,19 @@ vec3 perturbNormal(mat3 cotangentFrame, vec3 textureSample, float scale) {
 }
 
 void main() {
-    vec3 albedo;
+    vec3 albedo = u_material.albedo_color.rgb;
     float alpha = 1.0;
     if (u_material.active_textures[0]) {
-        vec4 albedo_alpha = texture(u_material.albedo_sampler, tex_coord);
-        albedo = u_material.albedo_color.rgb * albedo_alpha.rgb;
-        alpha = albedo_alpha.a;
-    } else {
-        albedo = u_material.albedo_color.rgb;
-    }
-    vec3 emission;
+        vec4 albedo_texture = texture(u_material.albedo_sampler, tex_coord);
+        albedo *= albedo_texture.rgb;
+        alpha = albedo_texture.a;
+    } 
+
+    vec3 emission = vec3(0.0);
     if(u_material.active_textures[6]) {
         emission = u_material.emissive_factor *  texture(u_material.emissive_sampler,tex_coord).rgb;
-    } else {
-        emission = vec3(0);
-    }
+    } 
+
     float metallic = u_material.metallic;
     if(u_material.active_textures[5]) {
         metallic = u_material.metallic * texture(u_material.metal_roughness_sampler, tex_coord).b;
