@@ -128,10 +128,10 @@ void main() {
     //ignore flat_shading for outline
     vec3 real_normal = normalize(world_normal);
 
-    //gives outline sortof
-    if(pow(saturate(dot(real_normal,V)), 1.5) < 0.08){
-        color = u_material.outline_color;
-    }
+
+    float outline = 1.0 - smoothstep(0.16,0.24, dot(real_normal,V));
+    color = mix(color, u_material.outline_color, outline);
+
 
     //Unreal HDR correction
     color = color / (color + 0.155) * 1.019;
