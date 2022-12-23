@@ -11,8 +11,10 @@ export type ToonMaterialOptions = {
     specular_intensity: number;
     diffuse_levels: number;
     specular_levels: number;
+    light_factor: vec3;
     flat_shading: boolean;
     is_billboard: boolean;
+    is_billboard_rot_y: boolean;
     albedo_image?: HTMLImageElement;
     albedo_texture?: Texture2D;
 } & MaterialOptions;
@@ -25,8 +27,10 @@ export class ToonMaterial extends Material {
     public specular_intensity: number = 2;
     public diffuse_levels: number = 4;
     public specular_levels: number = 1;
+    public light_factor: vec3 = [1, 1, 1];
     public flat_shading: boolean = false;
     public is_billboard: boolean = false;
+    public is_billboard_rot_y: boolean = false;
     public albedo_image?: HTMLImageElement;
     public albedo_texture?: Texture2D;
 
@@ -37,8 +41,10 @@ export class ToonMaterial extends Material {
         this.specular_intensity = options?.specular_intensity ?? this.specular_intensity;
         this.diffuse_levels = options?.diffuse_levels ?? this.diffuse_levels;
         this.specular_levels = options?.specular_levels ?? this.specular_levels;
+        if (options?.light_factor) vec3.copy(this.light_factor, options.light_factor);
         this.flat_shading = options?.flat_shading ?? this.flat_shading;
         this.is_billboard = options?.is_billboard ?? this.is_billboard;
+        this.is_billboard_rot_y = options?.is_billboard_rot_y ?? this.is_billboard_rot_y;
         this.albedo_image = options?.albedo_image;
         this.albedo_texture = options?.albedo_texture;
         this.material_options = options;
@@ -65,6 +71,7 @@ export class ToonMaterial extends Material {
         shader.setUniform("u_material.specular_intensity", this.specular_intensity);
         shader.setUniform("u_material.diffuse_levels", this.diffuse_levels);
         shader.setUniform("u_material.specular_levels", this.specular_levels);
+        shader.setUniform("u_material.light_factor", this.light_factor);
     }
 
     public get shaderSource(): ShaderSource {
@@ -72,6 +79,7 @@ export class ToonMaterial extends Material {
         source.material_defines = new Set<ShaderSource.Define>();
         if (this.flat_shading) source.material_defines.add(ShaderSource.Define.FLATSHADING);
         if (this.is_billboard) source.material_defines.add(ShaderSource.Define.BILLBOARD);
+        if (this.is_billboard_rot_y) source.material_defines.add(ShaderSource.Define.BILLBOARD_ROT_Y);
         return source;
     }
 }

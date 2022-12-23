@@ -32,6 +32,7 @@ struct Material {
     float specular_intensity;
     float diffuse_levels;
     float specular_levels;
+    vec3 light_factor;
 
 }; 
 
@@ -115,15 +116,17 @@ void main() {
         sf = pow(sf, u_material.specular_power);
 
         df = floor((df * u_material.diffuse_levels)  + 0.5) / u_material.diffuse_levels;
-        sf = floor((sf * u_material.specular_levels) + 0.5) / u_material.specular_levels;
+        if(u_material.specular_levels > 0.0)
+            sf = floor((sf * u_material.specular_levels) + 0.5) / u_material.specular_levels;
+        else sf = 0.0;
 
-        vec3 diffuse_color  = albedo_color * u_lights[i].color * attenuation; 
-        vec3 specular_color = vec3(u_material.specular_intensity) * u_lights[i].color * attenuation; 
+        vec3 diffuse_color  =  u_material.light_factor * albedo_color * u_lights[i].color * attenuation; 
+        vec3 specular_color =  u_material.light_factor * vec3(u_material.specular_intensity) * u_lights[i].color * attenuation; 
 
         color += df * diffuse_color + sf * specular_color ;
     }
 
-    color += albedo_color * light_ambient * PI;
+    color += albedo_color * light_ambient;
 
     //ignore flat_shading for outline
     vec3 real_normal = normalize(world_normal);
@@ -135,6 +138,8 @@ void main() {
 
     //Unreal HDR correction
     color = color / (color + 0.155) * 1.019;
+
+    if(alpha < 0.1) discard;
 
     frag_color =  vec4(color, alpha);
 

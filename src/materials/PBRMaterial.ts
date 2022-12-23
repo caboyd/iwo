@@ -15,6 +15,7 @@ export type PBRMaterialOptions = {
     light_factor: vec3;
     flat_shading: boolean;
     is_billboard: boolean;
+    is_billboard_rot_y: boolean;
     albedo_texture?: Texture2D;
     albedo_image?: HTMLImageElement;
     normal_texture?: Texture2D;
@@ -40,6 +41,7 @@ const DefaultPBRMaterialOptions: PBRMaterialOptions = {
     light_factor: [1, 1, 1],
     flat_shading: false,
     is_billboard: false,
+    is_billboard_rot_y: false,
 };
 
 export class PBRMaterial extends Material {
@@ -51,6 +53,7 @@ export class PBRMaterial extends Material {
     public light_factor: vec3;
     public flat_shading: boolean;
     public is_billboard: boolean;
+    public is_billboard_rot_y: boolean;
     public albedo_texture: Texture2D | undefined;
     public albedo_image: HTMLImageElement | undefined;
     public normal_texture: Texture2D | undefined;
@@ -80,6 +83,7 @@ export class PBRMaterial extends Material {
         this.light_factor = vec3.clone(opt.light_factor);
         this.flat_shading = opt.flat_shading;
         this.is_billboard = opt.is_billboard;
+        this.is_billboard_rot_y = opt.is_billboard_rot_y;
         this.albedo_texture = opt.albedo_texture;
         this.albedo_image = opt.albedo_image;
         this.normal_texture = opt.normal_texture;
@@ -186,6 +190,7 @@ export class PBRMaterial extends Material {
         source.material_defines = new Set<ShaderSource.Define>();
         if (this.flat_shading) source.material_defines.add(ShaderSource.Define.FLATSHADING);
         if (this.is_billboard) source.material_defines.add(ShaderSource.Define.BILLBOARD);
+        if (this.is_billboard_rot_y) source.material_defines.add(ShaderSource.Define.BILLBOARD_ROT_Y);
         return source;
     }
 }

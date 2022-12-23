@@ -50,9 +50,11 @@ mat4 mat4ToBillboard(mat4 m) {
     out_mat[0][1] = 0.0;
     out_mat[0][2] = 0.0;
     //column 1
+    #ifdef BILLBOARD_ROT_Y
     out_mat[1][0] = 0.0;
     out_mat[1][1] = 1.0;
     out_mat[1][2] = 0.0;
+    #endif
     //column 2
     out_mat[2][0] = 0.0;
     out_mat[2][1] = 0.0;

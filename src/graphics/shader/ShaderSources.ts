@@ -50,13 +50,14 @@ export interface ShaderSource {
 }
 
 export namespace ShaderSource {
-    export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING", "BILLBOARD"] as const;
+    export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING", "BILLBOARD", "BILLBOARD_ROT_Y"] as const;
     export type Define = typeof Defines[number];
     export namespace Define {
         export const INSTANCING = Defines[0];
         export const SHADOWS = Defines[1];
         export const FLATSHADING = Defines[2];
         export const BILLBOARD = Defines[3];
+        export const BILLBOARD_ROT_Y = Defines[4];
     }
 
     export function toShaderSourceWithDefines(source: ShaderSource, defines?: Set<Define>): ShaderSource {
@@ -93,11 +94,13 @@ export namespace ShaderSource {
         return result;
     }
 
+    const standard_valid_defines = [Define.SHADOWS, Define.INSTANCING, Define.BILLBOARD, Define.BILLBOARD_ROT_Y];
+
     export const BasicUnlit: ShaderSource = {
         name: "BasicUnlitShader",
         vert: standardVert,
         frag: basic_unlit_frag,
-        valid_defines: new Set<Define>([Define.INSTANCING, Define.BILLBOARD]),
+        valid_defines: new Set<Define>(standard_valid_defines),
         intial_uniforms: { "u_material.albedo_sampler": 0 },
     };
 
@@ -105,7 +108,7 @@ export namespace ShaderSource {
         name: "ToonShader",
         vert: standardVert,
         frag: toon_frag,
-        valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS, Define.FLATSHADING, Define.BILLBOARD]),
+        valid_defines: new Set<Define>(standard_valid_defines).add(Define.FLATSHADING),
         intial_uniforms: { "u_material.albedo_sampler": 0 },
     };
 
@@ -113,9 +116,9 @@ export namespace ShaderSource {
         name: "PBRShader",
         vert: standardVert,
         frag: pbrFrag,
-        valid_defines: new Set<Define>([Define.INSTANCING, Define.SHADOWS, Define.BILLBOARD]),
+        valid_defines: new Set<Define>(standard_valid_defines),
         intial_uniforms: {
-            gamma: 2.2,
+            //gamma: 2.2,
             "u_material.albedo_sampler": 0,
             "u_material.irradiance_sampler": 1,
             "u_material.env_sampler": 2,
@@ -132,7 +135,7 @@ export namespace ShaderSource {
         name: "NormalOnlyShader",
         vert: standardVert,
         frag: normalOnlyFrag,
-        valid_defines: new Set<Define>([Define.INSTANCING, Define.FLATSHADING, Define.BILLBOARD]),
+        valid_defines: new Set<Define>(standard_valid_defines).add(Define.FLATSHADING),
         intial_uniforms: {},
     };
 
