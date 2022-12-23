@@ -334,6 +334,8 @@ void main() {
         color = color / (color + 0.155) * 1.019;
     }
 
+    if(alpha < 0.1) discard;
+
     frag_color = vec4(color,alpha);
 }
 
