@@ -20,7 +20,7 @@ export class InstancedMesh {
     #instance_buffer: WebGLBuffer | undefined;
     #buffer_sent_to_gpu: boolean = false;
 
-    static readonly Defines: Set<ShaderSource.Define> = new Set([ShaderSource.Define.INSTANCING]);
+    static readonly Defines: ShaderSource.Define_Flags = ShaderSource.Define_Flags.INSTANCING;
 
     public constructor(mesh: Mesh, materials: Material[] | Material) {
         this.mesh = mesh;
@@ -62,7 +62,7 @@ export class InstancedMesh {
 
     private updateBuffer(gl: WebGL2RenderingContext, shader: Shader) {
         if (this.#instance_buffer) gl.deleteBuffer(this.#instance_buffer);
-        //FIXME: this won't work if other meshinstances are using this mesh becuase we are messing with the attributes.
+        //TODO: this won't work if other meshinstances are using this mesh becuase we are messing with the attributes.
         this.mesh.vertex_buffer.bind(gl);
         const buffer = new Float32Array(this.instance_matrix.length * 16);
         for (let i = 0; i < this.instance_matrix.length; i++) {

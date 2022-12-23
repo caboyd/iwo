@@ -28,7 +28,7 @@ export class Renderer {
     private static _EMPTY_TEXTURE: WebGLTexture;
     private static _EMPTY_CUBE_TEXTURE: WebGLTexture;
     private static _BRDF_LUT_TEXTURE: WebGLTexture | undefined;
-    private __Shaders: Map<string, Shader>;
+    #shaders: Map<string, Shader>;
 
     private readonly PerFrameBinding = 0;
     private readonly PerModelBinding = 1;
@@ -40,15 +40,14 @@ export class Renderer {
     #view_port_changed: boolean = false;
     public viewport: ViewportDimensions;
 
-    #global_defines: Set<ShaderSource.Define>;
+    #global_defines: ShaderSource.Define_Flags = 0;
     #shader_variant_uniforms: Map<string, Map<string, any>>;
 
     public constructor(gl: WebGL2RenderingContext) {
         this.gl = gl;
         this.stats = new RendererStats();
-        this.__Shaders = new Map<string, Shader>();
+        this.#shaders = new Map<string, Shader>();
         this.viewport = { x: 0, y: 0, width: gl.drawingBufferWidth, height: gl.drawingBufferHeight };
-        this.#global_defines = new Set();
         this.#shader_variant_uniforms = new Map();
 
         Renderer._EMPTY_TEXTURE = new Texture2D(gl).texture_id;
@@ -66,8 +65,8 @@ export class Renderer {
     }
 
     public setShadows(enabled: boolean) {
-        if (enabled) this.#global_defines.add(ShaderSource.Define.SHADOWS);
-        else this.#global_defines.delete(ShaderSource.Define.SHADOWS);
+        if (enabled) this.#global_defines |= ShaderSource.Define_Flags.SHADOWS;
+        else this.#global_defines |= ~ShaderSource.Define_Flags.SHADOWS;
     }
 
     public setPerFrameUniform(
@@ -100,11 +99,14 @@ export class Renderer {
         this.uboPerModelBlock.update(this.gl);
     }
 
-    public prepareMaterialShaders(materials: Material[], defines?: Set<ShaderSource.Define>) {
+    public prepareMaterialShaders(materials: Material[], defines?: ShaderSource.Define_Flags) {
         for (const mat of materials) {
-            const source = ShaderSource.toShaderSourceWithDefines(mat.shaderSource, defines);
-            if (this.__Shaders.has(source.name)) continue;
-            else this.initShader(source);
+            const name = ShaderSource.toShaderNameWithDefines(mat.shaderSource, defines);
+            if (this.#shaders.has(name)) continue;
+            else {
+                const source = ShaderSource.toShaderSourceWithDefines(mat.shaderSource, defines);
+                this.initShader(source);
+            }
         }
     }
 
@@ -118,7 +120,7 @@ export class Renderer {
         this.#shader_variant_uniforms.set(source.name, uniforms);
 
         //loop through all variant shaders with same base and set uniforms
-        for (const [name, shader] of this.__Shaders) {
+        for (const [name, shader] of this.#shaders) {
             if (name.includes(source.name)) shader.setUniforms(uniforms);
         }
     }
@@ -131,7 +133,7 @@ export class Renderer {
             return;
         } else {
             //loop through all variant shaders with same base and set uniforms
-            for (const [name, shader] of this.__Shaders) {
+            for (const [name, shader] of this.#shaders) {
                 shader.use();
                 if (name.includes(source.name)) shader.setUniforms(uniforms);
             }
@@ -149,7 +151,7 @@ export class Renderer {
             return;
         } else {
             //loop through all variant shaders with same base and set uniforms
-            for (const [name, shader] of this.__Shaders) {
+            for (const [name, shader] of this.#shaders) {
                 shader.use();
                 if (name.includes(source.name)) shader.setUniform(uniform_name, value);
             }
@@ -158,11 +160,14 @@ export class Renderer {
         }
     }
 
-    public getorCreateShader(src: ShaderSource, defines: Set<ShaderSource.Define> = new Set()): Shader {
-        const combined_defines: Set<ShaderSource.Define> = new Set([...this.#global_defines, ...defines]);
-        const source = ShaderSource.toShaderSourceWithDefines(src, combined_defines);
-        let shader = this.__Shaders.get(source.name)!;
-        if (shader === undefined) shader = this.initShader(source);
+    public getorCreateShader(src: ShaderSource, defines: ShaderSource.Define_Flags = 0): Shader {
+        let combined_defines: ShaderSource.Define_Flags = this.#global_defines | defines;
+        const name = ShaderSource.toShaderNameWithDefines(src, combined_defines);
+        let shader = this.#shaders.get(name);
+        if (shader === undefined) {
+            const source = ShaderSource.toShaderSourceWithDefines(src, combined_defines);
+            shader = this.initShader(source);
+        }
         return shader;
     }
 
@@ -171,7 +176,7 @@ export class Renderer {
         shader.use();
         this.current_shader = shader;
         shader.setUniformsRecord(src.intial_uniforms);
-        this.__Shaders.set(src.name, shader);
+        this.#shaders.set(src.name, shader);
 
         //set any preset uniforms that have be set for this shader base
         const shader_base_name = src.name.split("#")[0];
@@ -230,7 +235,7 @@ export class Renderer {
         index_buffer: IndexBuffer | undefined,
         vertex_buffer: VertexBuffer,
         mat: Material | undefined = undefined,
-        defines?: Set<ShaderSource.Define>
+        defines?: ShaderSource.Define_Flags
     ): void {
         this.prepareDraw(mat, vertex_buffer, defines);
 
@@ -253,7 +258,7 @@ export class Renderer {
         index_buffer: IndexBuffer | undefined,
         vertex_buffer: VertexBuffer,
         mat: Material | undefined = undefined,
-        defines?: Set<ShaderSource.Define>
+        defines?: ShaderSource.Define_Flags
     ): void {
         this.prepareDraw(mat, vertex_buffer, defines);
 
@@ -268,7 +273,7 @@ export class Renderer {
         this.gl.bindVertexArray(null);
     }
 
-    private prepareDraw(mat: Material | undefined, vertex_buffer: VertexBuffer, defines?: Set<ShaderSource.Define>) {
+    private prepareDraw(mat: Material | undefined, vertex_buffer: VertexBuffer, defines?: ShaderSource.Define_Flags) {
         const shader = mat && this.getorCreateShader(mat?.shaderSource, defines);
 
         if (shader && shader != this.current_shader) {

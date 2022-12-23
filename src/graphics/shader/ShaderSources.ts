@@ -44,47 +44,58 @@ export interface ShaderSource {
     name: string;
     vert: string;
     frag: string;
-    valid_defines?: Set<ShaderSource.Define>;
-    material_defines?: Set<ShaderSource.Define>;
+    valid_define_flags?: ShaderSource.Define_Flags;
+    material_define_flags?: ShaderSource.Define_Flags;
     intial_uniforms: Record<string, any>;
 }
 
 export namespace ShaderSource {
-    export const Defines = ["INSTANCING", "SHADOWS", "FLATSHADING", "BILLBOARD", "BILLBOARD_ROT_Y"] as const;
-    export type Define = typeof Defines[number];
-    export namespace Define {
-        export const INSTANCING = Defines[0];
-        export const SHADOWS = Defines[1];
-        export const FLATSHADING = Defines[2];
-        export const BILLBOARD = Defines[3];
-        export const BILLBOARD_ROT_Y = Defines[4];
+    export enum Define_Flags {
+        "INSTANCING" = 1 << 0,
+        "SHADOWS" = 1 << 1,
+        "FLATSHADING" = 1 << 2,
+        "BILLBOARD" = 1 << 3,
+        "BILLBOARD_ROT_Y" = 1 << 4,
+        //"ALL" = ~(~0 << 4),
     }
 
-    export function toShaderSourceWithDefines(source: ShaderSource, defines?: Set<Define>): ShaderSource {
-        if (!source.material_defines && (!defines || !source.valid_defines)) return source;
+    export function toShaderNameWithDefines(source: ShaderSource, defines?: Define_Flags): string {
+        const valid_defines: Define_Flags =
+            (source.valid_define_flags ?? 0) & ((defines ?? 0) | (source.material_define_flags ?? 0));
+        if (valid_defines === 0) return source.name;
+
+        let name = source.name;
+        for (const value in Define_Flags) {
+            let flag = Number(value);
+            if (isNaN(flag)) continue;
+            let d = Define_Flags[flag];
+            if (flag & valid_defines) name += `#${d}`;
+        }
+        return name;
+    }
+
+    export function toShaderSourceWithDefines(source: ShaderSource, defines?: Define_Flags): ShaderSource {
+        const valid_defines: Define_Flags =
+            (source.valid_define_flags ?? 0) & ((defines ?? 0) | (source.material_define_flags ?? 0));
+        if (valid_defines === 0) return source;
 
         let name = source.name;
         let vert = source.vert;
         let frag = source.frag;
 
-        const valid_defines = [];
-        if (defines && source.valid_defines)
-            for (const d of source.valid_defines.values()) {
-                if (defines.has(d)) valid_defines.push(d);
-            }
-        if (source.material_defines) for (const d of source.material_defines) valid_defines.push(d);
-
-        //DEFINES ALWAYS ALPHABETICAL
-        valid_defines.sort((a, b) => a.localeCompare(b));
-
         let define_str = "";
-        for (const d of valid_defines) {
-            define_str += `#define ${d}\n`;
-            name += `#${d}`;
+        for (const value in Define_Flags) {
+            let flag = Number(value);
+            if (isNaN(flag)) continue;
+            let d = Define_Flags[flag];
+            if (flag & valid_defines) {
+                define_str += `#define ${d}\n`;
+                name += `#${d}`;
+            }
         }
+
         vert = vert.replace("#version 300 es\n", `#version 300 es\n${define_str}`);
         frag = frag.replace("#version 300 es\n", `#version 300 es\n${define_str}`);
-
         const result: ShaderSource = {
             name: name,
             vert: vert,
@@ -94,13 +105,14 @@ export namespace ShaderSource {
         return result;
     }
 
-    const standard_valid_defines = [Define.SHADOWS, Define.INSTANCING, Define.BILLBOARD, Define.BILLBOARD_ROT_Y];
+    const standard_vert_define_flags =
+        Define_Flags.SHADOWS | Define_Flags.INSTANCING | Define_Flags.BILLBOARD | Define_Flags.BILLBOARD_ROT_Y;
 
     export const BasicUnlit: ShaderSource = {
         name: "BasicUnlitShader",
         vert: standardVert,
         frag: basic_unlit_frag,
-        valid_defines: new Set<Define>(standard_valid_defines),
+        valid_define_flags: standard_vert_define_flags,
         intial_uniforms: { "u_material.albedo_sampler": 0 },
     };
 
@@ -108,7 +120,7 @@ export namespace ShaderSource {
         name: "ToonShader",
         vert: standardVert,
         frag: toon_frag,
-        valid_defines: new Set<Define>(standard_valid_defines).add(Define.FLATSHADING),
+        valid_define_flags: standard_vert_define_flags | Define_Flags.FLATSHADING,
         intial_uniforms: { "u_material.albedo_sampler": 0 },
     };
 
@@ -116,7 +128,7 @@ export namespace ShaderSource {
         name: "PBRShader",
         vert: standardVert,
         frag: pbrFrag,
-        valid_defines: new Set<Define>(standard_valid_defines),
+        valid_define_flags: standard_vert_define_flags,
         intial_uniforms: {
             //gamma: 2.2,
             "u_material.albedo_sampler": 0,
@@ -135,7 +147,7 @@ export namespace ShaderSource {
         name: "NormalOnlyShader",
         vert: standardVert,
         frag: normalOnlyFrag,
-        valid_defines: new Set<Define>(standard_valid_defines).add(Define.FLATSHADING),
+        valid_define_flags: standard_vert_define_flags | Define_Flags.FLATSHADING,
         intial_uniforms: {},
     };
 
