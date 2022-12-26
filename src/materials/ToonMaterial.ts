@@ -77,9 +77,9 @@ export class ToonMaterial extends Material {
     public get shaderSource(): ShaderSource {
         const source = ShaderSource.Toon;
         source.material_define_flags = 0;
-        if (this.flat_shading) source.material_define_flags |= ShaderSource.Define_Flags.FLATSHADING;
-        if (this.is_billboard) source.material_define_flags |= ShaderSource.Define_Flags.BILLBOARD;
-        if (this.is_billboard_rot_y) source.material_define_flags |= ShaderSource.Define_Flags.BILLBOARD_ROT_Y;
+        if (this.flat_shading) source.material_define_flags |= ShaderSource.Define_Flag.FLATSHADING;
+        if (this.is_billboard) source.material_define_flags |= ShaderSource.Define_Flag.BILLBOARD;
+        if (this.is_billboard_rot_y) source.material_define_flags |= ShaderSource.Define_Flag.BILLBOARD_ROT_Y;
         return source;
     }
 }

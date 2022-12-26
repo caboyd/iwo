@@ -50,14 +50,16 @@ export interface ShaderSource {
 }
 
 export namespace ShaderSource {
-    export enum Define_Flags {
-        "INSTANCING" = 1 << 0,
-        "SHADOWS" = 1 << 1,
-        "FLATSHADING" = 1 << 2,
-        "BILLBOARD" = 1 << 3,
-        "BILLBOARD_ROT_Y" = 1 << 4,
+    export const Define_Flag = {
+        INSTANCING: 1 << 0,
+        SHADOWS: 1 << 1,
+        FLATSHADING: 1 << 2,
+        BILLBOARD: 1 << 3,
+        BILLBOARD_ROT_Y: 1 << 4,
         //"ALL" = ~(~0 << 4),
-    }
+    } as const;
+    const define_flag_entries = Object.entries(Define_Flag); //pre-compute to save mem alloc
+    export type Define_Flags = number;
 
     export function toShaderNameWithDefines(source: ShaderSource, defines?: Define_Flags): string {
         const valid_defines: Define_Flags =
@@ -65,11 +67,8 @@ export namespace ShaderSource {
         if (valid_defines === 0) return source.name;
 
         let name = source.name;
-        for (const value in Define_Flags) {
-            let flag = Number(value);
-            if (isNaN(flag)) continue;
-            let d = Define_Flags[flag];
-            if (flag & valid_defines) name += `#${d}`;
+        for (const [flag_name, flag] of define_flag_entries) {
+            if (flag & valid_defines) name += `#${flag_name}`;
         }
         return name;
     }
@@ -84,13 +83,10 @@ export namespace ShaderSource {
         let frag = source.frag;
 
         let define_str = "";
-        for (const value in Define_Flags) {
-            let flag = Number(value);
-            if (isNaN(flag)) continue;
-            let d = Define_Flags[flag];
+        for (const [flag_name, flag] of define_flag_entries) {
             if (flag & valid_defines) {
-                define_str += `#define ${d}\n`;
-                name += `#${d}`;
+                define_str += `#define ${flag_name}\n`;
+                name += `#${flag_name}`;
             }
         }
 
@@ -106,7 +102,7 @@ export namespace ShaderSource {
     }
 
     const standard_vert_define_flags =
-        Define_Flags.SHADOWS | Define_Flags.INSTANCING | Define_Flags.BILLBOARD | Define_Flags.BILLBOARD_ROT_Y;
+        Define_Flag.SHADOWS | Define_Flag.INSTANCING | Define_Flag.BILLBOARD | Define_Flag.BILLBOARD_ROT_Y;
 
     export const BasicUnlit: ShaderSource = {
         name: "BasicUnlitShader",
@@ -120,7 +116,7 @@ export namespace ShaderSource {
         name: "ToonShader",
         vert: standardVert,
         frag: toon_frag,
-        valid_define_flags: standard_vert_define_flags | Define_Flags.FLATSHADING,
+        valid_define_flags: standard_vert_define_flags | Define_Flag.FLATSHADING,
         intial_uniforms: { "u_material.albedo_sampler": 0 },
     };
 
@@ -147,7 +143,7 @@ export namespace ShaderSource {
         name: "NormalOnlyShader",
         vert: standardVert,
         frag: normalOnlyFrag,
-        valid_define_flags: standard_vert_define_flags | Define_Flags.FLATSHADING,
+        valid_define_flags: standard_vert_define_flags | Define_Flag.FLATSHADING,
         intial_uniforms: {},
     };
 

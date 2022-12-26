@@ -20,7 +20,7 @@ export class InstancedMesh {
     #instance_buffer: WebGLBuffer | undefined;
     #buffer_sent_to_gpu: boolean = false;
 
-    static readonly Defines: ShaderSource.Define_Flags = ShaderSource.Define_Flags.INSTANCING;
+    static readonly Defines: ShaderSource.Define_Flags = ShaderSource.Define_Flag.INSTANCING;
 
     public constructor(mesh: Mesh, materials: Material[] | Material) {
         this.mesh = mesh;

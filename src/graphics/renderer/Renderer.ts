@@ -65,8 +65,8 @@ export class Renderer {
     }
 
     public setShadows(enabled: boolean) {
-        if (enabled) this.#global_defines |= ShaderSource.Define_Flags.SHADOWS;
-        else this.#global_defines |= ~ShaderSource.Define_Flags.SHADOWS;
+        if (enabled) this.#global_defines |= ShaderSource.Define_Flag.SHADOWS;
+        else this.#global_defines |= ~ShaderSource.Define_Flag.SHADOWS;
     }
 
     public setPerFrameUniform(
