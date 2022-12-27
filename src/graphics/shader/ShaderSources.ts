@@ -124,7 +124,7 @@ export namespace ShaderSource {
         name: "PBRShader",
         vert: standardVert,
         frag: pbrFrag,
-        valid_define_flags: standard_vert_define_flags,
+        valid_define_flags: standard_vert_define_flags | Define_Flag.FLATSHADING,
         intial_uniforms: {
             //gamma: 2.2,
             "u_material.albedo_sampler": 0,
