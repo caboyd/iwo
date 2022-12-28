@@ -45,6 +45,7 @@ export class FPSControl {
     private mouse_x_total: number = 0;
     private mouse_y_total: number = 0;
     private is_mouse_down: boolean = false;
+    public mouse_active: boolean;
 
     public readonly opt: FPSControlOptions;
     public readonly active_keys: ActiveKeys = Object.fromEntries(
@@ -53,6 +54,8 @@ export class FPSControl {
 
     public constructor(camera: Camera, options: Partial<FPSControlOptions> = DefaultFPSControlOptions) {
         this.camera = camera;
+        this.mouse_active = true;
+
         this.opt = { ...DefaultFPSControlOptions, ...options };
 
         document.addEventListener("keydown", this.keydownEventCallback);
@@ -71,10 +74,12 @@ export class FPSControl {
     };
 
     private mouseDownCallback = (e: MouseEvent) => {
+        if (!this.mouse_active) return;
         if (e.button === 0) this.is_mouse_down = true;
     };
 
     private mouseUpCallback = (e: MouseEvent) => {
+        if (!this.mouse_active) return;
         if (e.button === 0) this.is_mouse_down = false;
     };
 
