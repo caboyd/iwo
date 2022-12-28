@@ -29,8 +29,7 @@ export type PBRMaterialOptions = {
     irradiance_texture?: TextureCubeMap;
     specular_env_texture?: TextureCubeMap;
     shadow_texture?: Texture2D;
-    material_options?: Partial<MaterialOptions>;
-};
+} & MaterialOptions;
 
 const DefaultPBRMaterialOptions: PBRMaterialOptions = {
     albedo_color: [1, 1, 1],
@@ -99,6 +98,7 @@ export class PBRMaterial extends Material {
         this.specular_env_texture = opt.specular_env_texture;
         this.specular_env_texture_active = true;
         this.shadow_texture = opt.shadow_texture;
+        this.material_options = opt;
     }
 
     public activate(gl: WebGL2RenderingContext, shader: Shader): void {
