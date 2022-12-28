@@ -51,7 +51,7 @@ export class Camera {
     }
 
     public lookAt(target: vec3): void {
-        const forward = vec3.sub(vec3.create(), target, this.position);
+        const forward = vec3.sub(temp, target, this.position);
         vec3.normalize(forward, forward);
         this.pitch = -Math.asin(forward[1]);
         this.heading = -(Math.atan2(forward[0], forward[2]) - Math.PI);
