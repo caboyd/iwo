@@ -26,6 +26,8 @@ layout (std140) uniform ubo_per_model{
 struct Light {
     vec4 position;
     vec3 color;
+    float linear_falloff;
+    float squared_falloff;
 };
 
 uniform int u_light_count;

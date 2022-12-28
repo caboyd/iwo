@@ -53,6 +53,8 @@ struct Material {
 struct Light {
     vec4 position;
     vec3 color;
+    float linear_falloff;
+    float squared_falloff;
 };
 
 uniform int u_light_count;
@@ -242,7 +244,11 @@ void main() {
         if (u_lights[i].position.w == 1.0) {
             L = normalize(light_pos - world_pos);
             float light_distance = length(light_pos - world_pos);
-            float attenuation = 1.0 / (light_distance * light_distance);
+            float lf = u_lights[i].linear_falloff;
+            if(lf == 0.0) lf = 1.0;
+            float sf = u_lights[i].squared_falloff;
+            if(sf == 0.0) sf = 1.0;
+            float attenuation = 1.0 / ((light_distance * lf) + (light_distance * light_distance * sf));
             radiance  *= attenuation;
         } else {
             L = normalize(L);
