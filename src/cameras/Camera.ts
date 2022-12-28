@@ -72,11 +72,10 @@ export class Camera {
     }
 
     public recalculateOrientation(): void {
-        const pitch_quat = quat.setAxisAngle(quat.create(), this.worldRight, this.pitch);
-        const heading_quat = quat.setAxisAngle(quat.create(), this.worldUp, this.heading);
-
         quat.identity(this.orientation);
+        const pitch_quat = quat.setAxisAngle(temp_quat, this.worldRight, this.pitch);
         quat.mul(this.orientation, this.orientation, pitch_quat);
+        const heading_quat = quat.setAxisAngle(temp_quat, this.worldUp, this.heading);
         quat.mul(this.orientation, this.orientation, heading_quat);
 
         //   console.log(this.orientation);
