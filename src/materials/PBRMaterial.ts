@@ -126,7 +126,7 @@ export class PBRMaterial extends Material {
 
         if (this.normal_texture === undefined && this.normal_image?.complete) {
             this.normal_texture = new Texture2D(gl, this.normal_image, {
-                flip: this.material_options?.flip_image_y || false,
+                flip: this.material_options?.flip_image_y,
             });
         }
         if (this.normal_texture) {
@@ -136,7 +136,7 @@ export class PBRMaterial extends Material {
 
         if (this.occlusion_texture === undefined && this.occlusion_image?.complete) {
             this.occlusion_texture = new Texture2D(gl, this.occlusion_image, {
-                flip: this.material_options?.flip_image_y || false,
+                flip: this.material_options?.flip_image_y,
             });
         }
         if (this.occlusion_texture) {
@@ -146,7 +146,7 @@ export class PBRMaterial extends Material {
 
         if (this.metal_roughness_texture === undefined && this.metal_roughness_image?.complete) {
             this.metal_roughness_texture = new Texture2D(gl, this.metal_roughness_image, {
-                flip: this.material_options?.flip_image_y || false,
+                flip: this.material_options?.flip_image_y,
             });
         }
         if (this.metal_roughness_texture) {
