@@ -240,8 +240,9 @@ void main() {
         vec3 light_pos =  (u_lights[i].position).xyz;
         vec3 L = light_pos;
         vec3 radiance = u_lights[i].color;
-        //point light
+ 
         if (u_lights[i].position.w == 1.0) {
+            //point light
             L = normalize(light_pos - world_pos);
             float light_distance = length(light_pos - world_pos);
             float lf = u_lights[i].linear_falloff;
