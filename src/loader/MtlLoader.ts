@@ -91,7 +91,7 @@ export class MtlLoader extends FileLoader {
                 metallic: metallic,
                 roughness: roughness,
                 emissive_factor: emmisive,
-                material_options: mtl_options,
+                ...mtl_options,
             });
             if (value.map_Kd_index !== undefined) mat.albedo_image = images[value.map_Kd_index];
             if (value.map_Ke_index !== undefined) mat.emissive_image = images[value.map_Ke_index];
