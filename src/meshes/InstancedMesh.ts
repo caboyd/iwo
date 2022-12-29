@@ -38,6 +38,10 @@ export class InstancedMesh {
         this.#buffer_sent_to_gpu = false;
     }
 
+    public refreshBuffer(): void {
+        this.#buffer_sent_to_gpu = false;
+    }
+
     public sortBackToFront(camera: vec3) {
         this.#buffer_sent_to_gpu = false;
         this.instance_matrix.sort((a, b) => {
