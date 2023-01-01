@@ -14,10 +14,11 @@ let tmp_mat4 = mat4.create();
 export class InstancedMesh {
     public mesh: Mesh;
     public materials: Material[];
-    public model_matrix: mat4;
-    public instance_matrix: mat4[];
+    public model_matrix: mat4 = mat4.create();
+    public instance_matrix: mat4[] = [];
 
     #instance_buffer: WebGLBuffer | undefined;
+    #instance_count_in_buffer: number = 0;
     #buffer_sent_to_gpu: boolean = false;
 
     static readonly Defines: ShaderSource.Define_Flags = ShaderSource.Define_Flag.INSTANCING;
@@ -28,9 +29,6 @@ export class InstancedMesh {
         if (this.materials.length === 0) throw "InstancedMesh requires material";
         if (this.mesh.instances && this.mesh.instances > 0)
             throw "InstancedMesh does not work with mesh using instances";
-
-        this.model_matrix = mat4.create();
-        this.instance_matrix = [];
     }
 
     public addInstance(instance: mat4) {
@@ -65,33 +63,48 @@ export class InstancedMesh {
     }
 
     private updateBuffer(gl: WebGL2RenderingContext, shader: Shader) {
-        if (this.#instance_buffer) gl.deleteBuffer(this.#instance_buffer);
-        //TODO: this won't work if other meshinstances are using this mesh becuase we are messing with the attributes.
-        this.mesh.vertex_buffer.bind(gl);
-        const buffer = new Float32Array(this.instance_matrix.length * 16);
-        for (let i = 0; i < this.instance_matrix.length; i++) {
-            const mat = this.instance_matrix[i];
-            buffer.set(mat, i * 16);
-        }
-        this.#instance_buffer = WebGL.buildBuffer(gl, gl.ARRAY_BUFFER, buffer);
+        //if buffer too small or 2x too big, remake it.
+        if (
+            this.instance_matrix.length > this.#instance_count_in_buffer ||
+            this.instance_matrix.length < this.#instance_count_in_buffer / 2
+        ) {
+            if (this.#instance_buffer) gl.deleteBuffer(this.#instance_buffer);
+            //TODO: this won't work if other meshinstances are using this mesh becuase we are messing with the attributes.
+            this.mesh.vertex_buffer.bind(gl);
+            const buffer = new Float32Array(this.instance_matrix.length * 16);
+            for (let i = 0; i < this.instance_matrix.length; i++) {
+                const mat = this.instance_matrix[i];
+                buffer.set(mat, i * 16);
+            }
+            this.#instance_count_in_buffer = this.instance_matrix.length;
+            this.#instance_buffer = WebGL.buildBuffer(gl, gl.ARRAY_BUFFER, buffer);
 
-        const instance_loc = gl.getAttribLocation(shader.ID, "a_instance");
+            const instance_loc = gl.getAttribLocation(shader.ID, "a_instance");
 
-        const stride = 4 * 16;
-        for (let i = 0; i < 4; i++) {
-            const loc = instance_loc + i;
+            const stride = 4 * 16;
+            for (let i = 0; i < 4; i++) {
+                const loc = instance_loc + i;
 
-            gl.enableVertexAttribArray(loc);
-            const offset = i * 16;
-            gl.vertexAttribPointer(
-                loc, // location
-                4, // component_count
-                gl.FLOAT, // type
-                false, // normalize
-                stride, // stride
-                offset // offset
-            );
-            gl.vertexAttribDivisor(loc, 1);
+                gl.enableVertexAttribArray(loc);
+                const offset = i * 16;
+                gl.vertexAttribPointer(
+                    loc, // location
+                    4, // component_count
+                    gl.FLOAT, // type
+                    false, // normalize
+                    stride, // stride
+                    offset // offset
+                );
+                gl.vertexAttribDivisor(loc, 1);
+            }
+        } else {
+            const buffer = new Float32Array(this.instance_matrix.length * 16);
+            for (let i = 0; i < this.instance_matrix.length; i++) {
+                const mat = this.instance_matrix[i];
+                buffer.set(mat, i * 16);
+            }
+            //reuse buffer
+            gl.bufferSubData(gl.ARRAY_BUFFER, 0, buffer);
         }
 
         gl.bindVertexArray(null);
