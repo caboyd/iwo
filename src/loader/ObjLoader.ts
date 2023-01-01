@@ -17,16 +17,18 @@ enum VertexDataTraits {
     vp = 8,
 }
 
-type RawObjDataArray = RawObjData[];
-
 type RawObjData = {
-    name: string;
-    trait_flags: VertexDataTraits;
-
     v: [number, number, number][];
     vt: [number, number][];
     vn: [number, number, number][];
     // vp: [number, number, number][];
+
+    objects: RawObj[];
+};
+
+type RawObj = {
+    name: string;
+    trait_flags: VertexDataTraits;
 
     groups: FaceGroup[];
     //used for calculating normals that are not provided
@@ -74,8 +76,14 @@ export class ObjLoader extends FileLoader {
     ): Promise<ObjData> {
         const lines = s.split(/\r?\n/);
 
-        const raw_obj_data_array: RawObjDataArray = [createEmptyObject("Default")];
-        let current_obj = raw_obj_data_array[0];
+        const raw_obj_data: RawObjData = {
+            v: [],
+            vt: [],
+            vn: [],
+            // vp: [],
+            objects: [createEmptyObject("Default")],
+        };
+        let current_obj = raw_obj_data.objects[0];
         let current_group = current_obj.groups[0];
         let current_smoothing_group: number[] | undefined = undefined;
         let mtl_to_load: string | undefined;
@@ -92,7 +100,7 @@ export class ObjLoader extends FileLoader {
                 ...obj_options,
             });
 
-        return generateGeometry(raw_obj_data_array, materials);
+        return generateGeometry(raw_obj_data, materials);
 
         async function parse_line(line: string) {
             if (line.length === 0 || line[0] === "#") return;
@@ -108,7 +116,7 @@ export class ObjLoader extends FileLoader {
                     if (current_obj.name === "Default") current_obj.name = arr[1];
                     else {
                         current_obj = createEmptyObject(arr[1]);
-                        raw_obj_data_array.push(current_obj);
+                        raw_obj_data.objects.push(current_obj);
                     }
                     break;
                 case "g":
@@ -126,19 +134,20 @@ export class ObjLoader extends FileLoader {
                     break;
                 case "mtllib":
                     //materials = await MtlLoader.promise(arr[1], base_url, obj_options);
+                    if (mtl_to_load) throw "ObjLoader: Not Supported: multiple mtllib";
                     mtl_to_load = arr[1];
                     break;
                 case "v":
                     current_obj.trait_flags |= VertexDataTraits.v;
-                    current_obj.v.push([nums[1], nums[2], nums[3]]);
+                    raw_obj_data.v.push([nums[1], nums[2], nums[3]]);
                     break;
                 case "vt":
                     current_obj.trait_flags |= VertexDataTraits.vt;
-                    current_obj.vt.push([nums[1], nums[2]]);
+                    raw_obj_data.vt.push([nums[1], nums[2]]);
                     break;
                 case "vn":
                     current_obj.trait_flags |= VertexDataTraits.vn;
-                    current_obj.vn.push([nums[1], nums[2], nums[3]]);
+                    raw_obj_data.vn.push([nums[1], nums[2], nums[3]]);
                     break;
                 case "vp":
                     throw "Not able to parse obj files with parameter space vertices (vp)";
@@ -176,15 +185,10 @@ export class ObjLoader extends FileLoader {
     }
 }
 
-function createEmptyObject(name: string): RawObjData {
+function createEmptyObject(name: string): RawObj {
     return {
         name: name,
         trait_flags: 0,
-        v: [],
-        vt: [],
-        vn: [],
-        // vp: [],
-
         groups: [
             {
                 name: "Default",
@@ -202,7 +206,7 @@ function createEmptyGroup(name: string): FaceGroup {
     };
 }
 
-function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlData): ObjData {
+function generateGeometry(raw_obj_data: RawObjData, materials?: MtlData): ObjData {
     let used_mtl_data: MtlData = {};
     let used_mat_index = 0;
 
@@ -211,7 +215,7 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
         materials: [],
     };
 
-    for (const raw_obj_data of raw_obj_data_array) {
+    for (const raw_obj of raw_obj_data.objects) {
         const groups: Group[] = [];
         const geom: Geometry = {
             attributes: {},
@@ -222,12 +226,12 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
         };
         const v_arr = [];
         const vt_arr = [];
-        const vt_check = raw_obj_data.trait_flags & VertexDataTraits.vt;
+        const vt_check = raw_obj.trait_flags & VertexDataTraits.vt;
         const vn_arr = [];
-        const vn_check = raw_obj_data.trait_flags & VertexDataTraits.vn;
+        const vn_check = raw_obj.trait_flags & VertexDataTraits.vn;
         let offset = 0;
 
-        for (const group of raw_obj_data.groups) {
+        for (const group of raw_obj.groups) {
             //add material to result if not yet added
             if (materials && group.material_name && used_mtl_data[group.material_name] === undefined) {
                 used_mtl_data[group.material_name] = materials[group.material_name];
@@ -282,7 +286,7 @@ function generateGeometry(raw_obj_data_array: RawObjDataArray, materials?: MtlDa
         }
 
         result.objects.push({
-            name: raw_obj_data.name,
+            name: raw_obj.name,
             geometry: geom,
         });
     }
