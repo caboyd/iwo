@@ -78,10 +78,19 @@ export class ObjLoader extends FileLoader {
         let current_obj = raw_obj_data_array[0];
         let current_group = current_obj.groups[0];
         let current_smoothing_group: number[] | undefined = undefined;
+        let mtl_to_load: string | undefined;
+        let required_materials: string[] = [];
 
         let materials: MtlData | undefined = undefined;
 
         for (let line of lines) await parse_line(line.trim());
+
+        //download queued mtl
+        if (mtl_to_load)
+            materials = await MtlLoader.promise(mtl_to_load, base_url, {
+                required_materials: required_materials,
+                ...obj_options,
+            });
 
         return generateGeometry(raw_obj_data_array, materials);
 
@@ -113,9 +122,11 @@ export class ObjLoader extends FileLoader {
                     break;
                 case "usemtl":
                     current_group.material_name = arr[1];
+                    required_materials.push(arr[1]);
                     break;
                 case "mtllib":
-                    materials = await MtlLoader.promise(arr[1], base_url, obj_options);
+                    //materials = await MtlLoader.promise(arr[1], base_url, obj_options);
+                    mtl_to_load = arr[1];
                     break;
                 case "v":
                     current_obj.trait_flags |= VertexDataTraits.v;
