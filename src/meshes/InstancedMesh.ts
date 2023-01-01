@@ -63,8 +63,9 @@ export class InstancedMesh {
     }
 
     private updateBuffer(gl: WebGL2RenderingContext, shader: Shader) {
-        //if buffer too small or 2x too big, remake it.
+        //if no buffer or buffer too small or 2x too big, remake it.
         if (
+            !this.#instance_buffer ||
             this.instance_matrix.length > this.#instance_count_in_buffer ||
             this.instance_matrix.length < this.#instance_count_in_buffer / 2
         ) {
@@ -104,6 +105,7 @@ export class InstancedMesh {
                 buffer.set(mat, i * 16);
             }
             //reuse buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, this.#instance_buffer);
             gl.bufferSubData(gl.ARRAY_BUFFER, 0, buffer);
         }
 
