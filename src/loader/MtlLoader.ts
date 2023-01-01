@@ -33,7 +33,7 @@ export type MtlData = {
     };
 };
 
-export type MtlOptions = MaterialOptions;
+export type MtlOptions = { required_materials?: string[] } & MaterialOptions;
 
 export class MtlLoader extends FileLoader {
     public static async promise(
@@ -50,7 +50,7 @@ export class MtlLoader extends FileLoader {
     private static fromMtlString(s: string, base_url = this.Default_Base_URL, mtl_options?: MtlOptions): MtlData {
         const lines = s.split(/\r?\n/);
 
-        const mtl_data = MtlLoader.toMtlData(lines);
+        const mtl_data = MtlLoader.toMtlData(lines, mtl_options?.required_materials);
 
         //find unique images and load them
         const unique_images: string[] = [];
@@ -101,7 +101,7 @@ export class MtlLoader extends FileLoader {
         return m;
     }
 
-    private static toMtlData(lines: string[]): Map<string, RawMtlData> {
+    private static toMtlData(lines: string[], required_materials?: string[]): Map<string, RawMtlData> {
         const m: Map<string, RawMtlData> = new Map();
         let current_object = "";
         let current_mtldata: RawMtlData = {} as RawMtlData;
@@ -145,6 +145,17 @@ export class MtlLoader extends FileLoader {
                     break;
             }
         }
-        return m;
+
+        //only keep necessary materials
+        if (required_materials) {
+            const required_m: Map<string, RawMtlData> = new Map();
+            for (const r of required_materials) {
+                const mat = m.get(r);
+                if (mat) required_m.set(r, mat);
+            }
+            return required_m;
+        } else {
+            return m;
+        }
     }
 }
