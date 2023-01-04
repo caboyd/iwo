@@ -40,10 +40,10 @@ const DefaultFPSControlOptions: FPSControlOptions = {
 };
 
 export class FPSControl {
-    private camera: Camera;
+    protected camera: Camera;
 
-    private mouse_x_total: number = 0;
-    private mouse_y_total: number = 0;
+    protected mouse_x_total: number = 0;
+    protected mouse_y_total: number = 0;
     private is_mouse_down: boolean = false;
     public mouse_active: boolean;
 
