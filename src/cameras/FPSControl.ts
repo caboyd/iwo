@@ -107,7 +107,7 @@ export class FPSControl {
         document.removeEventListener("mouseup", this.mouseUpCallback, false);
     }
 
-    private processKeyboard(delta_ms: number): void {
+    protected processKeyboard(delta_ms: number): void {
         const binds = this.opt.binds;
         const velocity = (this.opt.speed * delta_ms) / 10000;
 
@@ -139,7 +139,7 @@ export class FPSControl {
         }
     }
 
-    public processMouseMovement(delta_ms: number): void {
+    protected processMouseMovement(delta_ms: number): void {
         let xOffset = (this.mouse_x_total * delta_ms) / 5000;
         let yOffset = (this.mouse_y_total * delta_ms) / 5000;
 
