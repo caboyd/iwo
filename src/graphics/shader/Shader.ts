@@ -16,6 +16,10 @@ export class Shader {
         gl.attachShader(this.ID, fragmentShader);
         gl.linkProgram(this.ID);
 
+        //flag for deletion on cleanup
+        gl.deleteShader(vertexShader);
+        gl.deleteShader(fragmentShader)
+
         if (!gl.getProgramParameter(this.ID, gl.LINK_STATUS)) {
             alert("Could not initialize shaders");
         }
@@ -40,7 +44,7 @@ export class Shader {
     }
 
     public delete(): void {
-        this.gl.deleteShader(this.ID);
+        this.gl.deleteProgram(this.ID);
     }
 
     public use(): void {
