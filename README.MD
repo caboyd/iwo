@@ -1,3 +1,6 @@
+[![Version](https://img.shields.io/npm/v/iwo-renderer)](https://npmjs.com/package/iwo-renderer)
+
+
 # iwo - A Typescript Webgl2 Physically Based Renderer
 
 iwo is a physically based renderer written in Typescript. This project was created to learn how to create a forward rendering engine from scratch.
@@ -25,9 +28,9 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 ### File Loading / Importing
 - [x] [Asynchronous File Loading](https://github.com/caboyd/iwo/blob/master/src/loader/FileLoader.ts)
 - [x] [HDR Image Loader](https://github.com/caboyd/iwor/blob/master/src/loader/HDRImageLoader.ts)  
-- :construction: GLTF Importer
-- :construction: OBJ Importer
-
+- [x] :construction: [GLTF Importer](https://github.com/caboyd/iwor/blob/master/src/loader/glTFLoader.ts)  
+- [x] :construction: [Obj Importer](https://github.com/caboyd/iwor/blob/master/src/loader/ObjLoader.ts)  
+  - [x] :construction: [Mtl Importer](https://github.com/caboyd/iwor/blob/master/src/loader/MtlLoader.ts)  
 
 ### Geometry Generation
 - [x] [Plane](https://github.com/caboyd/iwo/blob/master/src/geometry/PlaneGeometry.ts)
@@ -43,20 +46,21 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 - [x] [Physically Based Shader](https://github.com/caboyd/iwo/blob/master/src/shaders/pbr.frag)
 - [x] Image Based Diffuse Lighting
 - [x] Image Based Specular Lighting
-- [ ] Normal Mapping
-- [ ] Parallax mapping - ([Tutorial](http://apoorvaj.io/exploring-bump-mapping-with-webgl.html))
+- [x] Normal Mapping
+- [ ] Parallax Mapping - ([Tutorial](http://apoorvaj.io/exploring-bump-mapping-with-webgl.html))
+- [ ] Displacement Mapping
 - [ ] Volumetric Rendering
-- [ ] 
-- [ ] Render Targets
+- [x] Render Targets
 - [x] Render to Cubemap
 - [ ] Scene Rendering
 
 ### Rendering Performance
 - [ ] Frustum Culling
 - [ ] Occlusion Culling
-- [ ] Instanced Rendering
+- [x] Instanced Rendering
 
 ### Rendering Other
+- [x] Post Processing
 - [ ] Mouse Picking
 - [x] Line Rendering
 - [ ] Font Rendering
@@ -65,7 +69,7 @@ This is a list of features to reference for ideas. Checkmarked features have bee
 
 
 ### Shadows
-- [ ] Shadow Mapping
+- [x] Shadow Mapping
 - [ ] Cascaded Shadow Mapping
 
 ### Cameras
